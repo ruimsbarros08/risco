@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en" >
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="utf-8"> 
+    <title>RISCO</title>
+
+</head>
+<body>
+
+
+<div class="container">
+    <div class="row">
+        <div style="height:50px;"></div>
+    </div>
+</div>
+
+
+<!-- NAVIGATION -->
+<div class="container" >
+    <div class="row">
+        <nav class="navbar-wrapper navbar-inverse" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#collapse-button">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+            </div>
+            <div class="collapse navbar-collapse" id="collapse-button">
+                <ul class="nav navbar-nav navbar-left">
+                    <li class=""><a href="">ACTIVITY</a></li>
+                    <li class=""><a href="">MODELS</a></li>
+                    <li class=""><a href="">JOB MANAGER</a></li>
+                    <li class=""><a href="">DOCUMENTATION</a></li>
+                </ul>
+
+
+                <ul class="nav navbar-nav navbar-right">
+
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"> username <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="">ACCOUNT</a></li>
+                            <li><a href="">MY MODELS</a></li>
+                            <li class="divider"></li>
+                            <li id="logout-btn" class=""><a href="">LOGOUT  <span class="glyphicon glyphicon-off"> </a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+            </div>
+          </div>
+        </nav>
+        <br>
+    </div>
+</div>
+
+
+<!-- CONTENT -->
+<div id="container">
+        {% block content %}{% endblock %}
+</div>
+
+
+
+
+
+</body>
+</html>

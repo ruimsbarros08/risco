@@ -34,7 +34,7 @@ class ExposureForm(forms.ModelForm):
 def index_exposure(request):
 	models = Exposure_Model.objects.all()
 	form = ExposureForm()
-	return render(request, 'eng_models/index.html', {'models': models, 'form': form})
+	return render(request, 'eng_models/index_exposure.html', {'models': models, 'form': form})
 
 def detail_exposure(request, model_id):
 	model = get_object_or_404(Exposure_Model ,pk=model_id)
@@ -43,7 +43,7 @@ def detail_exposure(request, model_id):
 	except:
 		asset_list = []
 	page = request.GET.get('page')
-	return render(request, 'eng_models/detail.html', {'model': model, 'assets': pagination(asset_list, 10, page)})
+	return render(request, 'eng_models/detail_exposure.html', {'model': model, 'assets': pagination(asset_list, 10, page)})
 
 def add_exposure(request):
 	if request.method == 'POST':
@@ -58,7 +58,7 @@ def add_exposure(request):
 			return redirect('detail_exposure', model_id=model.id)
 	else:
 		form = ExposureForm()
-		return render(request, 'eng_models/index.html', {'form': form})
+		return render(request, 'eng_models/index_exposure.html', {'form': form})
 
 
 ############################
