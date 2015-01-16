@@ -36,6 +36,10 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
+    'world',
+    'eng_models',
+    'jobs'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -58,8 +62,12 @@ WSGI_APPLICATION = 'riscoplatform.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'riscodb',
+        'USER': 'postgres',
+        'PASSWORD': 'prisefeup',
+        'HOST': 'priseDB.fe.up.pt',
+        'PORT': '5432'
     }
 }
 
@@ -68,7 +76,7 @@ DATABASES = {
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Lisbon'
 
 USE_I18N = True
 
