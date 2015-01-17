@@ -45,7 +45,7 @@ def detail_exposure(request, model_id):
 	page = request.GET.get('page')
 	return render(request, 'eng_models/detail_exposure.html', {'model': model, 'assets': pagination(asset_list, 10, page)})
 
-def add_exposure(request):
+def add_exposure_model(request):
 	if request.method == 'POST':
 		form = ExposureForm(request.POST, request.FILES)
 		if form.is_valid():

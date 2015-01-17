@@ -9,7 +9,7 @@ urlpatterns = patterns('',
 
 	url(r'^exposure/$', views.index_exposure, name='index_exposure'),
     url(r'^exposure/(?P<model_id>\d+)/$', views.detail_exposure, name='detail_exposure'),
-    url(r'^exposure/add/$', views.add_exposure, name='add_exposure'),
+    url(r'^exposure/add/$', views.add_exposure_model, name='add_exposure_model'),
 
     url(r'^site/$', views.index_site, name='index_site'),
     url(r'^site/(?P<model_id>\d+)/$', views.detail_site, name='detail_site'),

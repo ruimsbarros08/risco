@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+	
+	<div class="row">
+
+		<div class="col-md-12">
+			
+		<h3>{{ model.name }}</h3>
+		<br>
+		<h5>{{ model.description }}</h5>
+		<br>
+
+			{% if assets %}
+			    <ul>
+			    {% for asset in assets %}
+			    	<li>{{ asset.name }}</li>
+			    {% endfor %}
+			    </ul>
+			{% else %}
+			    <p>No models are available. Please add the first below</p>
+			{% endif %}
+
+			<div class="pagination">
+			    <span class="step-links">
+			        {% if assets.has_previous %}
+			            <a href="?page={{ assets.previous_page_number }}">previous</a>
+			        {% endif %}
+
+			        <span class="current">
+			            Page {{ assets.number }} of {{ assets.paginator.num_pages }}.
+			        </span>
+
+			        {% if assets.has_next %}
+			            <a href="?page={{ assets.next_page_number }}">next</a>
+			        {% endif %}
+			    </span>
+			</div>
+
+		</div>
+
+	</div>
+
+</div>
+
+
+{% endblock %}

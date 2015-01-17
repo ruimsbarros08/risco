@@ -5,6 +5,12 @@
     <meta charset="utf-8"> 
     <title>RISCO</title>
 
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/bootstrap/dist/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/bootstrap-theme-flatly/flatly.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/leaflet/dist/leaflet.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/leaflet-draw/dist/leaflet.draw.css' %}" />
+
 </head>
 <body>
 
@@ -19,7 +25,7 @@
 <!-- NAVIGATION -->
 <div class="container" >
     <div class="row">
-        <nav class="navbar-wrapper navbar-inverse" role="navigation">
+        <nav class="navbar-wrapper navbar-default" role="navigation">
           <div class="container">
             <div class="navbar-header">
               <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#collapse-button">
@@ -60,12 +66,16 @@
 
 
 <!-- CONTENT -->
-<div id="container">
-        {% block content %}{% endblock %}
-</div>
+
+{% block content %}{% endblock %}
 
 
-
+{% load staticfiles %}
+<script type="text/javascript" src="{% static 'eng_models/bower_components/jquery/dist/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'eng_models/bower_components/jquery-ui/jquery-ui.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'eng_models/bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'eng_models/bower_components/leaflet/dist/leaflet.js' %}"></script>
+<script type="text/javascript" src="{% static 'eng_models/bower_components/leaflet-draw/dist/leaflet.draw.js' %}"></script>
 
 
 </body>
