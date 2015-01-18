@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+	<div class="row">
+		<h3>{{ model.name }}</h3>
+		<br>
+		<h5>{{ model.description }}</h5>
+		<br>
+	</div>
+	<div class="row">
+
+		<div class="col-md-6">
+			<div id="map" class="vertical-map"></div>
+		</div>
+
+		<div class="col-md-6">
+
+			{% if sites %}
+			    <ul>
+			    {% for site in sites %}
+			    	<li>{{ site.vs30 }}</li>
+			    {% endfor %}
+			    </ul>
+			{% else %}
+			    <p>No models are available. Please add the first below</p>
+			{% endif %}
+
+			<div class="pagination">
+			    <span class="step-links">
+			        {% if sites.has_previous %}
+			            <a href="?page={{ sites.previous_page_number }}">previous</a>
+			        {% endif %}
+
+			        <span class="current">
+			            Page {{ sites.number }} of {{ sites.paginator.num_pages }}.
+			        </span>
+
+			        {% if sites.has_next %}
+			            <a href="?page={{ sites.next_page_number }}">next</a>
+			        {% endif %}
+			    </span>
+			</div>
+
+		</div>
+
+	</div>
+
+</div>
+
+{% load staticfiles %}
+<script type="text/javascript" src="{% static 'eng_models/js/site.js' %}"></script>
+
+
+{% endblock %}

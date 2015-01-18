@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/bootstrap-theme-flatly/flatly.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/leaflet/dist/leaflet.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/leaflet-draw/dist/leaflet.draw.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'eng_models/css/main.css' %}" />
 
 </head>
 <body>
@@ -64,18 +65,24 @@
     </div>
 </div>
 
-
-<!-- CONTENT -->
-
-{% block content %}{% endblock %}
-
-
 {% load staticfiles %}
 <script type="text/javascript" src="{% static 'eng_models/bower_components/jquery/dist/jquery.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'eng_models/bower_components/jquery-ui/jquery-ui.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'eng_models/bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'eng_models/bower_components/leaflet/dist/leaflet.js' %}"></script>
 <script type="text/javascript" src="{% static 'eng_models/bower_components/leaflet-draw/dist/leaflet.draw.js' %}"></script>
+<script type="text/javascript" src="{% static 'eng_models/js/init.js' %}"></script>
+
+<!-- CONTENT -->
+{% block content %}{% endblock %}
+
+<div class="container">
+    <div class="row">
+        <div style="height:100px;"></div>
+    </div>
+</div>
+
+
 
 
 </body>
