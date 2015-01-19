@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+<div class="row">
+	<div class="row">
+		<h2>Hazard Models</h2>
+	</div>
+</div>
+	
+<div class="row">
+
+	<div class="col-md-12">
+		
+	<h3>Fault Models</h3>
+
+		{% if fault_models %}
+		    <ul>
+		    {% for model in fault_models %}
+		        <li><a href="{% url 'detail_faults' model.id %}">{{ model.name }}</a></li>
+		    {% endfor %}
+		    </ul>
+		{% else %}
+		    <p>No models are available. Please add the first below</p>
+		{% endif %}
+
+	</div>
+	<div class="col-md-12">
+		<form action="{% url 'add_exposure_model' %}" method="post" enctype="multipart/form-data">
+			{% csrf_token %}
+		    {{ form }}
+		    <input type="submit" value="Add" />
+		</form>
+		
+	</div>
+
+</div>
+
+</div>
+
+
+{% endblock %}

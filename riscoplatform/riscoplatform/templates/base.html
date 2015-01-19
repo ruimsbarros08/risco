@@ -39,8 +39,24 @@
             <div class="collapse navbar-collapse" id="collapse-button">
                 <ul class="nav navbar-nav navbar-left">
                     <li class=""><a href="">ACTIVITY</a></li>
-                    <li class=""><a href="">MODELS</a></li>
-                    <li class=""><a href="">JOB MANAGER</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"> MODELS <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'index_hazard' %}">HAZARD</a></li>
+                            <li><a href="{% url 'index_exposure' %}">EXPOSURE</a></li>
+                            <li><a href="{% url 'index_site' %}">SITE CONDITIONS</a></li>
+                            <li><a href="">FRAGILITY</a></li>
+                            <li><a href="">VULNERABILITY</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"> JOB MANAGER <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="">SCENARIO</a></li>
+                            <li><a href="">PSHA</a></li>
+                            <li><a href="">EVENT BASED</a></li>
+                        </ul>
+                    </li>
                     <li class=""><a href="">DOCUMENTATION</a></li>
                 </ul>
 
