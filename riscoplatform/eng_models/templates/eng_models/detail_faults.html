@@ -13,8 +13,14 @@
 	<div class="row">
 
 		<div class="col-md-6">
-			<div id="map" class="vertical-map"></div>
+			<form action="{% url 'add_fault' %}" method="post" enctype="multipart/form-data">
+		      <div class="modal-body">
+					{% csrf_token %}
+				    {{ form }}
+		      </div>
+			</form>
 		</div>
+
 
 		<div class="col-md-6">
 
@@ -51,7 +57,7 @@
 </div>
 
 {% load staticfiles %}
-<!--<script type="text/javascript" src="{% static 'eng_models/js/site.js' %}"></script>-->
+<script type="text/javascript" src="{% static 'eng_models/js/faults.js' %}"></script>
 
 
 {% endblock %}

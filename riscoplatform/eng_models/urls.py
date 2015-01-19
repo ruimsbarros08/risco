@@ -5,7 +5,8 @@ urlpatterns = patterns('',
 
 	url(r'^hazard/$', views.index_hazard, name='index_hazard'),
     url(r'^hazard/faults/(?P<model_id>\d+)/$', views.detail_faults, name='detail_faults'),
-	url(r'^hazard/add/faults$', views.add_fault_model, name='add_fault_model'),
+    url(r'^hazard/add/fault_model$', views.add_fault_model, name='add_fault_model'),
+	url(r'^hazard/add/fault$', views.add_fault, name='add_fault'),
 
 	url(r'^exposure/$', views.index_exposure, name='index_exposure'),
     url(r'^exposure/(?P<model_id>\d+)/$', views.detail_exposure, name='detail_exposure'),

@@ -9,6 +9,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core import serializers
 from django.db import connection
 import json
+from leaflet.forms.widgets import LeafletWidget
+
 
 def pagination(list, n, page):
 	paginator = Paginator(list, n)
@@ -127,14 +129,21 @@ def add_site_model(request):
 ###################
 
 
-class FaultForm(forms.ModelForm):
+class FaultModelForm(forms.ModelForm):
 	class Meta:
 		model = Fault_Model
 		fields = ['name', 'description', 'xml']
 
+class FaultForm(forms.ModelForm):
+	class Meta:
+		model = Fault
+		fields = ['name', 'mindepth', 'maxdepth', 'strike', 'dip', 'rake', 'sr', 'maxmag', 'geom']
+		widgets = {'geom': LeafletWidget()}
+		
+
 def index_hazard(request):
 	fault_models = Fault_Model.objects.all()
-	form = FaultForm()
+	form = FaultModelForm()
 	return render(request, 'eng_models/index_hazard.html', {'fault_models': fault_models, 'form': form})
 
 def detail_faults(request, model_id):
@@ -144,12 +153,27 @@ def detail_faults(request, model_id):
 	except:
 		fault_list = []
 	page = request.GET.get('page')
-	return render(request, 'eng_models/detail_faults.html', {'model': model, 'faults': pagination(fault_list, 10, page)})
+	form = FaultForm()
+	return render(request, 'eng_models/detail_faults.html', {'model': model, 'form': form, 'faults': pagination(fault_list, 10, page)})
 
+
+def add_fault(request):
+	if request.method == 'POST':
+		form = FaultForm(request.POST, request.FILES)
+		if form.is_valid():
+			fault = form.save(commit=False)
+			fault.save()
+			if request.FILES:
+				pass
+				#create  parser
+			return redirect('detail_faults', model_id=model.id)
+	else:
+		form = FaultForm()
+		return render(request, 'eng_models/detail_faults.html', {'form': form})
 
 def add_fault_model(request):
 	if request.method == 'POST':
-		form = FaultForm(request.POST, request.FILES)
+		form = FaultModelForm(request.POST, request.FILES)
 		if form.is_valid():
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
@@ -159,7 +183,7 @@ def add_fault_model(request):
 				#create fault source parser
 			return redirect('detail_faults', model_id=model.id)
 	else:
-		form = FaultForm()
+		form = FaultModelForm()
 		return render(request, 'eng_models/index_hazard.html', {'form': form})
 
 
