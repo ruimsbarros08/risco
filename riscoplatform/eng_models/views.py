@@ -137,8 +137,18 @@ class FaultModelForm(forms.ModelForm):
 class FaultForm(forms.ModelForm):
 	class Meta:
 		model = Fault
-		fields = ['name', 'mindepth', 'maxdepth', 'strike', 'dip', 'rake', 'sr', 'maxmag', 'geom']
-		widgets = {'geom': LeafletWidget()}
+		fields = ['geom', 'name', 'mindepth', 'maxdepth', 'strike', 'dip', 'rake', 'sr', 'maxmag']
+		widgets = {
+            		'name': forms.TextInput(attrs={'class': 'form-control'}),
+            		'mindepth': forms.TextInput(attrs={'class': 'form-control'}),
+            		'maxdepth': forms.TextInput(attrs={'class': 'form-control'}),
+            		'strike': forms.TextInput(attrs={'class': 'form-control'}),
+            		'dip': forms.TextInput(attrs={'class': 'form-control'}),
+            		'rake': forms.TextInput(attrs={'class': 'form-control'}),
+            		'sr': forms.TextInput(attrs={'class': 'form-control'}),
+            		'maxmag': forms.TextInput(attrs={'class': 'form-control'}),
+					'geom': LeafletWidget()
+					}
 		
 
 def index_hazard(request):
@@ -157,16 +167,17 @@ def detail_faults(request, model_id):
 	return render(request, 'eng_models/detail_faults.html', {'model': model, 'form': form, 'faults': pagination(fault_list, 10, page)})
 
 
-def add_fault(request):
+def add_fault(request, model_id):
 	if request.method == 'POST':
-		form = FaultForm(request.POST, request.FILES)
+		form = FaultForm(request.POST)
 		if form.is_valid():
 			fault = form.save(commit=False)
+			fault.model_id = model_id
 			fault.save()
 			if request.FILES:
 				pass
 				#create  parser
-			return redirect('detail_faults', model_id=model.id)
+			return redirect('detail_faults', model_id=model_id)
 	else:
 		form = FaultForm()
 		return render(request, 'eng_models/detail_faults.html', {'form': form})

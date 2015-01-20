@@ -11,13 +11,16 @@
 		<br>
 	</div>
 	<div class="row">
-
 		<div class="col-md-6">
-			<form action="{% url 'add_fault' %}" method="post" enctype="multipart/form-data">
-		      <div class="modal-body">
-					{% csrf_token %}
-				    {{ form }}
-		      </div>
+			<form class="form-vertical" action="{% url 'add_fault' model.id %}" method="post" enctype="multipart/form-data">
+				<fieldset>
+					<div class="form-group">
+						{% csrf_token %}
+					    {{ form }}
+				    </div>
+				    <br>
+			    	<input class="btn btn-primary" type="submit" value="Add" />
+			    </fieldset>
 			</form>
 		</div>
 
@@ -30,25 +33,28 @@
 			    	<li>{{ fault.name }}</li>
 			    {% endfor %}
 			    </ul>
+				<div class="pagination">
+				    <span class="step-links">
+				        {% if faults.has_previous %}
+				            <a href="?page={{ faults.previous_page_number }}">previous</a>
+				        {% endif %}
+
+				        <span class="current">
+				            Page {{ faults.number }} of {{ faults.paginator.num_pages }}.
+				        </span>
+
+				        {% if faults.has_next %}
+				            <a href="?page={{ faults.next_page_number }}">next</a>
+				        {% endif %}
+				    </span>
+				</div>
 			{% else %}
-			    <p>No faults in this model. Please add the first below</p>
+				<div class="alert alert-dismissable alert-info">
+				<button type="button" class="close" data-dismiss="alert">×</button>
+			    	<p>No faults in this model. Please add the first below</p>
+			    </div>
 			{% endif %}
 
-			<div class="pagination">
-			    <span class="step-links">
-			        {% if faults.has_previous %}
-			            <a href="?page={{ faults.previous_page_number }}">previous</a>
-			        {% endif %}
-
-			        <span class="current">
-			            Page {{ faults.number }} of {{ faults.paginator.num_pages }}.
-			        </span>
-
-			        {% if faults.has_next %}
-			            <a href="?page={{ faults.next_page_number }}">next</a>
-			        {% endif %}
-			    </span>
-			</div>
 
 		</div>
 

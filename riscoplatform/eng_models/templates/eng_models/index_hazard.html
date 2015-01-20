@@ -19,11 +19,14 @@
 		{% if fault_models %}
 		    <ul>
 		    {% for model in fault_models %}
-		        <li><a href="{% url 'add_fault_model' model.id %}">{{ model.name }}</a></li>
+		        <li><a href="{% url 'detail_faults' model.id %}">{{ model.name }}</a></li>
 		    {% endfor %}
 		    </ul>
 		{% else %}
-		    <p>No models are available. Please add the first below</p>
+			<div class="alert alert-dismissable alert-info">
+			<button type="button" class="close" data-dismiss="alert">×</button>
+		    	<p>No models are available. Please add the first below</p>
+		    </div>
 		{% endif %}
 
 	</div>

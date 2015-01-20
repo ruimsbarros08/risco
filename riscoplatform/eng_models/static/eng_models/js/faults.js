@@ -3,7 +3,12 @@
 (function($) {
 $( document ).ready(function() {
 
-	var map = new L.Map('map');
+    map.on('map:loadfield', function (e) {
+        // Customize map for field
+        console.log(e.field, e.fieldid);
+    });
+    /*
+	var map = new L.Map('id_geom_map');
 	var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 	var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
 	var osm = new L.TileLayer(osmUrl, {minZoom: 3, maxZoom: 16, attribution: osmAttrib});
@@ -15,6 +20,14 @@ $( document ).ready(function() {
     var drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
+    var polylineOptions = {
+                allowIntersection: false,
+                shapeOptions: {
+                    color: '#f00',
+                    weight: 3
+                }
+            };
+
     // Initialise the draw control and pass it the FeatureGroup of editable layers
     var drawControl = new L.Control.Draw({
         edit: {
@@ -23,13 +36,7 @@ $( document ).ready(function() {
             //remove: false
         },
         draw: {
-            polyline: {
-                allowIntersection: false,
-                shapeOptions: {
-                    color: '#f00',
-                    weight: 3
-                }
-            },
+            polyline: polylineOptions,
             polygon: false,
             rectangle: false,
             circle: false,
@@ -45,7 +52,6 @@ $( document ).ready(function() {
 
         // Do whatever else you need to. (save to db, add to map etc)
         drawnItems.addLayer(layer);
-        $('#modal').modal();
     });
 
 
@@ -114,9 +120,9 @@ $( document ).ready(function() {
 	.always(function() {
 	    //alert( "complete" );
 	});
+
+
     */
 
-
-
 });
-})($); 
+})($);
