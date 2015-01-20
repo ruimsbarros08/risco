@@ -28,11 +28,35 @@
 		<div class="col-md-6">
 
 			{% if faults %}
-			    <ul>
-			    {% for fault in faults %}
-			    	<li>{{ fault.name }}</li>
-			    {% endfor %}
-			    </ul>
+				<table class="table table-striped table-hover ">
+				<caption>Model faults</caption>
+					<thead>
+					    <tr>
+						    <th>Name</th>
+						    <th>Mindepth</th>
+						    <th>Maxdepth</th>
+						    <th>Strike</th>
+						    <th>Dip</th>
+						    <th>Rake</th>
+						    <th>Sr</th>
+						    <th>Maxmag</th>
+					    </tr>
+					</thead>
+					<tbody>
+				    	{% for fault in faults %}
+				    	<tr>
+						    <td> {{ fault.name }} </td>
+						    <td> {{ fault.mindepth }} </td>
+						    <td> {{ fault.maxdepth }} </td>
+						    <td> {{ fault.strike }} </td>
+						    <td> {{ fault.dip }} </td>
+						    <td> {{ fault.rake }} </td>
+						    <td> {{ fault.sr }} </td>
+						    <td> {{ fault.maxmag }} </td>						    
+					    </tr>
+				    	{% endfor %}
+					</tbody>
+				</table>
 				<div class="pagination">
 				    <span class="step-links">
 				        {% if faults.has_previous %}

@@ -243,7 +243,8 @@ class Fault(models.Model):
     rake                        = models.IntegerField()
     sr                          = models.FloatField()
     maxmag                      = models.FloatField()
-    geom                        = models.MultiLineStringField(srid=4326)
+    #geom                        = models.MultiLineStringField(srid=4326)
+    geom                        = models.LineStringField(srid=4326, null=True)
 
     class Meta:
         managed = True

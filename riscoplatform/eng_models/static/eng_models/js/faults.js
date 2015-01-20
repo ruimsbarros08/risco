@@ -3,10 +3,10 @@
 (function($) {
 $( document ).ready(function() {
 
-    map.on('map:loadfield', function (e) {
+    //map.on('map:loadfield', function (e) {
         // Customize map for field
-        console.log(e.field, e.fieldid);
-    });
+    //    console.log(e.field, e.fieldid);
+    //});
     /*
 	var map = new L.Map('id_geom_map');
 	var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
