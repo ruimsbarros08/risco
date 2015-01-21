@@ -96,7 +96,7 @@ class Scenario_Hazard(models.Model):
     rupture_mesh_spacing		= models.IntegerField(default=5)
 
     #rupture
-    repture_type                = models.CharField(max_length=50, choices=RUPTURE_CHOICES, default=CUSTOM)
+    rupture_type                = models.CharField(max_length=50, choices=RUPTURE_CHOICES, default=CLOSEST)
     #Closest
     magnitude 					= models.FloatField(null=True, blank=True)
     location 					= models.PointField(srid=4326, null=True, blank=True)

@@ -18,32 +18,38 @@ from leaflet.forms.widgets import LeafletWidget
 ############################
 
 
-#class FaultModelForm(forms.ModelForm):
-#	class Meta:
-#		model = Fault_Model
-#		fields = ['name', 'description', 'xml']
-
 class ScenarioHazardForm(forms.ModelForm):
 	class Meta:
 		model = Scenario_Hazard
-		#fields = ['geom', 'name', 'mindepth', 'maxdepth', 'strike', 'dip', 'rake', 'sr', 'maxmag']
-		#widgets = {
-        #   		'name': forms.TextInput(attrs={'class': 'form-control'}),
-        #    		'mindepth': forms.TextInput(attrs={'class': 'form-control'}),
-        #    		'maxdepth': forms.TextInput(attrs={'class': 'form-control'}),
-        #   			'strike': forms.TextInput(attrs={'class': 'form-control'}),
-        #    		'dip': forms.TextInput(attrs={'class': 'form-control'}),
-        #    		'rake': forms.TextInput(attrs={'class': 'form-control'}),
-        #    		'sr': forms.TextInput(attrs={'class': 'form-control'}),
-        #    		'maxmag': forms.TextInput(attrs={'class': 'form-control'}),
-		#			'geom': LeafletWidget()
-		#			}
+		exclude = ['user', 'date_created', 'error', 'ready']
+		widgets = {
+					'description': forms.Textarea(attrs={'rows':5}),
+           			'region': forms.HiddenInput(),
+            		'location': forms.HiddenInput(),
+            		'rupture_geom': forms.HiddenInput(),
+            		'fault': forms.HiddenInput(),
+					}
 		
 
 def index_scenario_hazard(request):
 	jobs = Scenario_Hazard.objects.all()
 	form = ScenarioHazardForm()
-	return render(request, 'eng_models/index_scenario_hazard.html', {'jobs': jobs, 'form': form})
+	return render(request, 'jobs/index_scenario_hazard.html', {'jobs': jobs, 'form': form})
+
+def add_sceanrio_hazard(request):
+	if request.method == 'POST':
+		form = ScenarioHazardForm(request.POST, request.FILES)
+		if form.is_valid():
+			job = form.save(commit=False)
+			job.date_created = timezone.now()
+			job.save()
+			if request.FILES:
+				pass
+				#create parser
+			return redirect('index_scenario_hazard')
+	else:
+		form = ScenarioHazardForm()
+		return render(request, 'jobs/index_scenario_hazard.html', {'form': form})
 
 
 
