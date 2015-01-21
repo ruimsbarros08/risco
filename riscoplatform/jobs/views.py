@@ -12,7 +12,6 @@ from leaflet.forms.widgets import LeafletWidget
 
 # Create your views here.
 
-
 ############################
 ##     SCENARIO HAZARD    ##
 ############################

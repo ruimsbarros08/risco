@@ -164,6 +164,9 @@ class Site_Model(models.Model):
     contributors                = models.ManyToManyField(User, through='Site_Model_Contributor')
     xml                         = models.FileField(upload_to='uploads/site/', null=True, blank=True)
 
+    def __unicode__(self):
+        return self.name
+
     class Meta:
         managed = True
         db_table = 'eng_models_site_model'
@@ -218,6 +221,9 @@ class Fault_Model(models.Model):
     contributors                = models.ManyToManyField(User, through='Fault_Model_Contributor')
     xml                         = models.FileField(upload_to='uploads/fault/', null=True, blank=True)
 
+    def __unicode__(self):
+        return self.name
+
     class Meta:
         managed = True
         db_table = 'eng_models_fault_model'
@@ -245,6 +251,9 @@ class Fault(models.Model):
     maxmag                      = models.FloatField()
     #geom                        = models.MultiLineStringField(srid=4326)
     geom                        = models.LineStringField(srid=4326, null=True)
+
+    def __unicode__(self):
+        return self.name
 
     class Meta:
         managed = True

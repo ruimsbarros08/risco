@@ -24,30 +24,30 @@ $( document ).ready(function() {
     $( "#id_site_model" ).hide( "fast");
     $('#id_sites_type').on('change', function() {
         if (this.value == 'VARIABLE_CONDITIONS'){
-            $( "label[for='id_vs30']" ).hide( "fast");
-            $( "#id_vs30" ).hide( "fast");
-            $( "label[for='id_vs30type']" ).hide( "fast");
-            $( "#id_vs30type" ).hide( "fast");
-            $( "label[for='id_z1pt0']" ).hide( "fast");
-            $( "#id_z1pt0" ).hide( "fast");
-            $( "label[for='id_z2pt5']" ).hide( "fast");
-            $( "#id_z2pt5" ).hide( "fast");
+            $( "label[for='id_vs30']" ).hide( "fast", 'swing');
+            $( "#id_vs30" ).hide( "fast", 'swing');
+            $( "label[for='id_vs30type']" ).hide( "fast", 'swing');
+            $( "#id_vs30type" ).hide( "fast", 'swing');
+            $( "label[for='id_z1pt0']" ).hide( "fast", 'swing');
+            $( "#id_z1pt0" ).hide( "fast", 'swing');
+            $( "label[for='id_z2pt5']" ).hide( "fast", 'swing');
+            $( "#id_z2pt5" ).hide( "fast", 'swing');
 
-            $( "label[for='id_site_model']" ).show( "fast");
-            $( "#id_site_model" ).show( "fast");
+            $( "label[for='id_site_model']" ).show( "fast", 'swing');
+            $( "#id_site_model" ).show( "fast", 'swing');
         }
         else {
-            $( "label[for='id_vs30']" ).show( "fast");
-            $( "#id_vs30" ).show( "fast");
-            $( "label[for='id_vs30type']" ).show( "fast");
-            $( "#id_vs30type" ).show( "fast");
-            $( "label[for='id_z1pt0']" ).show( "fast");
-            $( "#id_z1pt0" ).show( "fast");
-            $( "label[for='id_z2pt5']" ).show( "fast");
-            $( "#id_z2pt5" ).show( "fast");
+            $( "label[for='id_vs30']" ).show( "fast", 'swing');
+            $( "#id_vs30" ).show( "fast", 'swing');
+            $( "label[for='id_vs30type']" ).show( "fast", 'swing');
+            $( "#id_vs30type" ).show( "fast", 'swing');
+            $( "label[for='id_z1pt0']" ).show( "fast", 'swing');
+            $( "#id_z1pt0" ).show( "fast", 'swing');
+            $( "label[for='id_z2pt5']" ).show( "fast", 'swing');
+            $( "#id_z2pt5" ).show( "fast", 'swing');
 
-            $( "label[for='id_site_model']" ).hide( "fast");
-            $( "#id_site_model" ).hide( "fast");
+            $( "label[for='id_site_model']" ).hide( "fast", 'swing');
+            $( "#id_site_model" ).hide( "fast", 'swing');
 
         }
     });
@@ -161,7 +161,6 @@ $( document ).ready(function() {
     });
 
 
-
 	var map = new L.Map('map');
 	var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 	var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
@@ -169,6 +168,103 @@ $( document ).ready(function() {
 
 	map.setView(new L.LatLng(40, -8),5);
 	map.addLayer(osm);
+
+
+
+    // Initialise the FeatureGroup to store editable layers
+    var drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+
+
+
+    var polylineOptions = {
+                allowIntersection: false,
+                shapeOptions: {
+                    color: '#f00',
+                    weight: 3
+                }
+            };
+
+    var polygonOptions = {
+                showArea: true,
+            };
+
+    // Initialise the draw control and pass it the FeatureGroup of editable layers
+    var drawControl = new L.Control.Draw({
+        edit: {
+            featureGroup: drawnItems,
+            //edit: false,
+            //remove: false
+        },
+        draw: {
+            polyline: polylineOptions,
+            polygon: polygonOptions,
+            rectangle: false,
+            circle: false,
+            //marker: false
+        }
+    });
+    map.addControl(drawControl);
+
+
+    map.on('draw:created', function (e) {
+        var type = e.layerType,
+            layer = e.layer;
+
+        if (type == 'marker'){
+            $('.leaflet-draw-draw-marker').hide();
+            $("#id_location").attr('value', toWKT(layer));
+        }
+        if (type == 'polyline'){
+            $('.leaflet-draw-draw-polyline').hide();
+            $("#id_rupture_geom").attr('value', toWKT(layer));
+        }
+        if (type == 'polygon'){
+            $('.leaflet-draw-draw-polygon').hide();
+            $("#id_region").attr('value', toWKT(layer));
+        }
+
+        // Do whatever else you need to. (save to db, add to map etc)
+        drawnItems.addLayer(layer);
+    });
+
+
+    map.on('draw:edited', function (e) {
+        var layers = e.layers;
+        layers.eachLayer(function (layer) {
+            if (layer instanceof L.Marker){
+                $("#id_location").attr('value', toWKT(layer));  
+            }
+            if (layer instanceof L.Polyline){
+                $("#id_rupture_geom").attr('value', toWKT(layer));
+            }
+            if (layer instanceof L.Polygon){
+                $("#id_region").attr('value', toWKT(layer));
+            }
+            //do whatever you want, most likely save back to db
+        });
+    });
+
+    map.on('draw:deleted', function (e) {
+        var layers = e.layers;
+        layers.eachLayer(function (layer) {
+            if (layer instanceof L.Marker){
+                $('.leaflet-draw-draw-marker').show();
+                $("#id_location").attr('value', '');
+            }
+            if (layer instanceof L.Polyline){
+                $('.leaflet-draw-draw-polyline').show();
+                $("#id_rupture_geom").attr('value', '');
+            }
+            if (layer instanceof L.Polygon){
+                $('.leaflet-draw-draw-polygon').show();
+                $("#id_region").attr('value', '');
+            }
+            //do whatever you want, most likely save back to db
+        });
+    });
+
+
 
 
 });
