@@ -81,7 +81,7 @@ class Scenario_Hazard(models.Model):
     description 				= models.CharField(max_length=200, null=True)
 
     #Region
-    region 						= models.MultiPolygonField(srid=4326)
+    region  					= models.PolygonField(srid=4326, null=True)
     grid_spacing				= models.FloatField(default=1)
 
     #Sites

@@ -9,6 +9,8 @@ from django.core import serializers
 from django.db import connection
 import json
 from leaflet.forms.widgets import LeafletWidget
+from django.contrib.auth.models import User
+
 
 # Create your views here.
 
@@ -28,6 +30,7 @@ class ScenarioHazardForm(forms.ModelForm):
             		'rupture_geom': forms.HiddenInput(),
             		'fault': forms.HiddenInput(),
 					}
+
 		
 
 def index_scenario_hazard(request):
@@ -38,14 +41,20 @@ def index_scenario_hazard(request):
 def add_sceanrio_hazard(request):
 	if request.method == 'POST':
 		form = ScenarioHazardForm(request.POST, request.FILES)
+		#print form
 		if form.is_valid():
 			job = form.save(commit=False)
 			job.date_created = timezone.now()
+			me = User.objects.get(id=1)
+			job.user = me
 			job.save()
 			if request.FILES:
 				pass
 				#create parser
 			return redirect('index_scenario_hazard')
+		else:
+			print form.is_valid()
+			print form.errors
 	else:
 		form = ScenarioHazardForm()
 		return render(request, 'jobs/index_scenario_hazard.html', {'form': form})
