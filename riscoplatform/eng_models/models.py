@@ -16,6 +16,11 @@ from django.contrib.auth.models import User
 from world.models import World, Fishnet
 
 
+def file2string(file):
+    with open(file, 'r') as f:
+        content = f.read()
+        return content
+
 class Exposure_Model(models.Model):
 
     SQUARED_METERS = 'squared_meters'
@@ -64,10 +69,16 @@ class Exposure_Model(models.Model):
     deductible                  = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, default=ABSOLUTE, null=True)
     insurance_limit             = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, default=ABSOLUTE, null=True)
     xml                         = models.FileField(upload_to='uploads/exposure/', null=True, blank=True)
+    xml_string                  = models.TextField(null=True)
+
+    def save(self, *args, **kwargs):
+        self.xml_string = file2string(self.xml)
+        super(Exposure_Model, self).save(*args, **kwargs)
 
     class Meta:
         managed = True
         db_table = 'eng_models_exposure_model'
+
 
     def __unicode__(self):
         return self.name
@@ -163,6 +174,11 @@ class Site_Model(models.Model):
     description                 = models.CharField(max_length=200)
     contributors                = models.ManyToManyField(User, through='Site_Model_Contributor')
     xml                         = models.FileField(upload_to='uploads/site/', null=True, blank=True)
+    xml_string                  = models.TextField(null=True)
+
+    def save(self, *args, **kwargs):
+        self.xml_string = file2string(self.xml)
+        super(Exposure_Model, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.name
@@ -220,6 +236,11 @@ class Fault_Model(models.Model):
     description                 = models.CharField(max_length=200)
     contributors                = models.ManyToManyField(User, through='Fault_Model_Contributor')
     xml                         = models.FileField(upload_to='uploads/fault/', null=True, blank=True)
+    xml_string                  = models.TextField(null=True)
+
+    def save(self, *args, **kwargs):
+        self.xml_string = file2string(self.xml)
+        super(Exposure_Model, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.name

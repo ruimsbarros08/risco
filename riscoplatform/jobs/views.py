@@ -1,15 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from eng_models.models import Exposure_Model, Site_Model, Fault_Model
 from jobs.models import Scenario_Hazard
-from django.http import HttpResponseRedirect, HttpResponse
+#from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.core import serializers
-from django.db import connection
-import json
-from leaflet.forms.widgets import LeafletWidget
+#from django.core import serializers
+#from django.db import connection
+#import json
+#from leaflet.forms.widgets import LeafletWidget
 from django.contrib.auth.models import User
+import redis
 
 
 # Create your views here.
@@ -32,7 +33,6 @@ class ScenarioHazardForm(forms.ModelForm):
 					}
 
 		
-
 def index_scenario_hazard(request):
 	jobs = Scenario_Hazard.objects.all()
 	form = ScenarioHazardForm()
@@ -51,6 +51,12 @@ def add_sceanrio_hazard(request):
 			if request.FILES:
 				pass
 				#create parser
+
+			#queing to priseOQ
+			#conn = redis.Redis('priseOQ.fe.up.pt', 6379)
+			#q = Queue(connection=conn)
+			#job = q.enqueue('rta.start', data, timeout=3600)
+
 			return redirect('index_scenario_hazard')
 		else:
 			print form.is_valid()

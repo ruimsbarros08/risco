@@ -6,6 +6,11 @@ from eng_models.models import Site_Model, Fault_Model, Fault
 
 # Create your models here.
 
+def file2string(file):
+    with open(file, 'r') as f:
+        content = f.read()
+        return content
+
 class Scenario_Hazard(models.Model):
 
     ABRAHAMSON_AND_SILVA_2008 		= 'ABRAHAMSON_AND_SILVA_2008'
@@ -111,6 +116,7 @@ class Scenario_Hazard(models.Model):
     rupture_geom                = models.LineStringField(srid=4326, null=True, blank=True)
     #upload
     rupture_xml                 = models.FileField(upload_to='uploads/rupture/', null=True, blank=True)
+    rupture_xml_string          = models.TextField(null=True)
 
     pga 						= models.BooleanField(default=True)
     sa1_period					= models.FloatField(null=True, blank=True)
@@ -124,9 +130,15 @@ class Scenario_Hazard(models.Model):
     n_gmf 						= models.IntegerField(default=50)
 
     ini_file                    = models.FileField(upload_to='uploads/scenario/hazard/', null=True, blank=True)
+    ini_file_string             = models.TextField(null=True)
 
     error                       = models.BooleanField(default=False)
-    ready 						= models.BooleanField(default=False)
+    ready                       = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        self.rupture_xml_string = file2string(rupture_xml)
+        self.ini_file_string = file2string(ini_file)
+        super(Scenario_Hazard, self).save(*args, **kwargs)
 
     def __unicode__(self):
     	return self.name
@@ -134,3 +146,5 @@ class Scenario_Hazard(models.Model):
     class Meta:
         managed = True
         db_table = 'jobs_scenario_hazard'
+
+
