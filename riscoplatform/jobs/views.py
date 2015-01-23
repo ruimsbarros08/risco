@@ -23,7 +23,7 @@ import redis
 class ScenarioHazardForm(forms.ModelForm):
 	class Meta:
 		model = Scenario_Hazard
-		exclude = ['user', 'date_created', 'error', 'ready']
+		exclude = ['user', 'date_created', 'error', 'ready', 'rupture_xml_string', 'ini_file_string']
 		widgets = {
 					'description': forms.Textarea(attrs={'rows':5}),
            			'region': forms.HiddenInput(),

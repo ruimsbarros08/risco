@@ -1,4 +1,7 @@
 *.pyc
+riscoplatform/uploads/
+
+
 
 # Compiled source #
 ###################

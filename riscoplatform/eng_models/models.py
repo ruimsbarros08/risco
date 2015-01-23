@@ -16,11 +16,6 @@ from django.contrib.auth.models import User
 from world.models import World, Fishnet
 
 
-def file2string(file):
-    with open(file, 'r') as f:
-        content = f.read()
-        return content
-
 class Exposure_Model(models.Model):
 
     SQUARED_METERS = 'squared_meters'
@@ -72,7 +67,7 @@ class Exposure_Model(models.Model):
     xml_string                  = models.TextField(null=True)
 
     def save(self, *args, **kwargs):
-        self.xml_string = file2string(self.xml)
+        self.xml_string = self.self.xml.read()
         super(Exposure_Model, self).save(*args, **kwargs)
 
     class Meta:
@@ -177,8 +172,8 @@ class Site_Model(models.Model):
     xml_string                  = models.TextField(null=True)
 
     def save(self, *args, **kwargs):
-        self.xml_string = file2string(self.xml)
-        super(Exposure_Model, self).save(*args, **kwargs)
+        self.xml_string = self.xml.read()
+        super(Site_Model, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.name
@@ -239,8 +234,8 @@ class Fault_Model(models.Model):
     xml_string                  = models.TextField(null=True)
 
     def save(self, *args, **kwargs):
-        self.xml_string = file2string(self.xml)
-        super(Exposure_Model, self).save(*args, **kwargs)
+        self.xml_string = self.xml.read()
+        super(Fault_Model, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.name

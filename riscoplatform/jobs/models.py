@@ -6,11 +6,6 @@ from eng_models.models import Site_Model, Fault_Model, Fault
 
 # Create your models here.
 
-def file2string(file):
-    with open(file, 'r') as f:
-        content = f.read()
-        return content
-
 class Scenario_Hazard(models.Model):
 
     ABRAHAMSON_AND_SILVA_2008 		= 'ABRAHAMSON_AND_SILVA_2008'
@@ -136,8 +131,8 @@ class Scenario_Hazard(models.Model):
     ready                       = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        self.rupture_xml_string = file2string(rupture_xml)
-        self.ini_file_string = file2string(ini_file)
+        self.rupture_xml_string = self.rupture_xml.read()
+        self.ini_file_string = self.ini_file.read()
         super(Scenario_Hazard, self).save(*args, **kwargs)
 
     def __unicode__(self):
