@@ -3,12 +3,22 @@
 (function($) {
 $( document ).ready(function() {
 
-    //$('label').addClass('control-labels col-lg-2');
+    $('label').addClass('control-labels col-lg-2');
     $('input').addClass('form-control');
     $('select').addClass('form-control');
     $('textarea').addClass('form-control');
-    //$('input').wrap('<div class="col-lg-10"></div>');
-    //$('input[value="csrfmiddlewaretoken"]').next().unwrap();
+    $('input').wrap('<div class="col-lg-10"></div>');
+    $('select').wrap('<div class="col-lg-10"></div>');
+    $('textarea').wrap('<div class="col-lg-10"></div>');
+    $('<div class="form-group">').insertBefore('label');
+    $('</div>').insertAfter('</input>');
+    $('</div>').insertAfter('</textarea>');
+    $('</div>').insertAfter('</select>');
+    
+    $('input[name="csrfmiddlewaretoken"]').unwrap();
+    $('#id_region').unwrap();
+    $('#id_location').unwrap();
+    $('#id_rupture_geom').unwrap();
 
     //dividers
     $('<hr>').insertAfter('#id_description');
@@ -17,6 +27,7 @@ $( document ).ready(function() {
     $('<hr>').insertAfter('#id_rupture_mesh_spacing');
     $('<hr>').insertAfter('#id_rupture_xml');
     $('<hr>').insertAfter('#id_n_gmf');
+    $('<hr>').insertAfter('#id_ini_file');
     
 
     //hide-show    
@@ -224,7 +235,6 @@ $( document ).ready(function() {
             $("#id_region").attr('value', toWKT(layer));
         }
 
-        // Do whatever else you need to. (save to db, add to map etc)
         drawnItems.addLayer(layer);
     });
 
@@ -241,7 +251,6 @@ $( document ).ready(function() {
             if (layer instanceof L.Polygon){
                 $("#id_region").attr('value', toWKT(layer));
             }
-            //do whatever you want, most likely save back to db
         });
     });
 
@@ -260,7 +269,6 @@ $( document ).ready(function() {
                 $('.leaflet-draw-draw-polygon').show();
                 $("#id_region").attr('value', '');
             }
-            //do whatever you want, most likely save back to db
         });
     });
 

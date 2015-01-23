@@ -11,6 +11,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 #from leaflet.forms.widgets import LeafletWidget
 from django.contrib.auth.models import User
 import redis
+from rq import Connection,Queue
+
 
 
 # Create your views here.
@@ -23,13 +25,12 @@ import redis
 class ScenarioHazardForm(forms.ModelForm):
 	class Meta:
 		model = Scenario_Hazard
-		exclude = ['user', 'date_created', 'error', 'ready', 'rupture_xml_string', 'ini_file_string']
+		exclude = ['user', 'date_created', 'fault', 'error', 'ready', 'rupture_xml_string', 'ini_file_string']
 		widgets = {
 					'description': forms.Textarea(attrs={'rows':5}),
            			'region': forms.HiddenInput(),
             		'location': forms.HiddenInput(),
             		'rupture_geom': forms.HiddenInput(),
-            		'fault': forms.HiddenInput(),
 					}
 
 		
@@ -53,9 +54,9 @@ def add_sceanrio_hazard(request):
 				#create parser
 
 			#queing to priseOQ
-			#conn = redis.Redis('priseOQ.fe.up.pt', 6379)
+			#conn = redis.Redis('localhost', 6379)
 			#q = Queue(connection=conn)
-			#job = q.enqueue('rta.start', data, timeout=3600)
+			#job = q.enqueue('rta.scenaro_hazard', job.id, timeout=3600)
 
 			return redirect('index_scenario_hazard')
 		else:
