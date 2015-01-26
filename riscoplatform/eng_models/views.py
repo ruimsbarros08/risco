@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from eng_models.models import Exposure_Model, Asset, Site_Model, Site, Fault_Model, Fault
+from eng_models.models import Exposure_Model, Asset, Site_Model, Site, Fault_Model, Fault, Rupture_Model
+from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
 from django.utils import timezone
@@ -196,6 +197,50 @@ def add_fault_model(request):
 	else:
 		form = FaultModelForm()
 		return render(request, 'eng_models/index_hazard.html', {'form': form})
+
+
+####################
+##     RUPTURE    ##
+####################
+
+
+class RuptureForm(forms.ModelForm):
+	class Meta:
+		model = Rupture_Model
+		exclude = ['user', 'date_created', 'xml_string']
+		widgets = {
+					'description': forms.Textarea(attrs={'rows':5}),
+            		'location': forms.HiddenInput(),
+            		'rupture_geom': forms.HiddenInput(),
+					}
+
+		
+def index_rupture_model(request):
+	models = Rupture_Model.objects.all()
+	form = RuptureForm()
+	return render(request, 'eng_models/index_rupture_model.html', {'models': models, 'form': form})
+
+def add_rupture_model(request):
+	if request.method == 'POST':
+		form = RuptureForm(request.POST, request.FILES)
+		if form.is_valid():
+			model = form.save(commit=False)
+			model.date_created = timezone.now()
+			me = User.objects.get(id=1)
+			model.user = me
+			model.save()
+			if request.FILES:
+				pass
+				#create parser
+
+			return redirect('index_rupture_model')
+		else:
+			print form.is_valid()
+			print form.errors
+	else:
+		form = RuptureForm()
+		return render(request, 'eng_models/index_rupture_model.html', {'form': form})
+
 
 
 

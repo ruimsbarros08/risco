@@ -8,12 +8,17 @@ urlpatterns = patterns('',
     url(r'^hazard/add/fault_model$', views.add_fault_model, name='add_fault_model'),
 	url(r'^hazard/(?P<model_id>\d+)/add_fault$', views.add_fault, name='add_fault'),
 
-	url(r'^exposure/$', views.index_exposure, name='index_exposure'),
-    url(r'^exposure/(?P<model_id>\d+)/$', views.detail_exposure, name='detail_exposure'),
-    url(r'^exposure/add/$', views.add_exposure_model, name='add_exposure_model'),
+    url(r'^rupture/$', views.index_rupture_model, name='index_rupture_model'),
+    url(r'^rupture/add$', views.add_rupture_model, name='add_rupture_model'),
+
 
     url(r'^site/$', views.index_site, name='index_site'),
     url(r'^site/(?P<model_id>\d+)/$', views.detail_site, name='detail_site'),
     url(r'^site/(?P<model_id>\d+)/map_grid$', views.detail_site_ajax, name='detail_site_ajax'),
     url(r'^site/add/$', views.add_site_model, name='add_site_model'),
+
+    url(r'^exposure/$', views.index_exposure, name='index_exposure'),
+    url(r'^exposure/(?P<model_id>\d+)/$', views.detail_exposure, name='detail_exposure'),
+    url(r'^exposure/add/$', views.add_exposure_model, name='add_exposure_model'),
+
 )

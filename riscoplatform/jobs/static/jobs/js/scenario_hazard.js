@@ -17,15 +17,15 @@ $( document ).ready(function() {
     
     $('input[name="csrfmiddlewaretoken"]').unwrap();
     $('#id_region').unwrap();
-    $('#id_location').unwrap();
-    $('#id_rupture_geom').unwrap();
+    //$('#id_location').unwrap();
+    //$('#id_rupture_geom').unwrap();
 
     //dividers
     $('<hr>').insertAfter('#id_description');
     $('<hr>').insertAfter('#id_grid_spacing');
     $('<hr>').insertAfter('#id_z2pt5');
     $('<hr>').insertAfter('#id_rupture_mesh_spacing');
-    $('<hr>').insertAfter('#id_rupture_xml');
+    $('<hr>').insertAfter('#id_rupture_model');
     $('<hr>').insertAfter('#id_n_gmf');
     $('<hr>').insertAfter('#id_ini_file');
     
@@ -63,6 +63,7 @@ $( document ).ready(function() {
         }
     });
 
+    /*
     $( "label[for='id_rake']" ).hide( "fast");
     $( "#id_rake" ).hide( "fast");
     $( "label[for='id_upper_depth']" ).hide( "fast");
@@ -132,6 +133,7 @@ $( document ).ready(function() {
             $( "#id_rupture_xml" ).show( "fast");
         }
     });
+ */
 
     $( "label[for='id_sa2_period']" ).hide( "fast");
     $( "#id_sa2_period" ).hide( "fast");
@@ -187,7 +189,7 @@ $( document ).ready(function() {
     map.addLayer(drawnItems);
 
 
-
+    /*
     var polylineOptions = {
                 allowIntersection: false,
                 shapeOptions: {
@@ -195,7 +197,7 @@ $( document ).ready(function() {
                     weight: 3
                 }
             };
-
+    */
     var polygonOptions = {
                 showArea: true,
             };
@@ -208,11 +210,11 @@ $( document ).ready(function() {
             //remove: false
         },
         draw: {
-            polyline: polylineOptions,
+            polyline: false,
             polygon: polygonOptions,
             rectangle: false,
             circle: false,
-            //marker: false
+            marker: false
         }
     });
     map.addControl(drawControl);
@@ -221,7 +223,7 @@ $( document ).ready(function() {
     map.on('draw:created', function (e) {
         var type = e.layerType,
             layer = e.layer;
-
+        /*
         if (type == 'marker'){
             $('.leaflet-draw-draw-marker').hide();
             $("#id_location").attr('value', toWKT(layer));
@@ -230,6 +232,7 @@ $( document ).ready(function() {
             $('.leaflet-draw-draw-polyline').hide();
             $("#id_rupture_geom").attr('value', toWKT(layer));
         }
+        */
         if (type == 'polygon'){
             $('.leaflet-draw-draw-polygon').hide();
             $("#id_region").attr('value', toWKT(layer));
@@ -242,12 +245,14 @@ $( document ).ready(function() {
     map.on('draw:edited', function (e) {
         var layers = e.layers;
         layers.eachLayer(function (layer) {
+            /*
             if (layer instanceof L.Marker){
                 $("#id_location").attr('value', toWKT(layer));  
             }
             if (layer instanceof L.Polyline){
                 $("#id_rupture_geom").attr('value', toWKT(layer));
             }
+            */
             if (layer instanceof L.Polygon){
                 $("#id_region").attr('value', toWKT(layer));
             }
@@ -257,6 +262,7 @@ $( document ).ready(function() {
     map.on('draw:deleted', function (e) {
         var layers = e.layers;
         layers.eachLayer(function (layer) {
+            /*
             if (layer instanceof L.Marker){
                 $('.leaflet-draw-draw-marker').show();
                 $("#id_location").attr('value', '');
@@ -265,6 +271,7 @@ $( document ).ready(function() {
                 $('.leaflet-draw-draw-polyline').show();
                 $("#id_rupture_geom").attr('value', '');
             }
+            */
             if (layer instanceof L.Polygon){
                 $('.leaflet-draw-draw-polygon').show();
                 $("#id_region").attr('value', '');

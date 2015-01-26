@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from world.models import World
-from eng_models.models import Site_Model, Fault_Model, Fault
+from eng_models.models import Site_Model, Rupture_Model
 
 # Create your models here.
 
@@ -66,22 +66,13 @@ class Scenario_Hazard(models.Model):
         (INFERRED, 'inferred'),
     )
 
-    CLOSEST = 'CLOSEST_FAULT'
-    CUSTOM = 'CUSTOM_RUPTURE'
-    UPLOAD = 'UPLOAD_XML'
-    RUPTURE_CHOICES = (
-        (CLOSEST, 'closest fault'),
-        (CUSTOM, 'custom rupture'),
-        (UPLOAD, 'upload xml'),
-    )
-
     user 						= models.ForeignKey(User)
     date_created 				= models.DateTimeField('date created')
     name 						= models.CharField(max_length=200)
     description 				= models.CharField(max_length=200, null=True)
 
     #Region
-    region  					= models.PolygonField(srid=4326, null=True)
+    region  					= models.PolygonField(srid=4326)
     grid_spacing				= models.FloatField(default=1)
 
     #Sites
@@ -95,23 +86,8 @@ class Scenario_Hazard(models.Model):
     random_seed                 = models.IntegerField(default=3)
     rupture_mesh_spacing		= models.IntegerField(default=5)
 
-    #rupture
-    rupture_type                = models.CharField(max_length=50, choices=RUPTURE_CHOICES, default=CLOSEST)
-    #Closest
-    magnitude 					= models.FloatField(null=True, blank=True)
-    location 					= models.PointField(srid=4326, null=True, blank=True)
-    depth 						= models.FloatField(null=True, blank=True)
-    fault_model                 = models.ForeignKey(Fault_Model, null=True, blank=True)
-    fault                       = models.ForeignKey(Fault, null=True, blank=True)
-    #Custom
-    rake                        = models.FloatField(null=True, blank=True)
-    upper_depth                 = models.FloatField(null=True, blank=True)
-    lower_depth                 = models.FloatField(null=True, blank=True)
-    dip                         = models.FloatField(null=True, blank=True)
-    rupture_geom                = models.LineStringField(srid=4326, null=True, blank=True)
-    #upload
-    rupture_xml                 = models.FileField(upload_to='uploads/rupture/', null=True, blank=True)
-    rupture_xml_string          = models.TextField(null=True)
+    #Rupture
+    rupture_model               = models.ForeignKey(Rupture_Model)
 
     pga 						= models.BooleanField(default=True)
     sa1_period					= models.FloatField(null=True, blank=True)
@@ -131,8 +107,8 @@ class Scenario_Hazard(models.Model):
     ready                       = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        self.rupture_xml_string = self.rupture_xml.read()
-        self.ini_file_string = self.ini_file.read()
+        if self.ini_file:
+            self.ini_file_string = self.ini_file.read()
         super(Scenario_Hazard, self).save(*args, **kwargs)
 
     def __unicode__(self):

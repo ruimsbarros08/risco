@@ -14,6 +14,9 @@ from django.db import models
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from world.models import World, Fishnet
+from django.core.files import File
+from django.template.loader import render_to_string
+
 
 
 class Exposure_Model(models.Model):
@@ -67,7 +70,8 @@ class Exposure_Model(models.Model):
     xml_string                  = models.TextField(null=True)
 
     def save(self, *args, **kwargs):
-        self.xml_string = self.self.xml.read()
+        if self.xml:
+            self.xml_string = self.self.xml.read()
         super(Exposure_Model, self).save(*args, **kwargs)
 
     class Meta:
@@ -172,7 +176,8 @@ class Site_Model(models.Model):
     xml_string                  = models.TextField(null=True)
 
     def save(self, *args, **kwargs):
-        self.xml_string = self.xml.read()
+        if self.xml:
+            self.xml_string = self.xml.read()
         super(Site_Model, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -234,7 +239,8 @@ class Fault_Model(models.Model):
     xml_string                  = models.TextField(null=True)
 
     def save(self, *args, **kwargs):
-        self.xml_string = self.xml.read()
+        if self.xml:
+            self.xml_string = self.xml.read()
         super(Fault_Model, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -274,5 +280,71 @@ class Fault(models.Model):
     class Meta:
         managed = True
         db_table = 'eng_models_fault'
+
+
+class Rupture_Model(models.Model):
+    #CLOSEST = 'CLOSEST_FAULT'
+    CUSTOM = 'CUSTOM_RUPTURE'
+    UPLOAD = 'UPLOAD_XML'
+    INPUT_CHOICES = (
+#        (CLOSEST, 'closest fault'),
+        (CUSTOM, 'custom rupture'),
+        (UPLOAD, 'upload xml'),
+    )
+
+    POINT = 'POINT'
+    FAULT = 'FAULT'
+    RUPTURE_TYPES = (
+        (POINT, 'Point'),
+        (FAULT, 'Fault'),
+        )
+
+    user                        = models.ForeignKey(User)
+    date_created                = models.DateTimeField('date created')
+    name                        = models.CharField(max_length=200)
+    description                 = models.CharField(max_length=200, null=True)
+
+    input_type                  = models.CharField(max_length=50, choices=INPUT_CHOICES, default=CUSTOM)
+    rupture_type                = models.CharField(max_length=50, choices=RUPTURE_TYPES, default=FAULT)
+    magnitude                   = models.FloatField(null=True, blank=True)
+    depth                       = models.FloatField(null=True, blank=True)
+    rake                        = models.FloatField(null=True, blank=True)
+    upper_depth                 = models.FloatField(null=True, blank=True)
+    lower_depth                 = models.FloatField(null=True, blank=True)
+    dip                         = models.FloatField(null=True, blank=True)
+    
+    location                    = models.PointField(srid=4326)
+    rupture_geom                = models.LineStringField(srid=4326, null=True, blank=True)
+    
+    #Closest
+    #fault_model                 = models.ForeignKey(Fault_Model, null=True, blank=True)
+    #fault                       = models.ForeignKey(Fault, null=True, blank=True)
+    #upload
+    
+    xml                         = models.FileField(upload_to='uploads/rupture/', null=True, blank=True)
+    xml_string                  = models.TextField(null=True)
+
+    def save(self, *args, **kwargs):
+        if self.xml:
+            self.xml_string = self.xml.read()
+        else:
+            if self.rupture_type == 'POINT':
+                string = str(render_to_string('eng_models/rupture_point_source.xml', {'rupture': self}))
+            else:
+                string = str(render_to_string('eng_models/rupture_fault_source.xml', {'rupture': self}))
+
+            self.xml_string = string
+            #f = open('/tmp/rupture.xml', 'rw')
+            #djangofile = File(f)
+            #djangofile.write(string)
+            #self.xml = djangofile
+
+        super(Rupture_Model, self).save(*args, **kwargs)
+
+
+    def __unicode__(self):
+        return self.name
+        
+
 
 
