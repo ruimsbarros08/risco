@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+	<div class="row">
+		<h2>Scenario based hazard</h2><br>
+		<h4> {{ job.name }} </h4><br>
+		<h6> {{ job.description }} </h6><br>
+	</div>
+
+	<div class="row">
+		
+		<div class="col-md-9">
+			<div id='map' class="vertical-map"></div><br>
+		</div>
+
+		<div class="col-md-3">
+
+			<ul class="list-group">
+			  	<li class="list-group-item active">
+			  	Job parameters	
+			  	</li>
+
+			  	<li class="list-group-item">
+			    <b>Grid spacing:</b> {{ job.grid_spacing }} 
+			  	</li>
+
+			  	{% if job.sites_type == 'VARIABLE_CONDITIONS' %}
+			  	<li class="list-group-item">
+				<b>Site model:</b> <a href="{% url 'detail_site' job.site_model.id %}">{{ job.site_model }} </a> 
+			  	</li>
+				{% else %}
+				<li class="list-group-item">
+				<b>vs30:</b> {{ job.vs30 }} 
+			  	</li>
+
+			  	<li class="list-group-item">
+				<b>vs30type:</b> {{ job.vs30type }}
+			  	</li>
+			    
+			    <li class="list-group-item">
+				<b>z1pt0:</b> {{ job.z1pt0 }}
+			  	</li>
+			    
+			    <li class="list-group-item">
+				<b>z2pt5:</b> {{ job.z2pt5 }}
+			  	</li>
+				{% endif %}
+
+				<li class="list-group-item">
+				<b>Random seed:</b> {{ job.random_seed }}
+			  	</li>
+
+			  	<li class="list-group-item">
+				<b>Rupture mesh spacing:</b> {{ job.rupture_mesh_spacing }}
+			  	</li>
+
+			  	<li class="list-group-item">
+				<b>Rupture model:</b> <a href="{% url 'index_rupture_model' %}">{{ job.site_model }} </a> 
+			  	</li>
+
+			  	<li class="list-group-item">
+				<b>Truncation level:</b> {{ job.truncation_level }}
+			  	</li>
+
+			  	<li class="list-group-item">
+				<b>Max distance:</b> {{ job.max_distance }}
+			  	</li>
+
+			  	<li class="list-group-item">
+				<b>GMPE:</b> {{ job.gmpe }}
+			  	</li>
+
+			  	<li class="list-group-item">
+				<b>Correlation model:</b> {{ job.correlation_model }}
+			  	</li>
+
+			  	<li class="list-group-item">
+				<b>vs30 clustering:</b> {{ job.vs30_clustering }}
+			  	</li>
+
+			  	<li class="list-group-item">
+				<b>Number of gmf:</b> {{ job.n_gmf }}
+			  	</li>
+
+			</ul>
+
+		</div>
+
+	</div>
+</div>
+
+{% load staticfiles %}
+
+<script type="text/javascript" src="{% static 'jobs/js/scenario_hazard_results.js' %}"></script>
+
+{% endblock %}

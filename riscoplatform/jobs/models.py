@@ -1,33 +1,33 @@
 from django.db import models
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
-from world.models import World
+from world.models import World, Fishnet
 from eng_models.models import Site_Model, Rupture_Model
 
 # Create your models here.
 
 class Scenario_Hazard(models.Model):
 
-    ABRAHAMSON_AND_SILVA_2008 		= 'ABRAHAMSON_AND_SILVA_2008'
-    AKKAR_AND_BOMMER_2010 			= 'AKKAR_AND_BOMMER_2010'
-    AKKAR_AND_CAGNAN_2010 			= 'AKKAR_AND_CAGNAN_2010'
-    BOORE_AND_ATKINSON_2008 		= 'BOORE_AND_ATKINSON_2008'
-    CAUZZI_AND_FACCIOLI_2008 		= 'CAUZZI_AND_FACCIOLI_2008'
-    CHIOU_AND_YOUNGS_2008 			= 'CHIOU_AND_YOUNGS_2008'
-    FACCIOLI_ET_AL_2010 			= 'FACCIOLI_ET_AL_2010'
-    SADIGH_ET_AL_1997 				= 'SADIGH_ET_AL_1997'
-    ZHAO_ET_AL_2006_ASC 			= 'ZHAO_ET_AL_2006_ASC'
-    ATKINSON_AND_BOORE_2003_INTER 	= 'ATKINSON_AND_BOORE_2003_INTER'
-    ATKINSON_AND_BOORE_2003_IN_SLAB = 'ATKINSON_AND_BOORE_2003_IN_SLAB'
-    LIN_AND_LEE_2008_INTER 			= 'LIN_AND_LEE_2008_INTER'
-    LIN_AND_LEE_2008_IN_SLAB 		= 'LIN_AND_LEE_2008_IN_SLAB'
-    YOUNGS_ET_AL_1997_INTER 		= 'YOUNGS_ET_AL_1997_INTER'
-    YOUNGS_ET_AL_1997_IN_SLAB 		= 'YOUNGS_ET_AL_1997_IN_SLAB'
-    ZHAO_ET_AL_2006_INTER 			= 'ZHAO_ET_AL_2006_INTER'
-    ZHAO_ET_AL_2006_IN_SLAB 		= 'ZHAO_ET_AL_2006_IN_SLAB'
-    ATKINSON_AND_BOORE_2006 		= 'ATKINSON_AND_BOORE_2006'
-    CAMPBELL_2003 					= 'CAMPBELL_2003'
-    TORO_ET_AL_2002 				= 'TORO_ET_AL_2002'
+    ABRAHAMSON_AND_SILVA_2008 		= 'AbrahamsonSilva2008'
+    AKKAR_AND_BOMMER_2010 			= 'AkkarBommer2010'
+    AKKAR_AND_CAGNAN_2010 			= 'AkkarCagnan2010'
+    BOORE_AND_ATKINSON_2008 		= 'BooreAtkinson2008'
+    CAUZZI_AND_FACCIOLI_2008 		= 'CauzziFaccioli2008'
+    CHIOU_AND_YOUNGS_2008 			= 'ChiouYoungs2008'
+    FACCIOLI_ET_AL_2010 			= 'FaccioliEtAl2010'
+    SADIGH_ET_AL_1997 				= 'SadighEtAl1997'
+    ZHAO_ET_AL_2006_ASC 			= 'ZhaoEtAl2006Asc'
+    ATKINSON_AND_BOORE_2003_INTER 	= 'AtkinsonBoore2003SInter'
+    ATKINSON_AND_BOORE_2003_IN_SLAB = 'AtkinsonBoore2003SSlab'
+    LIN_AND_LEE_2008_INTER 			= 'LinLee2008SInter'
+    LIN_AND_LEE_2008_IN_SLAB 		= 'LinLee2008SSlab'
+    YOUNGS_ET_AL_1997_INTER 		= 'YoungsEtAl1997SInter'
+    YOUNGS_ET_AL_1997_IN_SLAB 		= 'YoungsEtAl1997SSlab'
+    ZHAO_ET_AL_2006_INTER 			= 'ZhaoEtAl2006SInter'
+    ZHAO_ET_AL_2006_IN_SLAB 		= 'ZhaoEtAl2006SSlab'
+    ATKINSON_AND_BOORE_2006 		= 'AtkinsonBoore2006'
+    CAMPBELL_2003 					= 'Campbell2003'
+    TORO_ET_AL_2002 				= 'ToroEtAl2002'
 
     GMPE_CHOICES = (
     	(ABRAHAMSON_AND_SILVA_2008 			,'Abrahamson and Silva 2008'),
@@ -101,14 +101,13 @@ class Scenario_Hazard(models.Model):
     n_gmf 						= models.IntegerField(default=50)
 
     ini_file                    = models.FileField(upload_to='uploads/scenario/hazard/', null=True, blank=True)
-    ini_file_string             = models.TextField(null=True)
 
+    start                       = models.BooleanField(default=False)
     error                       = models.BooleanField(default=False)
     ready                       = models.BooleanField(default=False)
+    oq_id                       = models.IntegerField(null=True)
 
     def save(self, *args, **kwargs):
-        if self.ini_file:
-            self.ini_file_string = self.ini_file.read()
         super(Scenario_Hazard, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -117,5 +116,23 @@ class Scenario_Hazard(models.Model):
     class Meta:
         managed = True
         db_table = 'jobs_scenario_hazard'
+
+
+class Scenario_Hazard_Results(models.Model):
+
+    job                         = models.ForeignKey(Scenario_Hazard)
+    location                    = models.PointField(srid=4326)
+    imt                         = models.CharField(max_length=3)
+    sa_period                   = models.FloatField(null=True)
+    sa_damping                  = models.IntegerField(null=True)
+    gmvs                        = models.FloatField()
+    cell                        = models.ForeignKey(Fishnet, null=True)
+
+    def save(self, *args, **kwargs):
+        super(Scenario_Hazard, self).save(*args, **kwargs)
+
+    def __unicode__(self):
+        return self.name
+
 
 

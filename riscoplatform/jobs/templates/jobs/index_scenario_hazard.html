@@ -17,7 +17,7 @@
 
 	<div class="row">
 		<div class="col-md-8">
-			<form class="form-horizontal" action="{% url 'add_sceanrio_hazard' %}" method="post" enctype="multipart/form-data">
+			<form class="form-horizontal" action="{% url 'add_scenario_hazard' %}" method="post" enctype="multipart/form-data">
 				{% csrf_token %}
 				<fieldset>
 					<legend>Insert new job</legend>
@@ -48,7 +48,7 @@
 				    	{% for job in jobs %}
 				    	<tr>
 						    <td> {{ job.name }} </td>
-						    <td> <button class="btn btn-sm btn-success"> Results </button> </td>
+						    <td> <a href="{% url 'results_scenario_hazard' job.id %}"> <button class="btn btn-sm btn-success"> Results </button> </a></td>
 				    
 					    </tr>
 				    	{% endfor %}

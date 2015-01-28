@@ -67,11 +67,8 @@ class Exposure_Model(models.Model):
     deductible                  = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, default=ABSOLUTE, null=True)
     insurance_limit             = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, default=ABSOLUTE, null=True)
     xml                         = models.FileField(upload_to='uploads/exposure/', null=True, blank=True)
-    xml_string                  = models.TextField(null=True)
 
     def save(self, *args, **kwargs):
-        if self.xml:
-            self.xml_string = self.self.xml.read()
         super(Exposure_Model, self).save(*args, **kwargs)
 
     class Meta:
@@ -173,11 +170,8 @@ class Site_Model(models.Model):
     description                 = models.CharField(max_length=200)
     contributors                = models.ManyToManyField(User, through='Site_Model_Contributor')
     xml                         = models.FileField(upload_to='uploads/site/', null=True, blank=True)
-    xml_string                  = models.TextField(null=True)
 
     def save(self, *args, **kwargs):
-        if self.xml:
-            self.xml_string = self.xml.read()
         super(Site_Model, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -236,11 +230,8 @@ class Fault_Model(models.Model):
     description                 = models.CharField(max_length=200)
     contributors                = models.ManyToManyField(User, through='Fault_Model_Contributor')
     xml                         = models.FileField(upload_to='uploads/fault/', null=True, blank=True)
-    xml_string                  = models.TextField(null=True)
 
     def save(self, *args, **kwargs):
-        if self.xml:
-            self.xml_string = self.xml.read()
         super(Fault_Model, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -271,7 +262,6 @@ class Fault(models.Model):
     rake                        = models.IntegerField()
     sr                          = models.FloatField()
     maxmag                      = models.FloatField()
-    #geom                        = models.MultiLineStringField(srid=4326)
     geom                        = models.LineStringField(srid=4326, null=True)
 
     def __unicode__(self):
@@ -322,22 +312,17 @@ class Rupture_Model(models.Model):
     #upload
     
     xml                         = models.FileField(upload_to='uploads/rupture/', null=True, blank=True)
-    xml_string                  = models.TextField(null=True)
 
     def save(self, *args, **kwargs):
-        if self.xml:
-            self.xml_string = self.xml.read()
-        else:
-            if self.rupture_type == 'POINT':
-                string = str(render_to_string('eng_models/rupture_point_source.xml', {'rupture': self}))
-            else:
-                string = str(render_to_string('eng_models/rupture_fault_source.xml', {'rupture': self}))
 
-            self.xml_string = string
-            #f = open('/tmp/rupture.xml', 'rw')
-            #djangofile = File(f)
-            #djangofile.write(string)
-            #self.xml = djangofile
+        if self.rupture_type == 'POINT':
+            string = str(render_to_string('eng_models/rupture_point_source.xml', {'rupture': self}))
+        else:
+            string = str(render_to_string('eng_models/rupture_fault_source.xml', {'rupture': self}))
+        #f = open('/tmp/rupture.xml', 'rw')
+        #djangofile = File(f)
+        #djangofile.write(string)
+        #self.xml = djangofile
 
         super(Rupture_Model, self).save(*args, **kwargs)
 
