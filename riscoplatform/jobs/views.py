@@ -17,6 +17,7 @@ from django.contrib.auth.models import User
 import redis
 from rq import Queue
 import json
+import colors
 
 
 # Create your views here.
@@ -90,9 +91,9 @@ def results_scenario_hazard_ajax(request, job_id):
 						and jobs_scenario_hazard_results.imt = 'PGA' \
 						group by world_fishnet.id", [job_id])
 	    cells = cursor.fetchall()
-	    features = list(dict(type='Feature', id=cell[2], properties=dict(color='#FF0000', pga="{0:.4f}".format(cell[1])),
+	    features = list(dict(type='Feature', id=cell[2], properties=dict(color=colors.hazard_picker(cell[1]), a="{0:.4f}".format(cell[1])),
 					geometry=json.loads(cell[0])) for cell in cells)
-	    d.append({'type': 'FeatureCollection', 'features': features})
+	    d.append({'type': 'FeatureCollection', 'features': features, 'name': 'PGA'})
 
 	if job.sa1_period != None:
 		cursor.execute("select ST_AsGeoJSON(cell), avg(gmvs), world_fishnet.id  \
@@ -102,9 +103,9 @@ def results_scenario_hazard_ajax(request, job_id):
 						and jobs_scenario_hazard_results.sa_period = %s \
 						group by world_fishnet.id", [job_id, job.sa1_period])
 		cells = cursor.fetchall()
-		features = list(dict(type='Feature', id=cell[2], properties=dict(color='#FF0000', sa="{0:.4f}".format(cell[1]), period=job.sa1_period),
+		features = list(dict(type='Feature', id=cell[2], properties=dict(color=colors.hazard_picker(cell[1]), a="{0:.4f}".format(cell[1])),
 					geometry=json.loads(cell[0])) for cell in cells)
-		d.append({'type': 'FeatureCollection', 'features': features})
+		d.append({'type': 'FeatureCollection', 'features': features, 'name': 'Sa('+str(job.sa1_period)+')'})
 
 		if job.sa2_period != None:
 			cursor.execute("select ST_AsGeoJSON(cell), avg(gmvs), world_fishnet.id  \
@@ -114,9 +115,9 @@ def results_scenario_hazard_ajax(request, job_id):
 							and jobs_scenario_hazard_results.sa_period = %s \
 							group by world_fishnet.id", [job_id, job.sa2_period])
 			cells = cursor.fetchall()
-			features = list(dict(type='Feature', id=cell[2], properties=dict(color='#FF0000', sa="{0:.4f}".format(cell[1]), period=job.sa2_period),
+			features = list(dict(type='Feature', id=cell[2], properties=dict(color=colors.hazard_picker(cell[1]), a="{0:.4f}".format(cell[1])),
 						geometry=json.loads(cell[0])) for cell in cells)
-			d.append({'type': 'FeatureCollection', 'features': features})
+			d.append({'type': 'FeatureCollection', 'features': features, 'name': 'Sa('+str(job.sa2_period)+')'})
 
 			if job.sa3_period != None:
 				cursor.execute("select ST_AsGeoJSON(cell), avg(gmvs), world_fishnet.id  \
@@ -126,9 +127,9 @@ def results_scenario_hazard_ajax(request, job_id):
 								and jobs_scenario_hazard_results.sa_period = %s \
 								group by world_fishnet.id", [job_id, job.sa3_period])
 				cells = cursor.fetchall()
-				features = list(dict(type='Feature', id=cell[2], properties=dict(color='#FF0000', sa="{0:.4f}".format(cell[1]), period=job.sa3_period),
+				features = list(dict(type='Feature', id=cell[2], properties=dict(color=colors.hazard_picker(cell[1]), a="{0:.4f}".format(cell[1])),
 							geometry=json.loads(cell[0])) for cell in cells)
-				d.append({'type': 'FeatureCollection', 'features': features})
+				d.append({'type': 'FeatureCollection', 'features': features, 'name': 'Sa('+str(job.sa3_period)+')'})
 
 	return HttpResponse(json.dumps(d), content_type="application/json")
 

@@ -19,7 +19,7 @@ $( document ).ready(function() {
     };
     info.update = function (props) {
         this._div.innerHTML = '<h4>INFO</h4>' +  (props ?
-            '<b>a: </b>' + props.pga + ' m/s<sup>2</sup> <br>'
+            '<b>a: </b>' + props.a + ' m/s<sup>2</sup> <br>'
             : 'Hover the map');
     };
     info.addTo(map);
@@ -37,23 +37,32 @@ $( document ).ready(function() {
     var url = document.URL.split('/');
     var job_id = url[url.length -2];
 
-
+    
+    var control = L.control.layers().addTo(map);
+    
     $.ajax( BASE_URL+'jobs/scenario/hazard/results_ajax/'+job_id )
     .done(function(data) {
-        var geoJsonTileLayer = L.geoJson(data, {
-        style: style,
-        onEachFeature: function (feature, layer) {
-            //layer.setStyle({"fillColor": feature.properties.color});
-            layer.on('mouseover', function () {
-                info.update(layer.feature.properties);
-                layer.setStyle(hoverStyle);
-            });
-            layer.on('mouseout', function () {
-                info.update();
-                layer.setStyle(style);
-            });
+        for (var i = 0; i<data.length;i++) {
+
+            var geoJsonTileLayer = L.geoJson(data[i], {
+                style: style,
+                onEachFeature: function (feature, layer) {
+                    layer.setStyle({"fillColor": feature.properties.color});
+                    layer.on('mouseover', function () {
+                        info.update(layer.feature.properties);
+                        layer.setStyle(hoverStyle);
+                    });
+                    layer.on('mouseout', function () {
+                        info.update();
+                        layer.setStyle(style);
+                    });
+                }
+            }).addTo(map);
+
+            control.addBaseLayer(geoJsonTileLayer, data[i].name);
+
         }
-    }).addTo(map);
+
     })
     .fail(function() {
         alert( "ERROR: The results are not in the database" );
