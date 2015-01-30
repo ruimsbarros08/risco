@@ -16,7 +16,47 @@ from django.contrib.auth.models import User
 from world.models import World, Fishnet
 from django.core.files import File
 from django.template.loader import render_to_string
+from djorm_pgarray.fields import FloatArrayField
 
+
+class Building_Taxonomy_Source(models.Model):
+    date_created                = models.DateTimeField('date created')
+    name                        = models.CharField(max_length=200)
+    description                 = models.CharField(max_length=200, null=True)
+    contributors                = models.ManyToManyField(User, through='Building_Taxonomy_Source_Contributor')
+
+    class Meta:
+        managed = True
+        db_table = 'eng_models_building_taxonomy_source'
+
+    def __unicode__(self):
+        return self.name
+
+
+class Building_Taxonomy_Source_Contributor(models.Model):
+    contributor                 = models.ForeignKey(User)
+    source                      = models.ForeignKey(Building_Taxonomy_Source)
+    author                      = models.BooleanField(default=False)
+    date_joined                 = models.DateTimeField('date joined')
+
+    class Meta:
+        managed = True
+        db_table = 'eng_models_building_taxonomy_source_contributor'
+        
+
+class Building_Taxonomy(models.Model):
+    source                      = models.ForeignKey(Building_Taxonomy_Source)
+    name                        = models.CharField(max_length=10)
+    description                 = models.CharField(max_length=200, null=True)
+    material                    = models.CharField(max_length=10, null=True)
+    nstoreys                    = models.CharField(max_length=10, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'eng_models_building_taxonomy'
+
+    def __unicode__(self):
+        return self.name        
 
 
 class Exposure_Model(models.Model):
@@ -54,6 +94,7 @@ class Exposure_Model(models.Model):
     name                        = models.CharField(max_length=200)
     description                 = models.CharField(max_length=200)
     contributors                = models.ManyToManyField(User, through='Exposure_Model_Contributor')
+    taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source, blank=True, null=True)
     area_type                   = models.CharField(max_length=20, choices=AGG_CHOICES, default=AGGREGATED, null=True)
     area_unit                   = models.CharField(max_length=20, choices=UNIT_CHOICES, default=SQUARED_METERS, null=True)
     struct_cost_type            = models.CharField(max_length=20, choices=AGG_CHOICES, default=AGGREGATED, null=True)
@@ -91,44 +132,6 @@ class Exposure_Model_Contributor(models.Model):
         db_table = 'eng_models_exposure_model_contributor'
 
 
-class Building_Taxonomy_Source(models.Model):
-    date_created                = models.DateTimeField('date created')
-    name                        = models.CharField(max_length=200)
-    description                 = models.CharField(max_length=200, null=True)
-    contributors                = models.ManyToManyField(User, through='Building_Taxonomy_Source_Contributor')
-
-    class Meta:
-        managed = True
-        db_table = 'eng_models_building_taxonomy_source'
-
-    def __unicode__(self):
-        return self.name
-
-
-class Building_Taxonomy_Source_Contributor(models.Model):
-    contributor                 = models.ForeignKey(User)
-    source                      = models.ForeignKey(Building_Taxonomy_Source)
-    author                      = models.BooleanField(default=False)
-    date_joined                 = models.DateTimeField('date joined')
-
-    class Meta:
-        managed = True
-        db_table = 'eng_models_building_taxonomy_source_contributor'
-        
-
-class Building_Taxonomy(models.Model):
-    source                      = models.ForeignKey(Building_Taxonomy_Source)
-    name                        = models.CharField(max_length=10, unique=True)
-    description                 = models.CharField(max_length=200, null=True)
-    material                    = models.CharField(max_length=10, null=True)
-    nstoreys                    = models.CharField(max_length=10, null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'eng_models_building_taxonomy'
-
-    def __unicode__(self):
-        return self.name        
 
 
 class Asset(models.Model):
@@ -329,7 +332,69 @@ class Rupture_Model(models.Model):
 
     def __unicode__(self):
         return self.name
+
+
+class Fragility_Model(models.Model):
+
+    date_created                = models.DateTimeField('date created')
+    name                        = models.CharField(max_length=200)
+    description                 = models.CharField(max_length=200)
+    contributors                = models.ManyToManyField(User, through='Fragility_Model_Contributor')
+    taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source)
+    xml                         = models.FileField(upload_to='uploads/fragility/', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        super(Fragility_Model, self).save(*args, **kwargs)
+
+    def __unicode__(self):
+        return self.name
+
+
+class Fragility_Model_Contributor(models.Model):
+    contributor                 = models.ForeignKey(User)
+    model                       = models.ForeignKey(Fragility_Model)
+    author                      = models.BooleanField(default=False)
+    date_joined                 = models.DateTimeField('date joined')
+
         
+class Fragility_Function(models.Model):
+    LOGNORMAL = 'lognormal'
+    DIST_TYPES = (
+        (LOGNORMAL, 'Lognormal'),
+        )
+
+    SLIGHT = 'slight'
+    MODERATE = 'moderate'
+    EXTENSIVE = 'extensive'
+    COMPLETE = 'complete'
+    LIMIT_STATES = (
+        (SLIGHT, 'Slight'),
+        (MODERATE, 'Moderate'),
+        (EXTENSIVE, 'Extensive'),
+        (COMPLETE, 'Complete'),
+        )
+
+    model                       = models.ForeignKey(Fragility_Model)
+    taxonomy                    = models.ForeignKey(Building_Taxonomy)
+    dist_type                   = models.CharField(max_length=10, choices=DIST_TYPES, default=LOGNORMAL)
+    limit_state                 = models.CharField(max_length=10, choices=LIMIT_STATES)
+    sa_period                   = models.FloatField()
+    unit                        = models.CharField(max_length=3)
+    min_iml                     = models.FloatField()
+    max_iml                     = models.FloatField()
+    mean                        = models.FloatField()
+    stddev                      = models.FloatField()
+    function                    = FloatArrayField(dimension=2)
+
+    def save(self, *args, **kwargs):
+        super(Fragility_Function, self).save(*args, **kwargs)
+
+
+
+
+
+
+
 
 
 

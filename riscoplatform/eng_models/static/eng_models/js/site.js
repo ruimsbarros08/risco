@@ -34,7 +34,7 @@ $( document ).ready(function() {
     };
 
     var url = document.URL.split('/');
-    var model_id = url[url.length -1];
+    var model_id = url[url.length -2];
 
 
 	$.ajax( BASE_URL+'models/site/'+model_id+'/map_grid' )

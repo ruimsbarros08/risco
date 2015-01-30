@@ -1,12 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from eng_models.models import Exposure_Model, Asset, Site_Model, Site, Fault_Model, Fault, Rupture_Model
+from eng_models.models import Exposure_Model, Asset, Site_Model, Site, Fault_Model, Fault, Rupture_Model, Fragility_Model, Fragility_Function, Building_Taxonomy_Source
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-#import exposure_model_parser
-#import site_model_parser
+from parsers import exposure_parser
 from django.core import serializers
 from django.db import connection
 import json
@@ -30,9 +29,12 @@ def pagination(list, n, page):
 #####################
 
 class ExposureForm(forms.ModelForm):
+	add_tax_source = forms.BooleanField(required=False)
+	tax_source_name = forms.CharField(required=False)
+	tax_source_desc = forms.CharField(required=False)
 	class Meta:
 		model = Exposure_Model
-		fields = ['name', 'description', 'xml']
+		fields = ['name', 'description', 'taxonomy_source', 'xml']
 
 def index_exposure(request):
 	models = Exposure_Model.objects.all()
@@ -53,12 +55,16 @@ def add_exposure_model(request):
 		form = ExposureForm(request.POST, request.FILES)
 		if form.is_valid():
 			model = form.save(commit=False)
-			model.date_created = timezone.now()
-			model.save()
-			if request.FILES:
-				pass
-				#exposure_model_parser.start_parse(model)
+			if 'add_tax_source' in request.POST:
+				new_tax_source = Building_Taxonomy_Source(name=request.POST['tax_source_name'],
+															description=request.POST['tax_source_desc'],
+															date_created=timezone.now())
+				new_tax_source.save()
+				model.taxonomy_source = new_tax_source
+			exposure_parser.start(model)
 			return redirect('detail_exposure', model_id=model.id)
+		else:
+			print form.errors
 	else:
 		form = ExposureForm()
 		return render(request, 'eng_models/index_exposure.html', {'form': form})
@@ -207,7 +213,7 @@ def add_fault_model(request):
 class RuptureForm(forms.ModelForm):
 	class Meta:
 		model = Rupture_Model
-		exclude = ['user', 'date_created', 'xml_string']
+		exclude = ['user', 'date_created']
 		widgets = {
 					'description': forms.Textarea(attrs={'rows':5}),
             		'location': forms.HiddenInput(),
@@ -240,6 +246,55 @@ def add_rupture_model(request):
 	else:
 		form = RuptureForm()
 		return render(request, 'eng_models/index_rupture_model.html', {'form': form})
+
+
+######################
+##     FRAGILITY    ##
+######################
+
+class FragilityForm(forms.ModelForm):
+	add_tax_source = forms.BooleanField()
+	tax_source_name = forms.CharField()
+	tax_source_desc = forms.CharField()
+	class Meta:
+		model = Fragility_Model
+		fields = ['name', 'description', 'taxonomy_source', 'xml']
+	def save(self, commit=True):
+		if self.cleaned_data['add_tax_source']:
+			self.taxonomy_source = Building_Taxonomy_Source(name=tax_source_name, description=tax_source_desc)
+		#parse(self)
+		super(FragilityForm, self).save(commit=commit)
+
+def index_fragility(request):
+	models = Fragility_Model.objects.all()
+	form = FragilityForm()
+	return render(request, 'eng_models/index_fragility.html', {'models': models, 'form': form})
+
+#def detail_fragility(request, model_id):
+#	model = get_object_or_404(Exposure_Model ,pk=model_id)
+#	try:
+#		asset_list = Asset.objects.filter(model_id=model_id)
+#	except:
+#		asset_list = []
+#	page = request.GET.get('page')
+#	return render(request, 'eng_models/detail_exposure.html', {'model': model, 'assets': pagination(asset_list, 10, page)})
+
+def add_fragility_model(request):
+	if request.method == 'POST':
+		form = FragilityForm(request.POST, request.FILES)
+		if form.is_valid():
+			model = form.save(commit=False)
+			if 'add_tax_source' in request.POST:
+				new_tax_source = Building_Taxonomy_Source(name=request.POST['tax_source_name'],
+															description=request.POST['tax_source_desc'],
+															date_created=timezone.now())
+				new_tax_source.save()
+				model.taxonomy_source = new_tax_source
+			#return redirect('detail_exposure', model_id=model.id)
+			return redirect('index_fragility', model_id=model.id)
+	else:
+		form = FragilityForm()
+		return render(request, 'eng_models/index_fragility.html', {'form': form})
 
 
 

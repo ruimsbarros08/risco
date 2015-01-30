@@ -12,11 +12,12 @@
 		<br>
 		<h5>{{ model.description }}</h5>
 		<br>
+		<p>{{ model.taxonomy_source }}</p>
 
 			{% if assets %}
 			    <ul>
 			    {% for asset in assets %}
-			    	<li>{{ asset.name }}</li>
+			    	<li>{{ asset.name }}, </li>
 			    {% endfor %}
 			    </ul>
 			{% else %}
