@@ -17,7 +17,8 @@ urlpatterns = patterns('',
     url(r'^site/add/$', views.add_site_model, name='add_site_model'),
 
     url(r'^fragility/$', views.index_fragility, name='index_fragility'),
-    #url(r'^fragility/(?P<model_id>\d+)/$', views.detail_exposure, name='detail_exposure'),
+    url(r'^fragility/(?P<model_id>\d+)/$', views.detail_fragility, name='detail_fragility'),
+    url(r'^fragility/(?P<model_id>\d+)/taxonomy/(?P<taxonomy_id>\d+)/$', views.fragility_get_taxonomy, name='fragility_get_taxonomy'),
     url(r'^fragility/add/$', views.add_fragility_model, name='add_fragility_model'),
 
     url(r'^exposure/$', views.index_exposure, name='index_exposure'),

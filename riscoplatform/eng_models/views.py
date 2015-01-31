@@ -1,11 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from eng_models.models import Exposure_Model, Asset, Site_Model, Site, Fault_Model, Fault, Rupture_Model, Fragility_Model, Fragility_Function, Building_Taxonomy_Source
+from eng_models.models import Exposure_Model, Asset, Site_Model, Site, Fault_Model, Fault, Rupture_Model, Fragility_Model, Fragility_Function, Building_Taxonomy_Source, Building_Taxonomy
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from parsers import exposure_parser
+from parsers import exposure_parser, fragility_parser
 from django.core import serializers
 from django.db import connection
 import json
@@ -253,31 +253,26 @@ def add_rupture_model(request):
 ######################
 
 class FragilityForm(forms.ModelForm):
-	add_tax_source = forms.BooleanField()
-	tax_source_name = forms.CharField()
-	tax_source_desc = forms.CharField()
+	add_tax_source = forms.BooleanField(required=False)
+	tax_source_name = forms.CharField(required=False)
+	tax_source_desc = forms.CharField(required=False)
 	class Meta:
 		model = Fragility_Model
 		fields = ['name', 'description', 'taxonomy_source', 'xml']
-	def save(self, commit=True):
-		if self.cleaned_data['add_tax_source']:
-			self.taxonomy_source = Building_Taxonomy_Source(name=tax_source_name, description=tax_source_desc)
-		#parse(self)
-		super(FragilityForm, self).save(commit=commit)
+
 
 def index_fragility(request):
 	models = Fragility_Model.objects.all()
 	form = FragilityForm()
 	return render(request, 'eng_models/index_fragility.html', {'models': models, 'form': form})
 
-#def detail_fragility(request, model_id):
-#	model = get_object_or_404(Exposure_Model ,pk=model_id)
-#	try:
-#		asset_list = Asset.objects.filter(model_id=model_id)
-#	except:
-#		asset_list = []
-#	page = request.GET.get('page')
-#	return render(request, 'eng_models/detail_exposure.html', {'model': model, 'assets': pagination(asset_list, 10, page)})
+def detail_fragility(request, model_id):
+	model = get_object_or_404(Fragility_Model ,pk=model_id)
+	try:
+		tax_list = Fragility_Function.objects.filter(model_id=model_id).distinct('taxonomy_id')
+	except:
+		tax_list = []
+	return render(request, 'eng_models/detail_fragility.html', {'model': model, 'taxonomies': tax_list})
 
 def add_fragility_model(request):
 	if request.method == 'POST':
@@ -290,11 +285,19 @@ def add_fragility_model(request):
 															date_created=timezone.now())
 				new_tax_source.save()
 				model.taxonomy_source = new_tax_source
-			#return redirect('detail_exposure', model_id=model.id)
-			return redirect('index_fragility', model_id=model.id)
+			model.date_created = timezone.now()
+			fragility_parser.start(model)
+			return redirect('detail_fragility', model_id=model.id)
 	else:
 		form = FragilityForm()
 		return render(request, 'eng_models/index_fragility.html', {'form': form})
+
+
+def fragility_get_taxonomy(request, model_id, taxonomy_id):
+	functions = Fragility_Function.objects.filter(taxonomy_id = taxonomy_id, model_id=model_id)
+	data = serializers.serialize("json", functions)
+	return HttpResponse(data, content_type="application/json")
+
 
 
 

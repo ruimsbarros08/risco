@@ -17,6 +17,8 @@ from world.models import World, Fishnet
 from django.core.files import File
 from django.template.loader import render_to_string
 from djorm_pgarray.fields import FloatArrayField
+from scipy.stats import lognorm
+import numpy as np
 
 
 class Building_Taxonomy_Source(models.Model):
@@ -46,7 +48,7 @@ class Building_Taxonomy_Source_Contributor(models.Model):
 
 class Building_Taxonomy(models.Model):
     source                      = models.ForeignKey(Building_Taxonomy_Source)
-    name                        = models.CharField(max_length=10)
+    name                        = models.CharField(max_length=20)
     description                 = models.CharField(max_length=200, null=True)
     material                    = models.CharField(max_length=10, null=True)
     nstoreys                    = models.CharField(max_length=10, null=True)
@@ -376,17 +378,26 @@ class Fragility_Function(models.Model):
 
     model                       = models.ForeignKey(Fragility_Model)
     taxonomy                    = models.ForeignKey(Building_Taxonomy)
-    dist_type                   = models.CharField(max_length=10, choices=DIST_TYPES, default=LOGNORMAL)
-    limit_state                 = models.CharField(max_length=10, choices=LIMIT_STATES)
+    dist_type                   = models.CharField(max_length=20, choices=DIST_TYPES, default=LOGNORMAL)
+    limit_state                 = models.CharField(max_length=20, choices=LIMIT_STATES)
     sa_period                   = models.FloatField()
     unit                        = models.CharField(max_length=3)
     min_iml                     = models.FloatField()
     max_iml                     = models.FloatField()
     mean                        = models.FloatField()
     stddev                      = models.FloatField()
-    function                    = FloatArrayField(dimension=2)
+    pdf                         = FloatArrayField(dimension=2)
+    cdf                         = FloatArrayField(dimension=2)
 
     def save(self, *args, **kwargs):
+        dist = lognorm(float(self.stddev), loc = float(self.mean))
+        #x = np.linspace(0, 2.5, 0.25)
+        x = np.array([0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5])
+        pdf = dist.pdf(x)
+        cdf = dist.cdf(x)
+        self.pdf = [x.tolist(), pdf.tolist()]
+        self.cdf = [x.tolist(), cdf.tolist()]
+
         super(Fragility_Function, self).save(*args, **kwargs)
 
 

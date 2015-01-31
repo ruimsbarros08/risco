@@ -1,12 +1,12 @@
 from xml.dom.minidom import parse
-#from eng_models.models import Fragility_Function, Building_Taxonomy
+from eng_models.models import Fragility_Function, Building_Taxonomy
 from django.utils import timezone
 
 
-def start(path):
+def start(object):
 
-	#model = parse(object.xml)
-	model = parse(path)
+	model = parse(object.xml)
+	object.save()
 
 	functions = model.getElementsByTagName('ffs')
 	for ffs in functions:
@@ -18,10 +18,13 @@ def start(path):
 		unit = iml.getAttribute('imlUnit')
 		min_iml = iml.getAttribute('minIML')
 		max_iml = iml.getAttribute('maxIML')
-		print '--------'
-		print type, taxonomy, sa_period, unit, min_iml, max_iml
-		print '--------'
 
+
+		try:
+			taxonomy = Building_Taxonomy.objects.get(name=taxonomy, source=object.taxonomy_source)
+		except:
+			taxonomy = Building_Taxonomy(name=taxonomy, source=object.taxonomy_source)
+			taxonomy.save()
 
 		ffcs = ffs.getElementsByTagName('ffc')
 
@@ -32,10 +35,25 @@ def start(path):
 			mean = params.getAttribute('mean')
 			stddev = params.getAttribute('stddev')
 
-			print '--------'
-			print limit_state, mean, stddev
+			new_frag_function = Fragility_Function()
+			new_frag_function.model = object
+			new_frag_function.type = type
+			new_frag_function.taxonomy = taxonomy
+			new_frag_function.sa_period = sa_period
+			new_frag_function.unit = unit
+			new_frag_function.min_iml = min_iml
+			new_frag_function.max_iml = max_iml
+			new_frag_function.limit_state = limit_state
+			new_frag_function.mean = mean
+			new_frag_function.stddev = stddev
 
-start('test_fragility.xml')
+			new_frag_function.save()
+
+
+
+
+
+
 
 
 

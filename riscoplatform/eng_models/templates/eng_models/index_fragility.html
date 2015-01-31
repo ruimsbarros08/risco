@@ -17,7 +17,7 @@
 		{% if models %}
 		    <ul>
 		    {% for model in models %}
-		        <li><a href="">{{ model.name }}</a></li>
+		        <li><a href="{% url 'detail_fragility' model.id %}">{{ model.name }}</a></li>
 		    {% endfor %}
 		    </ul>
 		{% else %}
