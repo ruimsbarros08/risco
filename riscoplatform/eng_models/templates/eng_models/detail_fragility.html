@@ -17,7 +17,7 @@
 	</div>
 
 	<div class="row">
-		<div class="col-md-12">
+		<div class="col-md-6">
 		        <select class="form-control" id="select">
 					{% for tax in taxonomies %}
 						<option value="{{ tax.taxonomy.id }}" > {{ tax.taxonomy }} </option>
@@ -27,8 +27,15 @@
 	</div>
 
 	<div class="row">
-		<div class="col-md-12">
-			<div id="chart-container"></div>
+		<div style="height:50px;"></div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6">
+			<div id="chart-container-prob"></div>
+		</div>
+		<div class="col-md-6">
+			<div id="chart-container-cum"></div>
 		</div>
 	</div>
 

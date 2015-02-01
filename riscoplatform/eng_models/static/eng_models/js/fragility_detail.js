@@ -3,13 +3,15 @@
 (function($) {
 $( document ).ready(function() {
 
-var draw_chart = function(values){
-    $('#chart-container').highcharts({
+var draw_chart = function(categories, container, title){
+
+    return new Highcharts.Chart({
         chart: {
-            type: 'areaspline'
+            type: 'areaspline',
+            renderTo: container,
         },
         title: {
-            text: 'Cumulative distribution function'
+            text: title
         },
         //legend: {
         //    layout: 'vertical',
@@ -22,7 +24,7 @@ var draw_chart = function(values){
         //    backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
         //},
         xAxis: {
-            categories: values[0],
+            categories: categories,
             //plotBands: [{ // visualize the weekend
             //    from: 4.5,
             //    to: 6.5,
@@ -31,7 +33,7 @@ var draw_chart = function(values){
         },
         yAxis: {
             title: {
-                text: ''
+                text: 'Probability of exceedance'
             }
         },
         tooltip: {
@@ -46,10 +48,7 @@ var draw_chart = function(values){
                 fillOpacity: 0.5
             }
         },
-        series: [{
-            name: '',
-            data: values[1]
-        },]
+        series: []
     });
     }
 
@@ -60,12 +59,24 @@ $('#select').on('change', function() {
 
     $.ajax( BASE_URL+'models/fragility/'+model_id+'/taxonomy/'+$(this).val() )
     .done(function(data) {
+
         var str = data[0].fields.cdf;
-        var cdf = JSON.parse("[" + str + "]");
+        var categories = JSON.parse("[" + str + "]")[0][0];
+        
+        var prob_chart = draw_chart(categories, 'chart-container-prob', 'Probability distribution function');
+        var cum_chart = draw_chart(categories, 'chart-container-cum', 'Cumulative distribution function');
 
-        console.log(cdf[0]);
+        for (var i=0; i<data.length; i++){
 
-        draw_chart(cdf[0]);
+            var str_pdf = data[i].fields.pdf;
+            var str_cdf = data[i].fields.cdf;
+            var pdf = JSON.parse("[" + str_pdf + "]")[0][1];
+            var cdf = JSON.parse("[" + str_cdf + "]")[0][1];
+
+            prob_chart.addSeries({name: data[i].fields.limit_state, data: pdf})
+            cum_chart.addSeries({name: data[i].fields.limit_state, data: cdf})
+        }
+
     })
     .fail(function() {
         alert( "error" );
