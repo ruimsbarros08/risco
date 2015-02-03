@@ -63,25 +63,27 @@ class Building_Taxonomy(models.Model):
 
 class Exposure_Model(models.Model):
 
-    SQUARED_METERS = 'squared_meters'
+    SQUARED_METERS = 'squared meters'
     HECTARE = 'hectare'
     UNIT_CHOICES = (
-        (SQUARED_METERS, 'squared meters'),
-        (HECTARE, 'hectare')
+        (SQUARED_METERS, 'Squared meters'),
+        (HECTARE, 'Hectare')
     )
 
     AGGREGATED = 'aggregated'
     PER_UNIT = 'per_unit'
+    PER_AREA = 'per_area'
     AGG_CHOICES = (
-        (AGGREGATED, 'aggregated'),
-        (PER_UNIT, 'per_unit'),
+        (AGGREGATED, 'Aggregated'),
+        (PER_UNIT, 'Per unit'),
+        (PER_AREA, 'Per area'),
     )
 
     EURO = 'EUR'
     DOLLAR = 'DOL'
     CURRENCY_CHOICES = (
-        (EURO, 'eur'),
-        (DOLLAR, 'dol'),
+        (EURO, 'Euro'),
+        (DOLLAR, 'Dollar'),
     )
 
     ABSOLUTE = 'absolute'
@@ -97,18 +99,18 @@ class Exposure_Model(models.Model):
     description                 = models.CharField(max_length=200)
     contributors                = models.ManyToManyField(User, through='Exposure_Model_Contributor')
     taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source, blank=True, null=True)
-    area_type                   = models.CharField(max_length=20, choices=AGG_CHOICES, default=AGGREGATED, null=True)
-    area_unit                   = models.CharField(max_length=20, choices=UNIT_CHOICES, default=SQUARED_METERS, null=True)
-    struct_cost_type            = models.CharField(max_length=20, choices=AGG_CHOICES, default=AGGREGATED, null=True)
-    struct_cost_currency        = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default=EURO, null=True)
-    non_struct_cost_type        = models.CharField(max_length=20, choices=AGG_CHOICES, default=AGGREGATED, null=True)
-    non_struct_cost_currency    = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default=EURO, null=True)
-    contents_cost_type          = models.CharField(max_length=20, choices=AGG_CHOICES, default=AGGREGATED, null=True)
-    contents_cost_currency      = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default=EURO, null=True)
-    business_int_cost_type      = models.CharField(max_length=20, choices=AGG_CHOICES, default=AGGREGATED, null=True)
-    business_int_cost_currency  = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default=EURO, null=True)
-    deductible                  = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, default=ABSOLUTE, null=True)
-    insurance_limit             = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, default=ABSOLUTE, null=True)
+    area_type                   = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
+    area_unit                   = models.CharField(max_length=20, choices=UNIT_CHOICES, null=True)
+    struct_cost_type            = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
+    struct_cost_currency        = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
+    non_struct_cost_type        = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
+    non_struct_cost_currency    = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
+    contents_cost_type          = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
+    contents_cost_currency      = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
+    business_int_cost_type      = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
+    business_int_cost_currency  = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
+    deductible                  = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True)
+    insurance_limit             = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True)
     xml                         = models.FileField(upload_to='uploads/exposure/', null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -338,11 +340,20 @@ class Rupture_Model(models.Model):
 
 class Fragility_Model(models.Model):
 
+    CONTINUOUS = 'continuous'
+    DISCRETE = 'discrete'
+    FORMAT_CHOICES =(
+        (CONTINUOUS, 'Continuous'),
+        (DISCRETE, 'Discrete'),
+        )
+
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)
     description                 = models.CharField(max_length=200)
     contributors                = models.ManyToManyField(User, through='Fragility_Model_Contributor')
     taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source)
+    format                      = models.CharField(max_length=10, choices=FORMAT_CHOICES, default=CONTINUOUS)
+
     xml                         = models.FileField(upload_to='uploads/fragility/', null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -360,6 +371,17 @@ class Fragility_Model_Contributor(models.Model):
 
         
 class Fragility_Function(models.Model):
+    PGA = 'PGA'
+    PGV = 'PGV'
+    MMI = 'MMI'
+    SA = 'SA'
+    IMT_CHOICES = (
+        (PGA, 'PGA'),
+        (PGV, 'PGV'),
+        (MMI, 'MMI'),
+        (SA, 'Sa'),
+        )
+    
     LOGNORMAL = 'lognormal'
     DIST_TYPES = (
         (LOGNORMAL, 'Lognormal'),
@@ -380,12 +402,13 @@ class Fragility_Function(models.Model):
     taxonomy                    = models.ForeignKey(Building_Taxonomy)
     dist_type                   = models.CharField(max_length=20, choices=DIST_TYPES, default=LOGNORMAL)
     limit_state                 = models.CharField(max_length=20, choices=LIMIT_STATES)
-    sa_period                   = models.FloatField()
+    imt                         = models.CharField(max_length=3, choices=IMT_CHOICES, default=PGA)
+    sa_period                   = models.FloatField(null=True)
     unit                        = models.CharField(max_length=3)
     min_iml                     = models.FloatField()
     max_iml                     = models.FloatField()
-    mean                        = models.FloatField()
-    stddev                      = models.FloatField()
+    mean                        = models.FloatField(null=True)
+    stddev                      = models.FloatField(null=True)
     pdf                         = FloatArrayField(dimension=2)
     cdf                         = FloatArrayField(dimension=2)
 

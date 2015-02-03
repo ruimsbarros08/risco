@@ -2,17 +2,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 
 from eng_models.models import Exposure_Model, Site_Model, Fault_Model
-from jobs.models import Scenario_Hazard, Scenario_Hazard_Results
-#from django.http import HttpResponseRedirect, HttpResponse
+from jobs.models import Scenario_Hazard, Scenario_Hazard_Results, Scenario_Damage
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import connection
 
 #from django.core import serializers
-#from django.db import connection
-#import json
-#from leaflet.forms.widgets import LeafletWidget
 from django.contrib.auth.models import User
 import redis
 from rq import Queue
@@ -34,9 +30,6 @@ class ScenarioHazardForm(forms.ModelForm):
 		widgets = {
 					'description': forms.Textarea(attrs={'rows':5}),
            			'region': forms.HiddenInput(),
-            		#'location': forms.HiddenInput(),
-            		#'rupture_geom': forms.HiddenInput(),
-            		'fault': forms.HiddenInput(),
 					}
 
 		
@@ -133,6 +126,55 @@ def results_scenario_hazard_ajax(request, job_id):
 
 	return HttpResponse(json.dumps(d), content_type="application/json")
 
+
+
+
+############################
+##     SCENARIO DAMAGE    ##
+############################
+
+
+class ScenarioDamageForm(forms.ModelForm):
+	class Meta:
+		model = Scenario_Damage
+		exclude = ['user', 'date_created', 'start', 'error', 'ready', 'oq_id']
+		widgets = {
+					'description': forms.Textarea(attrs={'rows':5}),
+           			'region': forms.HiddenInput(),
+					}
+
+		
+def index_scenario_damage(request):
+	jobs = Scenario_Damage.objects.all()
+	form = ScenarioDamageForm()
+	return render(request, 'jobs/index_scenario_damage.html', {'jobs': jobs, 'form': form})
+
+def add_scenario_damage(request):
+	if request.method == 'POST':
+		form = ScenarioDamageForm(request.POST, request.FILES)
+		#print form
+		if form.is_valid():
+			job = form.save(commit=False)
+			job.date_created = timezone.now()
+			me = User.objects.get(id=1)
+			job.user = me
+			job.save()
+			if request.FILES:
+				pass
+				#create parser
+
+			#queing to priseOQ
+			#conn = redis.Redis('priseOQ.fe.up.pt', 6379)
+			#q = Queue(connection=conn)
+			#job = q.enqueue('scenario_hazard.start', job.id, timeout=3600)
+
+			return redirect('index_scenario_damage')
+		else:
+			print form.is_valid()
+			print form.errors
+	else:
+		form = ScenarioDamageForm()
+		return render(request, 'jobs/index_scenario_damage.html', {'form': form})
 
 
 

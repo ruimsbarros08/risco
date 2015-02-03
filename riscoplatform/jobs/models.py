@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from world.models import World, Fishnet
-from eng_models.models import Site_Model, Rupture_Model
+from eng_models.models import Site_Model, Rupture_Model, Fragility_Model, Exposure_Model, Asset
 
 # Create your models here.
 
@@ -128,11 +128,43 @@ class Scenario_Hazard_Results(models.Model):
     gmvs                        = models.FloatField()
     cell                        = models.ForeignKey(Fishnet, null=True)
 
-    def save(self, *args, **kwargs):
-        super(Scenario_Hazard, self).save(*args, **kwargs)
+    def __unicode__(self):
+        return self.job.name+' results'
+
+
+class Scenario_Damage(models.Model):
+    user                        = models.ForeignKey(User)
+    date_created                = models.DateTimeField('date created')
+    name                        = models.CharField(max_length=200)
+    description                 = models.CharField(max_length=200, null=True)
+    hazard_job                  = models.ForeignKey(Scenario_Hazard)
+    fragility_model             = models.ForeignKey(Fragility_Model)
+    exposure_model              = models.ForeignKey(Exposure_Model)
+    region                      = models.PolygonField(srid=4326)
+    max_hazard_dist             = models.FloatField()
+
+    start                       = models.BooleanField(default=False)
+    error                       = models.BooleanField(default=False)
+    ready                       = models.BooleanField(default=False)
+    oq_id                       = models.IntegerField(null=True)
+
+    ini_file                    = models.FileField(upload_to='uploads/scenario/damage/', null=True, blank=True)
 
     def __unicode__(self):
         return self.name
+
+
+class Scenario_Damage_Results(models.Model):
+    job                         = models.ForeignKey(Scenario_Damage)
+    asset                       = models.ForeignKey(Asset)
+    #limit state
+    mean                        = models.FloatField()
+    stddev                      = models.FloatField()
+
+    def __unicode__(self):
+        return self.job.name+' results'
+
+        
 
 
 

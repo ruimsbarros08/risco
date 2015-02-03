@@ -14,7 +14,12 @@ def start(object):
 		type = ffs.getAttribute('type')
 		taxonomy = ffs.getElementsByTagName('taxonomy')[0].firstChild.nodeValue
 		iml = ffs.getElementsByTagName('IML')[0]
-		sa_period = iml.getAttribute('IMT').split('(')[1].split(')')[0]
+		imt = iml.getAttribute('IMT')
+		if imt.startswith("SA"):
+			sa_period = imt.split('(')[1].split(')')[0]
+			imt = 'SA'
+		else:
+			sa_period = None
 		unit = iml.getAttribute('imlUnit')
 		min_iml = iml.getAttribute('minIML')
 		max_iml = iml.getAttribute('maxIML')
@@ -39,6 +44,7 @@ def start(object):
 			new_frag_function.model = object
 			new_frag_function.type = type
 			new_frag_function.taxonomy = taxonomy
+			new_frag_function.imt = imt
 			new_frag_function.sa_period = sa_period
 			new_frag_function.unit = unit
 			new_frag_function.min_iml = min_iml

@@ -3,6 +3,8 @@
 (function($) {
 $( document ).ready(function() {
 
+var poe;
+
 var draw_chart = function(categories, container, title){
 
     return new Highcharts.Chart({
@@ -12,7 +14,7 @@ var draw_chart = function(categories, container, title){
         },
         title: {
             text: title
-        },
+        }, 
         //legend: {
         //    layout: 'vertical',
         //    align: 'left',
@@ -34,7 +36,12 @@ var draw_chart = function(categories, container, title){
         yAxis: {
             title: {
                 text: 'Probability of exceedance'
-            }
+            },
+            plotLines: [{
+                color: '#FF0000',
+                width: 2,
+                value: poe
+            }],
         },
         tooltip: {
             shared: true,
@@ -63,17 +70,27 @@ $('#select').on('change', function() {
         var str = data[0].fields.cdf;
         var categories = JSON.parse("[" + str + "]")[0][0];
         
-        var prob_chart = draw_chart(categories, 'chart-container-prob', 'Probability distribution function');
+        //var prob_chart = draw_chart(categories, 'chart-container-prob', 'Probability distribution function');
         var cum_chart = draw_chart(categories, 'chart-container-cum', 'Cumulative distribution function');
 
+        $('#values-table tbody').html('');
+
         for (var i=0; i<data.length; i++){
+            var $tr;
+            $('#values-table tbody').append(
+                $tr = $('<tr>').append(
+                    $('<td>').text(data[i].fields.limit_state),
+                    $('<td>').text(data[i].fields.mean),
+                    $('<td>').text(data[i].fields.stddev)
+                )   
+            )
 
             var str_pdf = data[i].fields.pdf;
             var str_cdf = data[i].fields.cdf;
             var pdf = JSON.parse("[" + str_pdf + "]")[0][1];
             var cdf = JSON.parse("[" + str_cdf + "]")[0][1];
 
-            prob_chart.addSeries({name: data[i].fields.limit_state, data: pdf})
+            //prob_chart.addSeries({name: data[i].fields.limit_state, data: pdf})
             cum_chart.addSeries({name: data[i].fields.limit_state, data: cdf})
         }
 
