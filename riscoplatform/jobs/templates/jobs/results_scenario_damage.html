@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+	<div class="row">
+		<h2>Scenario based hazard</h2><br>
+		<h4> {{ job.name }} </h4><br>
+		<h6> {{ job.description }} </h6><br>
+	</div>
+
+	<div class="row">
+		
+		<div class="col-md-9">
+			<div id='map' class="vertical-map"></div><br>
+		</div>
+
+		<div class="col-md-3">
+
+			<ul class="list-group">
+			  	<li class="list-group-item active">
+			  	Job parameters	
+			  	</li>
+
+			  	<li class="list-group-item">
+			    <b>Hazard job:</b> <a href="{% url 'results_scenario_hazard' job.hazard_job.id %}">{{ job.hazard_job }} </a> 
+			  	</li>
+
+			  	<li class="list-group-item">
+			    <b>Fragility model:</b> <a href="{% url 'detail_fragility' job.fragility_model.id %}">{{ job.fragility_model }} </a> 
+			  	</li>
+
+			  	<li class="list-group-item">
+			    <b>Exposure model:</b> <a href="{% url 'detail_exposure' job.exposure_model.id %}">{{ job.exposure_model }} </a> 
+			  	</li>
+			  	<li class="list-group-item">
+			    <b>Max hazard distance:</b> {{ job.max_hazard_dist }} km 
+			  	</li>
+			</ul>
+
+		</div>
+
+	</div>
+</div>
+<!--
+{% load staticfiles %}
+<script type="text/javascript" src="{% static 'jobs/js/scenario_damage_results.js' %}"></script>
+-->
+{% endblock %}

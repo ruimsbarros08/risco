@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from world.models import World, Fishnet
+from djorm_pgarray.fields import FloatArrayField
 from eng_models.models import Site_Model, Rupture_Model, Fragility_Model, Exposure_Model, Asset
 
 # Create your models here.
@@ -90,9 +91,10 @@ class Scenario_Hazard(models.Model):
     rupture_model               = models.ForeignKey(Rupture_Model)
 
     pga 						= models.BooleanField(default=True)
-    sa1_period					= models.FloatField(null=True, blank=True)
-    sa2_period					= models.FloatField(null=True, blank=True)
-    sa3_period					= models.FloatField(null=True, blank=True)
+    #sa1_period					= models.FloatField(null=True, blank=True)
+    #sa2_period					= models.FloatField(null=True, blank=True)
+    #sa3_period					= models.FloatField(null=True, blank=True)
+    sa_periods                  = FloatArrayField(null=True)
     truncation_level			= models.FloatField(default=3)
     max_distance				= models.FloatField(default=200)
     gmpe						= models.CharField(max_length=50, choices=GMPE_CHOICES)
@@ -157,7 +159,7 @@ class Scenario_Damage(models.Model):
 class Scenario_Damage_Results(models.Model):
     job                         = models.ForeignKey(Scenario_Damage)
     asset                       = models.ForeignKey(Asset)
-    #limit state
+    limit_state                 = models.CharField(max_length=20)
     mean                        = models.FloatField()
     stddev                      = models.FloatField()
 

@@ -48,7 +48,7 @@
 				    	{% for job in jobs %}
 				    	<tr>
 						    <td> {{ job.name }} </td>
-						    <td> <a href=""> <button class="btn btn-sm btn-success"> Results </button> </a></td>
+						    <td> <a href="{% url 'results_scenario_damage' job.id %}"> <button class="btn btn-sm btn-success"> Results </button> </a></td>
 				    
 					    </tr>
 				    	{% endfor %}

@@ -112,6 +112,7 @@ class Exposure_Model(models.Model):
     deductible                  = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True)
     insurance_limit             = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True)
     xml                         = models.FileField(upload_to='uploads/exposure/', null=True, blank=True)
+    oq_id                       = models.IntegerField(null=True)
 
     def save(self, *args, **kwargs):
         super(Exposure_Model, self).save(*args, **kwargs)
@@ -369,8 +370,8 @@ class Fragility_Model_Contributor(models.Model):
     author                      = models.BooleanField(default=False)
     date_joined                 = models.DateTimeField('date joined')
 
-        
-class Fragility_Function(models.Model):
+
+class Taxonomy_Fragility_Model(models.Model):
     PGA = 'PGA'
     PGV = 'PGV'
     MMI = 'MMI'
@@ -387,26 +388,35 @@ class Fragility_Function(models.Model):
         (LOGNORMAL, 'Lognormal'),
         )
 
+    model                       = models.ForeignKey(Fragility_Model)
+    taxonomy                    = models.ForeignKey(Building_Taxonomy)
+    dist_type                   = models.CharField(max_length=20, choices=DIST_TYPES, default=LOGNORMAL)
+    imt                         = models.CharField(max_length=3, choices=IMT_CHOICES, default=PGA)
+    sa_period                   = models.FloatField(null=True)
+    unit                        = models.CharField(max_length=3)
+    min_iml                     = models.FloatField(null=True)
+    max_iml                     = models.FloatField(null=True)
+    no_dmg_limit                = models.FloatField(null=True)
+
+        
+class Fragility_Function(models.Model):
+
+    NO_DAMAGE = 'no_damage'
     SLIGHT = 'slight'
     MODERATE = 'moderate'
     EXTENSIVE = 'extensive'
     COMPLETE = 'complete'
     LIMIT_STATES = (
+        (NO_DAMAGE, 'no_damage'),
         (SLIGHT, 'Slight'),
         (MODERATE, 'Moderate'),
         (EXTENSIVE, 'Extensive'),
         (COMPLETE, 'Complete'),
         )
 
-    model                       = models.ForeignKey(Fragility_Model)
-    taxonomy                    = models.ForeignKey(Building_Taxonomy)
-    dist_type                   = models.CharField(max_length=20, choices=DIST_TYPES, default=LOGNORMAL)
+    tax_frag                    = models.ForeignKey(Taxonomy_Fragility_Model, null=True)
     limit_state                 = models.CharField(max_length=20, choices=LIMIT_STATES)
-    imt                         = models.CharField(max_length=3, choices=IMT_CHOICES, default=PGA)
-    sa_period                   = models.FloatField(null=True)
-    unit                        = models.CharField(max_length=3)
-    min_iml                     = models.FloatField()
-    max_iml                     = models.FloatField()
+    #limit_state                 = models.ForeignKey(Limit_State)
     mean                        = models.FloatField(null=True)
     stddev                      = models.FloatField(null=True)
     pdf                         = FloatArrayField(dimension=2)

@@ -55,7 +55,7 @@ def add_scenario_hazard(request):
 			#queing to priseOQ
 			conn = redis.Redis('priseOQ.fe.up.pt', 6379)
 			q = Queue(connection=conn)
-			job = q.enqueue('scenario_hazard.start', job.id, timeout=3600)
+			job = q.enqueue('start.start', job.id, 'scenario_hazard', timeout=3600)
 
 			return redirect('index_scenario_hazard')
 		else:
@@ -88,41 +88,17 @@ def results_scenario_hazard_ajax(request, job_id):
 					geometry=json.loads(cell[0])) for cell in cells)
 	    d.append({'type': 'FeatureCollection', 'features': features, 'name': 'PGA'})
 
-	if job.sa1_period != None:
+	for e in job.sa_periods:
 		cursor.execute("select ST_AsGeoJSON(cell), avg(gmvs), world_fishnet.id  \
 						from world_fishnet, jobs_scenario_hazard_results \
 						where jobs_scenario_hazard_results.job_id = %s \
 						and jobs_scenario_hazard_results.cell_id = world_fishnet.id \
 						and jobs_scenario_hazard_results.sa_period = %s \
-						group by world_fishnet.id", [job_id, job.sa1_period])
+						group by world_fishnet.id", [job_id, e])
 		cells = cursor.fetchall()
 		features = list(dict(type='Feature', id=cell[2], properties=dict(color=colors.hazard_picker(cell[1]), a="{0:.4f}".format(cell[1])),
 					geometry=json.loads(cell[0])) for cell in cells)
-		d.append({'type': 'FeatureCollection', 'features': features, 'name': 'Sa('+str(job.sa1_period)+')'})
-
-		if job.sa2_period != None:
-			cursor.execute("select ST_AsGeoJSON(cell), avg(gmvs), world_fishnet.id  \
-							from world_fishnet, jobs_scenario_hazard_results \
-							where jobs_scenario_hazard_results.job_id = %s \
-							and jobs_scenario_hazard_results.cell_id = world_fishnet.id \
-							and jobs_scenario_hazard_results.sa_period = %s \
-							group by world_fishnet.id", [job_id, job.sa2_period])
-			cells = cursor.fetchall()
-			features = list(dict(type='Feature', id=cell[2], properties=dict(color=colors.hazard_picker(cell[1]), a="{0:.4f}".format(cell[1])),
-						geometry=json.loads(cell[0])) for cell in cells)
-			d.append({'type': 'FeatureCollection', 'features': features, 'name': 'Sa('+str(job.sa2_period)+')'})
-
-			if job.sa3_period != None:
-				cursor.execute("select ST_AsGeoJSON(cell), avg(gmvs), world_fishnet.id  \
-								from world_fishnet, jobs_scenario_hazard_results \
-								where jobs_scenario_hazard_results.job_id = %s \
-								and jobs_scenario_hazard_results.cell_id = world_fishnet.id \
-								and jobs_scenario_hazard_results.sa_period = %s \
-								group by world_fishnet.id", [job_id, job.sa3_period])
-				cells = cursor.fetchall()
-				features = list(dict(type='Feature', id=cell[2], properties=dict(color=colors.hazard_picker(cell[1]), a="{0:.4f}".format(cell[1])),
-							geometry=json.loads(cell[0])) for cell in cells)
-				d.append({'type': 'FeatureCollection', 'features': features, 'name': 'Sa('+str(job.sa3_period)+')'})
+		d.append({'type': 'FeatureCollection', 'features': features, 'name': 'Sa('+str(e)+')'})
 
 	return HttpResponse(json.dumps(d), content_type="application/json")
 
@@ -164,9 +140,9 @@ def add_scenario_damage(request):
 				#create parser
 
 			#queing to priseOQ
-			#conn = redis.Redis('priseOQ.fe.up.pt', 6379)
-			#q = Queue(connection=conn)
-			#job = q.enqueue('scenario_hazard.start', job.id, timeout=3600)
+			conn = redis.Redis('priseOQ.fe.up.pt', 6379)
+			q = Queue(connection=conn)
+			job = q.enqueue('start.start', job.id, 'scenario_damage', timeout=3600)
 
 			return redirect('index_scenario_damage')
 		else:
@@ -175,6 +151,10 @@ def add_scenario_damage(request):
 	else:
 		form = ScenarioDamageForm()
 		return render(request, 'jobs/index_scenario_damage.html', {'form': form})
+
+def results_scenario_damage(request, job_id):
+	job = get_object_or_404(Scenario_Damage ,pk=job_id)
+	return render(request, 'jobs/results_scenario_damage.html', {'job': job})
 
 
 

@@ -1,5 +1,5 @@
 from xml.dom.minidom import parse
-from eng_models.models import Fragility_Function, Building_Taxonomy
+from eng_models.models import Fragility_Function, Building_Taxonomy, Taxonomy_Fragility_Model
 from django.utils import timezone
 
 
@@ -31,6 +31,15 @@ def start(object):
 			taxonomy = Building_Taxonomy(name=taxonomy, source=object.taxonomy_source)
 			taxonomy.save()
 
+		tax_frag = Taxonomy_Fragility_Model(model = object,
+											taxonomy = taxonomy,
+											dist_type = type,
+											imt = imt,
+											sa_period = sa_period,
+											min_iml = min_iml,
+											max_iml = max_iml)
+		tax_frag.save()
+
 		ffcs = ffs.getElementsByTagName('ffc')
 
 		for ffc in ffcs:
@@ -41,14 +50,7 @@ def start(object):
 			stddev = params.getAttribute('stddev')
 
 			new_frag_function = Fragility_Function()
-			new_frag_function.model = object
-			new_frag_function.type = type
-			new_frag_function.taxonomy = taxonomy
-			new_frag_function.imt = imt
-			new_frag_function.sa_period = sa_period
-			new_frag_function.unit = unit
-			new_frag_function.min_iml = min_iml
-			new_frag_function.max_iml = max_iml
+			new_frag_function.tax_frag = tax_frag
 			new_frag_function.limit_state = limit_state
 			new_frag_function.mean = mean
 			new_frag_function.stddev = stddev

@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from eng_models.models import Exposure_Model, Asset, Site_Model, Site, Fault_Model, Fault, Rupture_Model, Fragility_Model, Fragility_Function, Building_Taxonomy_Source, Building_Taxonomy
+from eng_models.models import Exposure_Model, Asset, Site_Model, Site, Fault_Model, Fault, Rupture_Model, Fragility_Model, Fragility_Function, Building_Taxonomy_Source, Building_Taxonomy, Taxonomy_Fragility_Model
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
@@ -269,7 +269,7 @@ def index_fragility(request):
 def detail_fragility(request, model_id):
 	model = get_object_or_404(Fragility_Model ,pk=model_id)
 	try:
-		tax_list = Fragility_Function.objects.filter(model_id=model_id).distinct('taxonomy_id')
+		tax_list = Taxonomy_Fragility_Model.objects.filter(model_id=model_id)
 	except:
 		tax_list = []
 	return render(request, 'eng_models/detail_fragility.html', {'model': model, 'taxonomies': tax_list})
@@ -294,7 +294,12 @@ def add_fragility_model(request):
 
 
 def fragility_get_taxonomy(request, model_id, taxonomy_id):
-	functions = Fragility_Function.objects.filter(taxonomy_id = taxonomy_id, model_id=model_id)
+
+	functions = Fragility_Function.objects.raw('select * \
+											from eng_models_fragility_function, eng_models_taxonomy_fragility_model \
+											where eng_models_taxonomy_fragility_model.taxonomy_id = %s \
+											and eng_models_taxonomy_fragility_model.model_id = %s \
+											and eng_models_taxonomy_fragility_model.id = eng_models_fragility_function.tax_frag_id', [taxonomy_id, model_id])
 	data = serializers.serialize("json", functions)
 	return HttpResponse(data, content_type="application/json")
 

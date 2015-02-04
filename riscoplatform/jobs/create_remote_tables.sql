@@ -1,5 +1,7 @@
 DROP FOREIGN TABLE IF EXISTS foreign_dmg_dist_per_asset;
 DROP FOREIGN TABLE IF EXISTS foreign_exposure_data;
+DROP FOREIGN TABLE IF EXISTS foreign_dmg_state;
+DROP FOREIGN TABLE IF EXISTS foreign_exposure_model;
 
 DROP FOREIGN TABLE IF EXISTS foreign_gmf;
 DROP FOREIGN TABLE IF EXISTS foreign_gmf_data;
@@ -18,10 +20,23 @@ SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'dmg_dist_per_asset');
 
 CREATE FOREIGN TABLE foreign_exposure_data (
 	id integer,
+	exposure_model_id integer,
 	asset_ref character varying
 )
 SERVER priseoq OPTIONS (schema_name 'riski', table_name 'exposure_data');
 
+CREATE FOREIGN TABLE foreign_dmg_state (
+	id integer,
+	risk_calculation_id integer,
+	dmg_state character varying
+)
+SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'dmg_state');
+
+CREATE FOREIGN TABLE foreign_exposure_model (
+	id integer,
+	job_id integer
+)
+SERVER priseoq OPTIONS (schema_name 'riski', table_name 'exposure_model');
 
 
 
