@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 
 from eng_models.models import Exposure_Model, Site_Model, Fault_Model
-from jobs.models import Scenario_Hazard, Scenario_Hazard_Results, Scenario_Damage
+from jobs.models import Scenario_Hazard, Scenario_Hazard_Results, Scenario_Damage, Scenario_Damage_Results
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -14,6 +14,7 @@ import redis
 from rq import Queue
 import json
 import colors
+import requests
 
 
 # Create your views here.
@@ -155,6 +156,38 @@ def add_scenario_damage(request):
 def results_scenario_damage(request, job_id):
 	job = get_object_or_404(Scenario_Damage ,pk=job_id)
 	return render(request, 'jobs/results_scenario_damage.html', {'job': job})
+
+
+def geojson_tiles(request, job_id, z, x, y):
+	geometries = requests.get('http://localhost:8080/portugal/'+str(z)+'/'+str(x)+'/'+str(y)+'.json')
+	geom_dict = json.loads(geometries.text)
+
+	cursor = connection.cursor()
+
+	for g in geom_dict["features"]:
+
+		cursor.execute("select sum(jobs_scenario_damage_results.mean), sum(jobs_scenario_damage_results.stddev), \
+			jobs_scenario_damage_results.limit_state \
+			from jobs_scenario_damage_results, eng_models_asset, world_world \
+			where jobs_scenario_damage_results.id = %s \
+			and jobs_scenario_damage_results.asset_id = eng_models_asset.id \
+			and st_intersects(eng_models_asset.location, world_world.geom) \
+			and world_world.id = %s \
+			group by jobs_scenario_damage_results.limit_state;", [job_id, g['id']])
+		data = [dict(mean = e[0],
+					stddev = e[1],
+					limit_state = e[2]) for e in cursor.fetchall()]
+
+		if data != []:
+			g['properties']['limit_states'] = data
+			#color = colors.damage_picker(m, int(z))
+			g['properties']['color'] = '#FF0000'
+		else:
+			pass
+
+	#geom_dict["features"] = [feature for feature in geom_dict["features"] if feature['properties']['limit_states'] != []]
+	return HttpResponse(json.dumps(geom_dict), content_type="application/json")
+
 
 
 
