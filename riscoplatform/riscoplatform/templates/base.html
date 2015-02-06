@@ -9,10 +9,8 @@
     <!--<link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/jquery-ui-bootstrap/jquery.ui.theme.css' %}" />-->
     <link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/bootstrap/dist/css/bootstrap.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/bootstrap-theme-flatly/flatly.min.css' %}" />
-    <!--
     <link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/leaflet/dist/leaflet.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/leaflet-draw/dist/leaflet.draw.css' %}" />
-    -->
     <link rel="stylesheet" type="text/css" href="{% static 'eng_models/css/main.css' %}" />
 
 </head>
@@ -45,7 +43,7 @@
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"> MODELS <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a href="{% url 'index_hazard' %}">HAZARD</a></li>
+                            <li><a href="{% url 'index_source' %}">SOURCE</a></li>
                             <li><a href="{% url 'index_site' %}">SITE CONDITIONS</a></li>
                             <li><a href="{% url 'index_rupture_model' %}">RUPTURE</a></li>
                             <li><a href="{% url 'index_exposure' %}">EXPOSURE</a></li>
@@ -98,13 +96,9 @@
 <script type="text/javascript" src="{% static 'eng_models/bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'eng_models/bower_components/jquery-ui/jquery-ui.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'eng_models/bower_components/highcharts/highcharts.js' %}"></script>
-<!--
 <script type="text/javascript" src="{% static 'eng_models/bower_components/leaflet/dist/leaflet.js' %}"></script>
 <script type="text/javascript" src="{% static 'eng_models/bower_components/leaflet-draw/dist/leaflet.draw.js' %}"></script>
--->
-{% load leaflet_tags %}
-{% leaflet_js plugins="ALL" %}
-{% leaflet_css plugins="ALL" %}
+
 <script type="text/javascript" src="{% static 'eng_models/bower_components/leaflet-tilelayer-geojson/TileLayer.GeoJSON.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'eng_models/js/init.js' %}"></script>

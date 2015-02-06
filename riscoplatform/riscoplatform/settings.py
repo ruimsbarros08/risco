@@ -37,7 +37,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    'leaflet',
     'world',
     'eng_models',
     'jobs'
@@ -92,18 +91,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 TEMPLATE_DIRS = ('riscoplatform/templates',)
-
-
-LEAFLET_CONFIG = {
-    'MINIMAP': True,
-    'RESET_VIEW': False,
-    'PLUGINS': {
-    'name-of-plugin': {
-        'css': ['eng_models/bower_components/leaflet-draw/dist/leaflet.draw.css'],
-        'js': 'eng_models/bower_components/leaflet-draw/dist/leaflet.draw.js',
-        'auto-include': True,
-        },
-    }
-}
 
 

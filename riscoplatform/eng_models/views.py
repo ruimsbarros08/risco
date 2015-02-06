@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from eng_models.models import Exposure_Model, Asset, Site_Model, Site, Fault_Model, Fault, Rupture_Model, Fragility_Model, Fragility_Function, Building_Taxonomy_Source, Building_Taxonomy, Taxonomy_Fragility_Model
+from eng_models.models import Exposure_Model, Asset, Site_Model, Site, Rupture_Model, Fragility_Model, Fragility_Function, Building_Taxonomy_Source, Building_Taxonomy, Taxonomy_Fragility_Model, Source_Model, Source
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
@@ -9,7 +9,6 @@ from parsers import exposure_parser, fragility_parser
 from django.core import serializers
 from django.db import connection
 import json
-from leaflet.forms.widgets import LeafletWidget
 
 
 def pagination(list, n, page):
@@ -132,77 +131,76 @@ def add_site_model(request):
 
 
 ###################
-##     HAZARD    ##
+##     SOURCE    ##
 ###################
 
 
-class FaultModelForm(forms.ModelForm):
+class SourceModelForm(forms.ModelForm):
 	class Meta:
-		model = Fault_Model
+		model = Source_Model
 		fields = ['name', 'description', 'xml']
 
-class FaultForm(forms.ModelForm):
+class SourceForm(forms.ModelForm):
 	class Meta:
-		model = Fault
-		fields = ['geom', 'name', 'mindepth', 'maxdepth', 'strike', 'dip', 'rake', 'sr', 'maxmag']
+		model = Source
+		fields = ['name', 'tectonic_region', 'mag_scale_rel', 'rupt_aspect_ratio', 'mag_freq_dist_type', 'a', 'b', 'min_mag', 'max_mag', 'bin_width', 'occur_rates', 'source_type', 'upper_depth', 'lower_depth', 'nodal_plane_dist', 'hypo_depth_dist', 'dip', 'rake', 'point', 'area', 'fault']
 		widgets = {
-            		'name': forms.TextInput(attrs={'class': 'form-control'}),
-            		'mindepth': forms.TextInput(attrs={'class': 'form-control'}),
-            		'maxdepth': forms.TextInput(attrs={'class': 'form-control'}),
-            		'strike': forms.TextInput(attrs={'class': 'form-control'}),
-            		'dip': forms.TextInput(attrs={'class': 'form-control'}),
-            		'rake': forms.TextInput(attrs={'class': 'form-control'}),
-            		'sr': forms.TextInput(attrs={'class': 'form-control'}),
-            		'maxmag': forms.TextInput(attrs={'class': 'form-control'}),
-					'geom': LeafletWidget()
+            		'point': forms.HiddenInput(),
+            		'area': forms.HiddenInput(),
+            		'fault': forms.HiddenInput(),
+            		#'nodal_plane_dist': forms.HiddenInput(),
+            		#'hypo_depth_dist': forms.HiddenInput(),
 					}
 		
 
-def index_hazard(request):
-	fault_models = Fault_Model.objects.all()
-	form = FaultModelForm()
-	return render(request, 'eng_models/index_hazard.html', {'fault_models': fault_models, 'form': form})
+def index_source(request):
+	models = Source_Model.objects.all()
+	form = SourceModelForm()
+	return render(request, 'eng_models/index_source.html', {'models': models, 'form': form})
 
-def detail_faults(request, model_id):
-	model = get_object_or_404(Fault_Model ,pk=model_id)
+def detail_source(request, model_id):
+	model = get_object_or_404(Source_Model ,pk=model_id)
 	try:
-		fault_list = Fault.objects.filter(model_id=model_id)
+		sources = Source.objects.filter(model_id=model_id)
 	except:
-		fault_list = []
+		sources = []
 	page = request.GET.get('page')
-	form = FaultForm()
-	return render(request, 'eng_models/detail_faults.html', {'model': model, 'form': form, 'faults': pagination(fault_list, 10, page)})
+	form = SourceForm()
+	return render(request, 'eng_models/detail_source.html', {'model': model, 'form': form, 'sources': pagination(sources, 10, page)})
 
 
-def add_fault(request, model_id):
+def add_source(request, model_id):
 	if request.method == 'POST':
-		form = FaultForm(request.POST)
+		form = SourceForm(request.POST)
 		if form.is_valid():
-			fault = form.save(commit=False)
-			fault.model_id = model_id
-			fault.save()
+			source = form.save(commit=False)
+			source.model_id = model_id
+			source.save()
 			if request.FILES:
 				pass
 				#create  parser
-			return redirect('detail_faults', model_id=model_id)
+			return redirect('detail_source', model_id=model_id)
+		else:
+			model = get_object_or_404(Source_Model ,pk=model_id)
+			return render(request, 'eng_models/detail_source.html', {'model': model ,'form': form})
 	else:
-		form = FaultForm()
-		return render(request, 'eng_models/detail_faults.html', {'form': form})
+		form = SourceForm()
+		return render(request, 'eng_models/detail_source.html', {'form': form})
 
-def add_fault_model(request):
+def add_source_model(request):
 	if request.method == 'POST':
-		form = FaultModelForm(request.POST, request.FILES)
+		form = SourceModelForm(request.POST, request.FILES)
 		if form.is_valid():
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
 			model.save()
 			if request.FILES:
 				pass
-				#create fault source parser
-			return redirect('detail_faults', model_id=model.id)
+				#create source parser
+			return redirect('detail_source', model_id=model.id)
 	else:
-		form = FaultModelForm()
-		return render(request, 'eng_models/index_hazard.html', {'form': form})
+		form = SourceModelForm()
+		return render(request, 'eng_models/index_source.html', {'form': form})
 
 
 ####################

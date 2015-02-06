@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+<div class="row">
+		<h2>Source Models</h2>
+</div>
+	
+<div class="row">
+
+	<div class="col-md-12">
+		
+		{% if models %}
+		    <ul>
+		    {% for model in models %}
+		        <li><a href="{% url 'detail_source' model.id %}">{{ model.name }}</a></li>
+		    {% endfor %}
+		    </ul>
+		{% else %}
+			<div class="alert alert-dismissable alert-info">
+			<button type="button" class="close" data-dismiss="alert">×</button>
+		    	<p>No models are available. Please add the first below</p>
+		    </div>
+		{% endif %}
+
+	</div>
+	<div class="col-md-12">
+		<form action="{% url 'add_source_model' %}" method="post" enctype="multipart/form-data">
+			{% csrf_token %}
+		    {{ form }}
+		    <input type="submit" value="Add" />
+		</form>
+		
+	</div>
+
+</div>
+
+</div>
+
+
+{% endblock %}

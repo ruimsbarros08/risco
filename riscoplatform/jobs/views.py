@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 
-from eng_models.models import Exposure_Model, Site_Model, Fault_Model
+from eng_models.models import Exposure_Model, Site_Model
 from jobs.models import Scenario_Hazard, Scenario_Hazard_Results, Scenario_Damage, Scenario_Damage_Results
 from django import forms
 from django.utils import timezone

@@ -232,52 +232,103 @@ class Site(models.Model):
         super(Site, self).save(*args, **kwargs)
 
 
-class Fault_Model(models.Model):
+class Source_Model(models.Model):
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)
     description                 = models.CharField(max_length=200)
-    contributors                = models.ManyToManyField(User, through='Fault_Model_Contributor')
-    xml                         = models.FileField(upload_to='uploads/fault/', null=True, blank=True)
+    contributors                = models.ManyToManyField(User, through='Source_Model_Contributor')
+    xml                         = models.FileField(upload_to='uploads/source/', null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        super(Fault_Model, self).save(*args, **kwargs)
+        super(Source_Model, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.name
 
-    class Meta:
-        managed = True
-        db_table = 'eng_models_fault_model'
 
-class Fault_Model_Contributor(models.Model):
+class Source_Model_Contributor(models.Model):
     contributor                 = models.ForeignKey(User)
-    model                       = models.ForeignKey(Fault_Model)
+    model                       = models.ForeignKey(Source_Model)
     author                      = models.BooleanField(default=False)
     date_joined                 = models.DateTimeField('date joined')
 
-    class Meta:
-        managed = True
-        db_table = 'eng_models_fault_model_contributor'
 
+class Source(models.Model):
+    ACTIVE = 'Active Shallow Crust'
+    STABLE = 'Stable Shallow Crust'
+    SUBDUCTION = 'Subduction Interface'
+    ACTIVE_INTERSLAB = 'Active Interslab'
+    VOLCANIC = 'Volcanic'
+    TECTONIC_CHOICES = (
+        (ACTIVE, 'Active Shallow Crust'),
+        (STABLE, 'Stable Shallow Crust'),
+        (SUBDUCTION, 'Subduction Interface'),
+        (ACTIVE_INTERSLAB, 'Active Interslab'),
+        (VOLCANIC, 'Volcanic'),
+        )
 
-class Fault(models.Model):
-    model                       = models.ForeignKey(Site_Model)
+    WC1994 = 'WC1994'
+    TA2012 = 'TA2012'
+    MAG_SCALE_REL = (
+        (WC1994, 'Wells and Coopersmith 1994'),
+        (WC1994, 'Thomas et al. 2012 (PEER)'),
+        )
+
+    TRUNC = 'TRUNC'
+    INC = 'INC'
+    MAG_FREQ_DIST_CHOICES = (
+        (TRUNC, 'Truncated Guttenberg Richer'),
+        (INC, 'Incremental MFD'),
+        )
+
+    POINT = 'POINT'
+    AREA = 'AREA'
+    SIMPLE_FAULT = 'SIMPLE_FAULT'
+    #COMPLEX_FAULT = 'COMPLEX_FAULT'
+    SOURCE_TYPES_CHOICES = (
+        (POINT, 'Point'),
+        (AREA, 'Area'),
+        (SIMPLE_FAULT, 'Simple Fault'),
+    #    (COMPLEX_FAULT, 'Complex Fault'),
+        )
+
+    model                       = models.ForeignKey(Source_Model)
     name                        = models.CharField(max_length=200)
-    mindepth                    = models.FloatField()
-    maxdepth                    = models.FloatField()
-    strike                      = models.IntegerField()
+    
+    tectonic_region             = models.CharField(max_length=50, choices=TECTONIC_CHOICES, default=ACTIVE)
+    mag_scale_rel               = models.CharField(max_length=50, choices=MAG_SCALE_REL, default=WC1994)
+    rupt_aspect_ratio           = models.FloatField(default=2.0)
+
+    mag_freq_dist_type          = models.CharField(max_length=10, choices=MAG_FREQ_DIST_CHOICES, default=TRUNC)
+    #trunc
+    a                           = models.FloatField(null=True, default=-3.5)
+    b                           = models.FloatField(null=True, default=-1.0)
+    min_mag                     = models.FloatField(null=True)
+    max_mag                     = models.FloatField(null=True)
+    #inc
+    bin_width                   = models.FloatField(null=True)
+    occur_rates                 = FloatArrayField(null=True)
+
+    source_type                 = models.CharField(max_length=20, choices=SOURCE_TYPES_CHOICES, default=POINT)
+    #point
+    point                       = models.PointField(srid=4326, null=True)
+    upper_depth                 = models.FloatField(null=True, default=0)
+    lower_depth                 = models.FloatField(null=True, default=10)
+    nodal_plane_dist            = FloatArrayField(null=True, dimension=4)
+    hypo_depth_dist             = FloatArrayField(null=True, dimension=2)
+    #area
+    area                        = models.PolygonField(srid=4326, null=True)
+    #fault
+    fault                       = models.LineStringField(srid=4326, null=True)
     dip                         = models.IntegerField()
     rake                        = models.IntegerField()
-    sr                          = models.FloatField()
-    maxmag                      = models.FloatField()
-    geom                        = models.LineStringField(srid=4326, null=True)
 
     def __unicode__(self):
         return self.name
 
-    class Meta:
-        managed = True
-        db_table = 'eng_models_fault'
+    #class Meta:
+    #    managed = True
+    #    db_table = 'eng_models_fault'
 
 
 class Rupture_Model(models.Model):

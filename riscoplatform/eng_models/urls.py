@@ -3,10 +3,10 @@ from eng_models import views
 
 urlpatterns = patterns('',
 
-	url(r'^hazard/$', views.index_hazard, name='index_hazard'),
-    url(r'^hazard/faults/(?P<model_id>\d+)/$', views.detail_faults, name='detail_faults'),
-    url(r'^hazard/add/fault_model$', views.add_fault_model, name='add_fault_model'),
-	url(r'^hazard/(?P<model_id>\d+)/add_fault$', views.add_fault, name='add_fault'),
+	url(r'^sources/$', views.index_source, name='index_source'),
+    url(r'^sources/(?P<model_id>\d+)/$', views.detail_source, name='detail_source'),
+    url(r'^sources/add$', views.add_source_model, name='add_source_model'),
+	url(r'^sources/(?P<model_id>\d+)/add_source$', views.add_source, name='add_source'),
 
     url(r'^rupture/$', views.index_rupture_model, name='index_rupture_model'),
     url(r'^rupture/add$', views.add_rupture_model, name='add_rupture_model'),
