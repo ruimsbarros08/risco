@@ -3,12 +3,23 @@
 {% block content %}
 
 <div class="container">
+
+
+<div class="row">
+	<div class="col-md-6">
+		<ul class="breadcrumb">
+		  	<li> <a href="{% url 'home' %}">Models</a></li>
+		  	<li class="active">Site conditions</li>
+		</ul>
+	</div>
+</div>
 	
 <div class="row">
 
 	<div class="col-md-12">
 		
-	<h3>Site Conditions</h3>
+		<h2>Site Conditions</h2>
+		<br>
 
 		{% if models %}
 		    <ul>
@@ -17,15 +28,30 @@
 		    {% endfor %}
 		    </ul>
 		{% else %}
-		    <p>No models are available. Please add the first below</p>
+			<div class="alert alert-dismissable alert-info">
+			<button type="button" class="close" data-dismiss="alert">×</button>
+		    	<p>No models are available. Please add the first below</p>
+		    </div>
 		{% endif %}
 
+		<br>
 	</div>
+
+
 	<div class="col-md-12">
 		<form action="{% url 'add_site_model' %}" method="post" enctype="multipart/form-data">
-			{% csrf_token %}
-		    {{ form }}
-		    <input type="submit" value="Add" />
+			<fieldset>
+				<legend>Insert new model</legend>
+
+				{% csrf_token %}
+			    {{ form }}
+			    <br>
+		        <div class="form-group">
+				    <div class="col-lg-5 col-lg-offset-2">
+				        <input class="btn btn-primary" type="submit" value="Add" />
+				    </div>
+			    </div>
+			</fieldset>
 		</form>
 		
 	</div>
@@ -33,6 +59,20 @@
 </div>
 
 </div>
+
+<script type="text/javascript">
+    $('label').addClass('control-labels col-lg-2');
+    $('input').addClass('form-control');
+    $('select').addClass('form-control');
+    $('textarea').addClass('form-control');
+    $('input').wrap('<div class="col-lg-10"></div>');
+    $('select').wrap('<div class="col-lg-10"></div>');
+    $('textarea').wrap('<div class="col-lg-10"></div>');
+    $('<div class="form-group">').insertBefore('label');
+    $('</div>').insertAfter('</input>');
+    $('</div>').insertAfter('</textarea>');
+    $('</div>').insertAfter('</select>');
+</script>
 
 
 {% endblock %}

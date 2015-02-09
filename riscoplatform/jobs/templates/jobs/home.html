@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+<div class="row">
+	<div class="col-md-6">
+		<ul class="breadcrumb">
+		  	<li class="active">Jobs</li>
+		</ul>
+	</div>
+</div>
+	
+<div class="row">
+
+	<div class="col-md-12">	
+	<h2>Job manager</h2>
+	<br>
+	</div>
+</div>
+
+<div class="row">
+
+	<div class="col-md-12">
+	<h4>Scenario based</h4>	
+	</div>
+
+	<div class="col-md-6">
+		<div class="panel panel-primary">
+	  		<div class="panel-heading">
+	    		<h3 class="panel-title"><a href="{% url 'index_scenario_hazard' %}"> Hazard </a></h3>
+	  		</div>
+	  		<div class="panel-body"></div>
+		</div>
+	</div>
+
+	<div class="col-md-6">
+		<div class="panel panel-primary">
+	  		<div class="panel-heading">
+	    		<h3 class="panel-title"><a href="#"> Risk</a></h3>
+	  		</div>
+	  		<div class="panel-body"></div>
+		</div>
+	</div>
+
+	<div class="col-md-6">
+		<div class="panel panel-primary">
+	  		<div class="panel-heading">
+	    		<h3 class="panel-title"><a href="{% url 'index_scenario_damage' %}"> Damage</a></h3>
+	  		</div>
+	  		<div class="panel-body"></div>
+		</div>
+	</div>
+
+</div>
+
+</div>
+
+
+
+{% endblock %}

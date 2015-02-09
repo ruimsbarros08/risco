@@ -301,27 +301,27 @@ class Source(models.Model):
 
     mag_freq_dist_type          = models.CharField(max_length=10, choices=MAG_FREQ_DIST_CHOICES, default=TRUNC)
     #trunc
-    a                           = models.FloatField(null=True, default=-3.5)
-    b                           = models.FloatField(null=True, default=-1.0)
+    a                           = models.FloatField(null=True, default=-3.5, blank=True)
+    b                           = models.FloatField(null=True, default=-1.0, blank=True)
     min_mag                     = models.FloatField(null=True)
-    max_mag                     = models.FloatField(null=True)
+    max_mag                     = models.FloatField(null=True, blank=True)
     #inc
-    bin_width                   = models.FloatField(null=True)
-    occur_rates                 = FloatArrayField(null=True)
+    bin_width                   = models.FloatField(null=True, blank=True)
+    occur_rates                 = FloatArrayField(null=True, blank=True)
 
     source_type                 = models.CharField(max_length=20, choices=SOURCE_TYPES_CHOICES, default=POINT)
     #point
-    point                       = models.PointField(srid=4326, null=True)
-    upper_depth                 = models.FloatField(null=True, default=0)
-    lower_depth                 = models.FloatField(null=True, default=10)
-    nodal_plane_dist            = FloatArrayField(null=True, dimension=4)
-    hypo_depth_dist             = FloatArrayField(null=True, dimension=2)
+    point                       = models.PointField(srid=4326, null=True, blank=True)
+    upper_depth                 = models.FloatField(null=True)
+    lower_depth                 = models.FloatField(null=True)
+    nodal_plane_dist            = FloatArrayField(null=True, dimension=4, blank=True)
+    hypo_depth_dist             = FloatArrayField(null=True, dimension=2, blank=True)
     #area
-    area                        = models.PolygonField(srid=4326, null=True)
+    area                        = models.PolygonField(srid=4326, null=True, blank=True)
     #fault
-    fault                       = models.LineStringField(srid=4326, null=True)
-    dip                         = models.IntegerField()
-    rake                        = models.IntegerField()
+    fault                       = models.LineStringField(srid=4326, null=True, blank=True)
+    dip                         = models.IntegerField(null=True, blank=True)
+    rake                        = models.IntegerField(null=True, blank=True)
 
     def __unicode__(self):
         return self.name

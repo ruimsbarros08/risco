@@ -17,7 +17,12 @@ import colors
 import requests
 
 
-# Create your views here.
+
+#MODELS HOME
+
+def home(request):
+	return render(request, 'jobs/home.html')
+
 
 ############################
 ##     SCENARIO HAZARD    ##

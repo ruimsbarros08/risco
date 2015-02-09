@@ -12,6 +12,44 @@ $( document ).ready(function() {
     map.setView(new L.LatLng(40, -8),5);
     map.addLayer(osm);
 
+    
+    $.ajax( BASE_URL+'models/rupture/ajax' )
+    .done(function(data) {
+
+    var pointSourceLayer = L.geoJson(data.pointSource, {
+        //style: style,
+        onEachFeature: function (feature, layer) {
+            //layer.setStyle({"fillColor": feature.properties.color});
+            layer.on('click', function () {
+                //info.update(layer.feature.properties);
+                //layer.setStyle(hoverStyle);
+            });
+        }
+    }).addTo(map);
+
+
+    var faultSourceLayer = L.geoJson(data.faultSource, {
+        //style: style,
+        onEachFeature: function (feature, layer) {
+            //layer.setStyle({"fillColor": feature.properties.color});
+            layer.on('click', function () {
+                //info.update(layer.feature.properties);
+                //layer.setStyle(hoverStyle);
+            });
+        }
+    }).addTo(map);
+
+
+    //map.fitBounds(areaSourceLayer.getBounds());
+
+    })
+    .fail(function() {
+        alert( "error" );
+    })
+    .always(function() {
+        //alert( "complete" );
+    });
+
 
 
     // Initialise the FeatureGroup to store editable layers

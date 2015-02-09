@@ -3,6 +3,16 @@
 {% block content %}
 
 <div class="container">
+
+<div class="row">
+	<div class="col-md-6">
+		<ul class="breadcrumb">
+		  	<li> <a href="{% url 'home' %}">Models</a></li>
+		  	<li><a href="{% url 'index_exposure' %}"> Exposure </a></li>
+		  	<li class="active">{{ model.name }}</li>
+		</ul>
+	</div>
+</div>
 	
 	<div class="row">
 
@@ -10,10 +20,15 @@
 			
 		<h3>{{ model.name }}</h3>
 		<br>
-		<h5>{{ model.description }}</h5>
+		<h4>{{ model.description }}</h4>
 		<br>
-		<p>{{ model.taxonomy_source }}</p>
+		<h4>Taxonomy source: {{ model.taxonomy_source }}</h4>
+		<br>
 
+		<div id="map" class="vertical-map"></div>
+
+
+		<!--
 			{% if assets %}
 			    <ul>
 			    {% for asset in assets %}
@@ -39,12 +54,16 @@
 			        {% endif %}
 			    </span>
 			</div>
+			-->
 
 		</div>
 
 	</div>
 
 </div>
+
+{% load staticfiles %}
+<script type="text/javascript" src="{% static 'eng_models/js/exposure_detail.js' %}"></script>
 
 
 {% endblock %}

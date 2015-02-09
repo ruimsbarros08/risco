@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+<div class="row">
+	<div class="col-md-6">
+		<ul class="breadcrumb">
+		  	<li class="active">Models</li>
+		</ul>
+	</div>
+</div>
+	
+<div class="row">
+
+	<div class="col-md-12">	
+	<h2>Models</h2>
+	<br>
+	</div>
+
+	<div class="col-md-6">
+		<div class="panel panel-primary">
+	  		<div class="panel-heading">
+	    		<h3 class="panel-title"><a href="{% url 'index_source' %}"> Source models </a></h3>
+	  		</div>
+	  		<div class="panel-body">
+	  		<!--
+	  		{% load staticfiles %}
+			<img src="{% static 'eng_models/img/share.png' %}">
+			-->
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-6">
+		<div class="panel panel-primary">
+	  		<div class="panel-heading">
+	    		<h3 class="panel-title"><a href="{% url 'index_site' %}"> Site conditions</a></h3>
+	  		</div>
+	  		<div class="panel-body"></div>
+		</div>
+	</div>
+
+	<div class="col-md-6">
+		<div class="panel panel-primary">
+	  		<div class="panel-heading">
+	    		<h3 class="panel-title"><a href="{% url 'index_rupture_model' %}"> Rupture models</a></h3>
+	  		</div>
+	  		<div class="panel-body"></div>
+		</div>
+	</div>
+
+	<div class="col-md-6">
+		<div class="panel panel-primary">
+	  		<div class="panel-heading">
+	    		<h3 class="panel-title"><a href="{% url 'index_exposure' %}"> Exposure models</a></h3>
+	  		</div>
+	  		<div class="panel-body"></div>
+		</div>
+	</div>
+
+	<div class="col-md-6">
+		<div class="panel panel-primary">
+	  		<div class="panel-heading">
+	    		<h3 class="panel-title"><a href="{% url 'index_fragility' %}">Fragility models</a></h3>
+	  		</div>
+	  		<div class="panel-body"></div>
+		</div>
+	</div>
+
+	<div class="col-md-6">
+		<div class="panel panel-primary">
+	  		<div class="panel-heading">
+	    		<h3 class="panel-title">Vulnerability models</h3>
+	  		</div>
+	  		<div class="panel-body"></div>
+		</div>
+	</div>
+
+
+</div>
+
+</div>
+
+
+
+{% endblock %}

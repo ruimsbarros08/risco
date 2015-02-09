@@ -4,10 +4,21 @@
 
 <div class="container">
 
+<div class="row">
+	<div class="col-md-6">
+		<ul class="breadcrumb">
+		  	<li> <a href="{% url 'home' %}">Jobs</a></li>
+		  	<li> <a href="{% url 'index_scenario_hazard' %}">Scenario Hazard</a></li>
+		  	<li class="active">{{ job.name }}</li>
+		</ul>
+	</div>
+</div>
+
 	<div class="row">
-		<h2>Scenario based hazard</h2><br>
-		<h4> {{ job.name }} </h4><br>
-		<h6> {{ job.description }} </h6><br>
+		<div class="col-md-12">
+			<h3> {{ job.name }} </h3><br>
+			<h4> {{ job.description }} </h4><br>
+		</div>
 	</div>
 
 	<div class="row">

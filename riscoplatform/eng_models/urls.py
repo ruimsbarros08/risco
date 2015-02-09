@@ -2,14 +2,17 @@ from django.conf.urls import patterns, url
 from eng_models import views
 
 urlpatterns = patterns('',
+    url(r'^$', views.home, name='home'),
 
 	url(r'^sources/$', views.index_source, name='index_source'),
     url(r'^sources/(?P<model_id>\d+)/$', views.detail_source, name='detail_source'),
     url(r'^sources/add$', views.add_source_model, name='add_source_model'),
-	url(r'^sources/(?P<model_id>\d+)/add_source$', views.add_source, name='add_source'),
+    url(r'^sources/(?P<model_id>\d+)/add_source$', views.add_source, name='add_source'),
+    url(r'^sources/(?P<model_id>\d+)/ajax$', views.sources_ajax, name='sources_ajax'),
 
     url(r'^rupture/$', views.index_rupture_model, name='index_rupture_model'),
     url(r'^rupture/add$', views.add_rupture_model, name='add_rupture_model'),
+    url(r'^rupture/ajax$', views.ruptures_ajax, name='ruptures_ajax'),
 
     url(r'^site/$', views.index_site, name='index_site'),
     url(r'^site/(?P<model_id>\d+)/$', views.detail_site, name='detail_site'),

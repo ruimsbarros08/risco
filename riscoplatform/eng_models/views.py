@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from parsers import exposure_parser, fragility_parser
+from parsers import exposure_parser, fragility_parser, source_parser
 from django.core import serializers
 from django.db import connection
 import json
@@ -20,6 +20,12 @@ def pagination(list, n, page):
 	except EmptyPage:
 		new_list = paginator.page(paginator.num_pages)
 	return new_list
+
+
+#MODELS HOME
+
+def home(request):
+	return render(request, 'eng_models/home.html')
 
 
 
@@ -91,8 +97,8 @@ def detail_site(request, model_id):
 		site_list = Site.objects.filter(model_id=model_id)
 	except:
 		site_list = []
-	page = request.GET.get('page')
-	return render(request, 'eng_models/detail_site.html', {'model': model, 'sites': pagination(site_list, 10, page)})
+	#page = request.GET.get('page')
+	return render(request, 'eng_models/detail_site.html', {'model': model, 'sites': site_list})
 
 def detail_site_ajax(request, model_id):
 
@@ -126,7 +132,6 @@ def add_site_model(request):
 	else:
 		form = SiteForm()
 		return render(request, 'eng_models/index_site.html', {'form': form})
-
 
 
 
@@ -187,6 +192,7 @@ def add_source(request, model_id):
 		form = SourceForm()
 		return render(request, 'eng_models/detail_source.html', {'form': form})
 
+
 def add_source_model(request):
 	if request.method == 'POST':
 		form = SourceModelForm(request.POST, request.FILES)
@@ -195,12 +201,31 @@ def add_source_model(request):
 			model.date_created = timezone.now()
 			model.save()
 			if request.FILES:
-				pass
-				#create source parser
+				source_parser.start(model)
 			return redirect('detail_source', model_id=model.id)
 	else:
 		form = SourceModelForm()
 		return render(request, 'eng_models/index_source.html', {'form': form})
+
+
+def sources_ajax(request, model_id):
+	point_sources = Source.objects.filter(model_id=model_id, source_type='POINT')
+	point_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
+				geometry = json.loads(source.point.json) ) for source in point_sources]
+
+	area_sources = Source.objects.filter(model_id=model_id, source_type='AREA')
+	area_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
+				geometry = json.loads(source.area.json) ) for source in area_sources]
+
+	fault_sources = Source.objects.filter(model_id=model_id, source_type='SIMPLE_FAULT')
+	fault_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
+				geometry = json.loads(source.fault.json) ) for source in fault_sources]	
+
+	data = {'pointSource': {'type': 'FeatureCollection', 'features': point_features},
+			'areaSource': {'type': 'FeatureCollection', 'features': area_features},
+			'faultSource': {'type': 'FeatureCollection', 'features': fault_features}}
+
+	return HttpResponse(json.dumps(data), content_type="application/json")
 
 
 ####################
@@ -244,6 +269,22 @@ def add_rupture_model(request):
 	else:
 		form = RuptureForm()
 		return render(request, 'eng_models/index_rupture_model.html', {'form': form})
+
+
+def ruptures_ajax(request):
+	point_sources = Rupture_Model.objects.filter(rupture_type='POINT')
+	point_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
+				geometry = json.loads(source.location.json) ) for source in point_sources]
+
+
+	fault_sources = Rupture_Model.objects.filter(rupture_type='FAULT')
+	fault_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
+				geometry = json.loads(source.rupture_geom.json) ) for source in fault_sources]	
+
+	data = {'pointSource': {'type': 'FeatureCollection', 'features': point_features},
+			'faultSource': {'type': 'FeatureCollection', 'features': fault_features}}
+
+	return HttpResponse(json.dumps(data), content_type="application/json")
 
 
 ######################

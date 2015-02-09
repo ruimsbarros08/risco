@@ -4,18 +4,26 @@
 
 <div class="container">
 
-	<div class="row">
-		<h3>{{ model.name }}</h3>
-		<br>
-		<h5>{{ model.description }}</h5>
-		<br>
+<div class="row">
+	<div class="col-md-6">
+		<ul class="breadcrumb">
+		  	<li> <a href="{% url 'home' %}">Models</a></li>
+		  	<li><a href="{% url 'index_source' %}"> Source </a></li>
+		  	<li class="active">{{ model.name }}</li>
+		</ul>
 	</div>
+</div>
 
 	<div class="row">
-		<div class="col-md-8">	
+		<div class="col-md-12">
+			<h3>{{ model.name }}</h3>
+			<br>
+			<h4>{{ model.description }}</h4>
+			<br>
+
 			<div id="map" class="vertical-map"></div><br>
 		</div>
-
+		<!--
 		<div class="col-md-4">
 
 			{% if sources %}
@@ -56,19 +64,20 @@
 			    </div>
 			{% endif %}
 		</div>
+		-->
 	</div>
 
 
 	<div class="row">
 		<div class="col-md-12">
-				{% if form.errors %}
-					{{ form.errors }}
-				{% endif %}
 			<form class="form-vertical" action="{% url 'add_source' model.id %}" method="post" enctype="multipart/form-data">
 			<fieldset>
 				<legend>Insert new source</legend>
 
 
+				{% if form.errors %}
+					{{ form.errors }}
+				{% endif %}
 				{% csrf_token %}
 			    {{ form }}
 			    <br>
