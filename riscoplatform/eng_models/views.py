@@ -9,7 +9,9 @@ from parsers import exposure_parser, fragility_parser, source_parser
 from django.core import serializers
 from django.db import connection
 import json
+import requests
 
+from riscoplatform.local_settings import *
 
 def pagination(list, n, page):
 	paginator = Paginator(list, n)
@@ -73,6 +75,31 @@ def add_exposure_model(request):
 	else:
 		form = ExposureForm()
 		return render(request, 'eng_models/index_exposure.html', {'form': form})
+
+def exposure_geojson_tiles(request, model_id, z, x, y):
+	geometries = requests.get(TILESTACHE_HOST+'world/'+str(z)+'/'+str(x)+'/'+str(y)+'.json')
+	geom_dict = json.loads(geometries.text)
+
+	cursor = connection.cursor()
+
+	for g in geom_dict["features"]:
+
+		cursor.execute("select count(*) \
+			from eng_models_exposure_model, eng_models_asset, world_world \
+			where eng_models_exposure_model.id = %s \
+			and eng_models_exposure_model.id = eng_models_asset.model_id \
+			and st_intersects(eng_models_asset.location, world_world.geom) \
+			and world_world.id = %s ", [model_id, g['id']])
+
+		try:
+			g['properties']['n_assets'] = cursor.fetchone()[0]
+			#color = colors.damage_picker(m, int(z))
+			#g['properties']['color'] = '#FF0000'
+		except:
+			pass
+
+	#geom_dict["features"] = [feature for feature in geom_dict["features"] if feature['properties']['limit_states'] != []]
+	return HttpResponse(json.dumps(geom_dict), content_type="application/json")
 
 
 ############################

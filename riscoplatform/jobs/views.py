@@ -15,10 +15,11 @@ from rq import Queue
 import json
 import colors
 import requests
+import socket
 
+from riscoplatform.local_settings import *
 
-
-#MODELS HOME
+#JOBS HOME
 
 def home(request):
 	return render(request, 'jobs/home.html')
@@ -60,8 +61,8 @@ def add_scenario_hazard(request):
 
 			#queing to priseOQ
 			conn = redis.Redis('priseOQ.fe.up.pt', 6379)
-			q = Queue(connection=conn)
-			job = q.enqueue('start.start', job.id, 'scenario_hazard', timeout=3600)
+			q = Queue('risco', connection=conn)
+			job = q.enqueue('start.start', job.id, 'scenario_hazard', DATABASE, timeout=3600)
 
 			return redirect('index_scenario_hazard')
 		else:
@@ -147,8 +148,8 @@ def add_scenario_damage(request):
 
 			#queing to priseOQ
 			conn = redis.Redis('priseOQ.fe.up.pt', 6379)
-			q = Queue(connection=conn)
-			job = q.enqueue('start.start', job.id, 'scenario_damage', timeout=3600)
+			q = Queue('risco', connection=conn)
+			job = q.enqueue('start.start', job.id, 'scenario_damage', DATABASE, timeout=3600)
 
 			return redirect('index_scenario_damage')
 		else:
@@ -164,35 +165,38 @@ def results_scenario_damage(request, job_id):
 
 
 def geojson_tiles(request, job_id, z, x, y):
-	geometries = requests.get('http://localhost:8080/portugal/'+str(z)+'/'+str(x)+'/'+str(y)+'.json')
+	geometries = requests.get(TILESTACHE_HOST+'world/'+str(z)+'/'+str(x)+'/'+str(y)+'.json')
 	geom_dict = json.loads(geometries.text)
 
 	cursor = connection.cursor()
 
 	for g in geom_dict["features"]:
 
-		cursor.execute("select sum(jobs_scenario_damage_results.mean), sum(jobs_scenario_damage_results.stddev), \
-			jobs_scenario_damage_results.limit_state \
-			from jobs_scenario_damage_results, eng_models_asset, world_world \
-			where jobs_scenario_damage_results.id = %s \
-			and jobs_scenario_damage_results.asset_id = eng_models_asset.id \
-			and st_intersects(eng_models_asset.location, world_world.geom) \
-			and world_world.id = %s \
-			group by jobs_scenario_damage_results.limit_state;", [job_id, g['id']])
-		data = [dict(mean = e[0],
-					stddev = e[1],
-					limit_state = e[2]) for e in cursor.fetchall()]
+		cursor.execute("select limit_state, sum(mean), sum(stddev), name_3 \
+						from world_world, jobs_scenario_damage_results, eng_models_asset \
+						where jobs_scenario_damage_results.asset_id = eng_models_asset.id \
+						and jobs_scenario_damage_results.job_id = %s \
+						and st_intersects(eng_models_asset.location, world_world.geom) \
+						and world_world.id = %s \
+						group by jobs_scenario_damage_results.limit_state, world_world.name_3", [job_id, g['id']])
+		data = [dict(limit_state = e[0],
+					mean = e[1],
+					stddev = e[2],
+					name = e[3]) for e in cursor.fetchall()]
+
 
 		if data != []:
 			g['properties']['limit_states'] = data
-			#color = colors.damage_picker(m, int(z))
-			g['properties']['color'] = '#FF0000'
-		else:
-			pass
 
-	#geom_dict["features"] = [feature for feature in geom_dict["features"] if feature['properties']['limit_states'] != []]
+			for e in data:
+				if e['limit_state'] == 'complete':
+					color = colors.damage_picker(e['mean'], int(z))
+
+			g['properties']['color'] = color
+
+
+	geom_dict["features"] = [feature for feature in geom_dict["features"] if 'limit_states' in feature['properties']]
 	return HttpResponse(json.dumps(geom_dict), content_type="application/json")
-
 
 
 

@@ -12,20 +12,14 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+from local_settings import *
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '_9#da*gn=4w@c@#*#5qhn-fe@h1wc2lkr+2cpk0kqd#awoa3$0'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-TEMPLATE_DEBUG = True
-
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -61,15 +55,9 @@ WSGI_APPLICATION = 'riscoplatform.wsgi.application'
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'riscodb',
-        'USER': 'postgres',
-        'PASSWORD': 'prisefeup',
-        'HOST': 'priseDB.fe.up.pt',
-        'PORT': '5432'
-    }
+    'default': DATABASE
 }
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/

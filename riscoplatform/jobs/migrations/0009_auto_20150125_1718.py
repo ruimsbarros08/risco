@@ -20,14 +20,14 @@ class Migration(migrations.Migration):
             model_name='scenario_hazard',
             name='dip',
         ),
-        migrations.RemoveField(
-            model_name='scenario_hazard',
-            name='fault',
-        ),
-        migrations.RemoveField(
-            model_name='scenario_hazard',
-            name='fault_model',
-        ),
+        #migrations.RemoveField(
+        #    model_name='scenario_hazard',
+        #    name='fault',
+        #),
+        #migrations.RemoveField(
+        #    model_name='scenario_hazard',
+        #    name='fault_model',
+        #),
         migrations.RemoveField(
             model_name='scenario_hazard',
             name='location',

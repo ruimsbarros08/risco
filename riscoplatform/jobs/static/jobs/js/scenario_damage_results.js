@@ -2,6 +2,58 @@
 
 (function($) {
 $( document ).ready(function() {
+
+    var updateChart = function(data){
+
+    var categories = [];
+    var values = [];
+    for (var i = 0; i<data.length; i++ ){
+        categories.push(data[i].limit_state)
+        values.push(data[i].mean)
+    }
+
+    $('#chart-container').highcharts({
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'Buildings damage'
+        },
+        subtitle: {
+            text: data[0].name
+        },
+        xAxis: {
+            categories: categories
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Number of buildings'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                '<td style="padding:0"><b>{point.y:.0f} </b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+                pointPadding: 0.2,
+                borderWidth: 0
+            }
+        },
+        series: [{
+            name: data[0].name,
+            data: values
+        },
+        ]
+    });
+
+    }
+
     
 	var map = new L.Map('map');
 	var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -47,22 +99,17 @@ $( document ).ready(function() {
             style: style,
             onEachFeature: function (feature, layer) {
                 layer.setStyle({'color': feature.properties.color})
-                //if (feature.properties) {
-                //    layer.setStyle(style);
-                //}
-                if (!(layer instanceof L.Point)) {
-                    layer.on('mouseover', function () {
-                        layer.setStyle(hoverStyle);
-                        //infoBox.update(layer.feature.properties);
-                    });
-                    layer.on('mouseout', function () {
-                        layer.setStyle(style);
-                        //infoBox.update();
-                    });
-                    layer.on('click', function () {
-                        console.log(feature)
-                    });
-                }
+                layer.on('mouseover', function () {
+                    layer.setStyle(hoverStyle);
+                    //infoBox.update(layer.feature.properties);
+                });
+                layer.on('mouseout', function () {
+                    layer.setStyle(style);
+                    //infoBox.update();
+                });
+                layer.on('click', function () {
+                    updateChart(feature.properties.limit_states)
+                });
             }
         }
     ).addTo(map);

@@ -1,3 +1,11 @@
+
+
+--CREATE SERVER priseoq FOREIGN DATA WRAPPER postgres_fdw OPTIONS (host 'priseOQ.fe.up.pt', dbname 'openquake2', port '5432');
+
+--DROP USER MAPPING IF EXISTS FOR postgres SERVER priseoq;
+--CREATE USER MAPPING FOR postgres SERVER priseoq OPTIONS (user 'postgres', password 'prisefeup');
+
+
 DROP FOREIGN TABLE IF EXISTS foreign_dmg_dist_per_asset;
 DROP FOREIGN TABLE IF EXISTS foreign_exposure_data;
 DROP FOREIGN TABLE IF EXISTS foreign_dmg_state;

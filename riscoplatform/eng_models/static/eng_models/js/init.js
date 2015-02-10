@@ -1,5 +1,5 @@
 //vars
-var BASE_URL = 'http://localhost:8000/';
+var BASE_URL = 'http://'+location.host+'/';
 
 //functions
 function toWKT(layer) {
