@@ -36,6 +36,7 @@ class ScenarioHazardForm(forms.ModelForm):
 		exclude = ['user', 'date_created', 'start', 'error', 'ready', 'oq_id']
 		widgets = {
 					'description': forms.Textarea(attrs={'rows':5}),
+					'sa_periods': forms.TextInput(attrs={'placeholder': 'Ex: 0.20, 0.5, 0.9, 1.3 ...'}),
            			'region': forms.HiddenInput(),
 					}
 
