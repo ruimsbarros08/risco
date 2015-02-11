@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from parsers import exposure_parser, fragility_parser, source_parser
+from parsers import exposure_parser, fragility_parser, source_parser, site_model_parser
 from django.core import serializers
 from django.db import connection
 import json
@@ -148,13 +148,11 @@ def add_site_model(request):
 	if request.method == 'POST':
 		form = SiteForm(request.POST, request.FILES)
 		if form.is_valid():
-			#model = Site_Model(xml=request.FILES['xml'])
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
 			model.save()
 			if request.FILES:
-				pass
-				#site_model_parser.start_parse(model)
+				site_model_parser.start(model)
 			return redirect('detail_site', model_id=model.id)
 	else:
 		form = SiteForm()
