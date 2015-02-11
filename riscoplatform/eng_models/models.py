@@ -17,7 +17,7 @@ from world.models import World, Fishnet
 from django.core.files import File
 from django.template.loader import render_to_string
 from djorm_pgarray.fields import FloatArrayField
-from scipy.stats import lognorm
+import scipy
 import numpy as np
 
 
@@ -474,7 +474,7 @@ class Fragility_Function(models.Model):
     cdf                         = FloatArrayField(dimension=2)
 
     def save(self, *args, **kwargs):
-        dist = lognorm(float(self.stddev), loc = float(self.mean))
+        dist = scipy.stats.lognorm(float(self.stddev), loc = float(self.mean))
         #x = np.linspace(0, 2.5, 0.25)
         x = np.array([0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5])
         pdf = dist.pdf(x)

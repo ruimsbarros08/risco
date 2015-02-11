@@ -30,3 +30,5 @@ ADMINS = (
 )
 
 TILESTACHE_HOST = 'http://prise.fe.up.pt/'
+
+STATIC_ROOT = "/srv/apps/risco/risco/riscoplatform/static/"
