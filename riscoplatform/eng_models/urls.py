@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url
 from eng_models import views
 
 urlpatterns = patterns('',
-    url(r'^$', views.home, name='home'),
+    url(r'^$', views.home, name='eng_models_home'),
 
 	url(r'^sources/$', views.index_source, name='index_source'),
     url(r'^sources/(?P<model_id>\d+)/$', views.detail_source, name='detail_source'),
