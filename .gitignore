@@ -1,6 +1,7 @@
 *.pyc
 riscoplatform/uploads/
 tilestache/local_tilestache.cfg
+tilestache.wsgi
 riscoplatform/riscoplatform/local_settings.py
 
 

@@ -1,3 +1,3 @@
 import os, TileStache
 
-application = TileStache.WSGITileServer('tilestache/local_tilestache.cfg')
+application = TileStache.WSGITileServer('/srv/apps/risco/risco/tilestache/local_tilestache.cfg')
