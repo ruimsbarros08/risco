@@ -67,6 +67,17 @@ class Scenario_Hazard(models.Model):
         (INFERRED, 'inferred'),
     )
 
+    CREATED = 'CREATED'
+    STARTED = 'STARTED'
+    ERROR = 'ERROR'
+    FINISHED = 'FINISHED'
+    STATUS_CHOICES = (
+        (CREATED, 'Created'),
+        (STARTED, 'Started'),
+        (ERROR, 'Error'),
+        (FINISHED, 'Finished'),
+    )
+
     user 						= models.ForeignKey(User)
     date_created 				= models.DateTimeField('date created')
     name 						= models.CharField(max_length=200)
@@ -91,9 +102,6 @@ class Scenario_Hazard(models.Model):
     rupture_model               = models.ForeignKey(Rupture_Model)
 
     pga 						= models.BooleanField(default=True)
-    #sa1_period					= models.FloatField(null=True, blank=True)
-    #sa2_period					= models.FloatField(null=True, blank=True)
-    #sa3_period					= models.FloatField(null=True, blank=True)
     sa_periods                  = FloatArrayField(null=True)
     truncation_level			= models.FloatField(default=3)
     max_distance				= models.FloatField(default=200)
@@ -104,9 +112,7 @@ class Scenario_Hazard(models.Model):
 
     ini_file                    = models.FileField(upload_to='uploads/scenario/hazard/', null=True, blank=True)
 
-    start                       = models.BooleanField(default=False)
-    error                       = models.BooleanField(default=False)
-    ready                       = models.BooleanField(default=False)
+    status                      = models.CharField(max_length=50, choices=STATUS_CHOICES, default=CREATED)
     oq_id                       = models.IntegerField(null=True)
 
     def save(self, *args, **kwargs):
@@ -135,6 +141,18 @@ class Scenario_Hazard_Results(models.Model):
 
 
 class Scenario_Damage(models.Model):
+
+    CREATED = 'CREATED'
+    STARTED = 'STARTED'
+    ERROR = 'ERROR'
+    FINISHED = 'FINISHED'
+    STATUS_CHOICES = (
+        (CREATED, 'Created'),
+        (STARTED, 'Started'),
+        (ERROR, 'Error'),
+        (FINISHED, 'Finished'),
+    )
+    
     user                        = models.ForeignKey(User)
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)
@@ -145,9 +163,7 @@ class Scenario_Damage(models.Model):
     region                      = models.PolygonField(srid=4326)
     max_hazard_dist             = models.FloatField()
 
-    start                       = models.BooleanField(default=False)
-    error                       = models.BooleanField(default=False)
-    ready                       = models.BooleanField(default=False)
+    status                      = models.CharField(max_length=50, choices=STATUS_CHOICES, default=CREATED)
     oq_id                       = models.IntegerField(null=True)
 
     ini_file                    = models.FileField(upload_to='uploads/scenario/damage/', null=True, blank=True)

@@ -8,6 +8,7 @@ risco web app - openquake in a web environment
 ```sh
 $ pip install -r requirements.txt
 ```
+
 3. Set up django local settings. <br>
     If you want to use it for developement: <br>
     ```py
@@ -84,12 +85,12 @@ $ pip install -r requirements.txt
         $ python tilestache-server.py -c tilestcahe/local_tilestache.cfg
     ```
     ```sh
-        $ python riscoplatform/manage.py rnserver
+        $ python riscoplatform/manage.py runserver
     ```
     
     
 ### Update the app in production
 
 1. Pull the repositoty;
-2. Repeat the steps 5 and 6.
+2. Repeat the steps 2, 5 and 6.
     
