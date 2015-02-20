@@ -5,9 +5,9 @@ risco web app - openquake in a web environment
 
 1. Clone this repository
 2. Install the dependencies (a virtual environment is recomended):
-```sh
-$ pip install -r requirements.txt
-```
+    ```sh
+    $ pip install -r requirements.txt
+    ```
 
 3. Set up django local settings. <br>
     If you want to use it for developement: <br>
