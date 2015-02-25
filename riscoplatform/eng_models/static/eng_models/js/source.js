@@ -133,6 +133,8 @@ $( document ).ready(function() {
             layer.on('click', function () {
                 //info.update(layer.feature.properties);
                 //layer.setStyle(hoverStyle);
+                var popupContent = '<b>ID</b>: '+feature.id+'<br><b>Name</b>: '+feature.properties.name;
+                layer.bindPopup(popupContent).openPopup();
             });
         }
     }).addTo(map);
@@ -145,6 +147,9 @@ $( document ).ready(function() {
             layer.on('click', function () {
                 //info.update(layer.feature.properties);
                 //layer.setStyle(hoverStyle);
+                var popupContent = '<b>ID</b>: '+feature.id+'<br><b>Name</b>: '+feature.properties.name;
+                layer.bindPopup(popupContent).openPopup();
+
             });
         }
     }).addTo(map);
@@ -157,6 +162,8 @@ $( document ).ready(function() {
             layer.on('click', function () {
                 //info.update(layer.feature.properties);
                 //layer.setStyle(hoverStyle);
+                var popupContent = '<b>ID</b>: '+feature.id+'<br><b>Name</b>: '+feature.properties.name;
+                layer.bindPopup(popupContent).openPopup();
             });
         }
     }).addTo(map);

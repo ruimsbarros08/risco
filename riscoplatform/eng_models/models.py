@@ -458,7 +458,7 @@ class Fragility_Function(models.Model):
     EXTENSIVE = 'extensive'
     COMPLETE = 'complete'
     LIMIT_STATES = (
-        (NO_DAMAGE, 'no_damage'),
+        (NO_DAMAGE, 'No damage'),
         (SLIGHT, 'Slight'),
         (MODERATE, 'Moderate'),
         (EXTENSIVE, 'Extensive'),
@@ -483,6 +483,102 @@ class Fragility_Function(models.Model):
         self.cdf = [x.tolist(), cdf.tolist()]
 
         super(Fragility_Function, self).save(*args, **kwargs)
+
+
+class Logic_Tree(models.Model):
+    user                        = models.ForeignKey(User)
+    date_created                = models.DateTimeField('date created')
+    name                        = models.CharField(max_length=200)
+    description                 = models.CharField(max_length=200, null=True)
+    xml                         = models.FileField(upload_to='uploads/logic_tree/', null=True, blank=True)
+
+
+class Logic_Tree_Level(models.Model):
+    logic_tree                  = models.ForeignKey(Logic_Tree)
+    level                       = models.IntegerField()
+    xml_id                      = models.CharField(max_length=10, null=True)
+
+class Logic_Tree_Branch_Set(models.Model):
+    GMPE_MODEL = 'gmpeModel'
+    SOURCE_MODEL = 'sourceModel'
+    MAX_MAG_GR_RELATIVE = 'maxMagGRRelative'
+    B_GR_RELATIVE = 'bGRRelative'
+    AB_GR_ABSOLUTE = 'abGRAbsolute'
+    MAX_MAG_GR_ABSOLUTE = 'maxMagGRAbsolute'
+    UNCERTAINTY_TYPE_CHOICES = (
+        (GMPE_MODEL, 'GMPE Model'),
+        (SOURCE_MODEL, 'Source Model'),
+        (MAX_MAG_GR_RELATIVE, 'Max Mag GR Relative'),
+        (B_GR_RELATIVE, 'b GR Relative'),
+        (AB_GR_ABSOLUTE, 'a/b GR Absolute'),
+        (MAX_MAG_GR_ABSOLUTE, 'max Mag GR Absolute'),
+        )
+
+    level                       = models.ForeignKey(Logic_Tree_Level)
+    uncertainty_type            = models.CharField(max_length=25, choices=UNCERTAINTY_TYPE_CHOICES, null=True)
+    origin                      = models.ForeignKey('Logic_Tree_Branch', null=True)
+    sources                     = models.ManyToManyField(Source, null=True)
+    xml_id                      = models.CharField(max_length=10, null=True)
+
+
+
+class Logic_Tree_Branch(models.Model):
+    ABRAHAMSON_AND_SILVA_2008       = 'AbrahamsonSilva2008'
+    AKKAR_AND_BOMMER_2010           = 'AkkarBommer2010'
+    AKKAR_AND_CAGNAN_2010           = 'AkkarCagnan2010'
+    BOORE_AND_ATKINSON_2008         = 'BooreAtkinson2008'
+    CAUZZI_AND_FACCIOLI_2008        = 'CauzziFaccioli2008'
+    CHIOU_AND_YOUNGS_2008           = 'ChiouYoungs2008'
+    FACCIOLI_ET_AL_2010             = 'FaccioliEtAl2010'
+    SADIGH_ET_AL_1997               = 'SadighEtAl1997'
+    ZHAO_ET_AL_2006_ASC             = 'ZhaoEtAl2006Asc'
+    ATKINSON_AND_BOORE_2003_INTER   = 'AtkinsonBoore2003SInter'
+    ATKINSON_AND_BOORE_2003_IN_SLAB = 'AtkinsonBoore2003SSlab'
+    LIN_AND_LEE_2008_INTER          = 'LinLee2008SInter'
+    LIN_AND_LEE_2008_IN_SLAB        = 'LinLee2008SSlab'
+    YOUNGS_ET_AL_1997_INTER         = 'YoungsEtAl1997SInter'
+    YOUNGS_ET_AL_1997_IN_SLAB       = 'YoungsEtAl1997SSlab'
+    ZHAO_ET_AL_2006_INTER           = 'ZhaoEtAl2006SInter'
+    ZHAO_ET_AL_2006_IN_SLAB         = 'ZhaoEtAl2006SSlab'
+    ATKINSON_AND_BOORE_2006         = 'AtkinsonBoore2006'
+    CAMPBELL_2003                   = 'Campbell2003'
+    TORO_ET_AL_2002                 = 'ToroEtAl2002'
+
+    GMPE_CHOICES = (
+        (ABRAHAMSON_AND_SILVA_2008          ,'Abrahamson and Silva 2008'),
+        (AKKAR_AND_BOMMER_2010              ,'Akkar and Boomer 2010'),
+        (AKKAR_AND_CAGNAN_2010              ,'Akkar and Cagnan 2010'),
+        (BOORE_AND_ATKINSON_2008            ,'Boore and Atkinson 2008'),
+        (CAUZZI_AND_FACCIOLI_2008           ,'Cauzzi and Faccioli 2008'),
+        (CHIOU_AND_YOUNGS_2008              ,'Chiou and Youngs 2008'),
+        (FACCIOLI_ET_AL_2010                ,'Faccioli et al. 2010'),
+        (SADIGH_ET_AL_1997                  ,'Sadigh et al. 1997'),
+        (ZHAO_ET_AL_2006_ASC                ,'Zhao et al. 2006 (ASC)'),
+        (ATKINSON_AND_BOORE_2003_INTER      ,'Atkinson and Boore 2003 (Inter)'),
+        (ATKINSON_AND_BOORE_2003_IN_SLAB    ,'Atkinson and Boore 2003 (In-slab)'),
+        (LIN_AND_LEE_2008_INTER             ,'Lin and Lee 2008 (Inter)'),
+        (LIN_AND_LEE_2008_IN_SLAB           ,'Lin and Lee 2008 (In-slab)'),
+        (YOUNGS_ET_AL_1997_INTER            ,'Youngs et al. 1997 (Inter)'),
+        (YOUNGS_ET_AL_1997_IN_SLAB          ,'Youngs et al. 1997 (In-slab)'),
+        (ZHAO_ET_AL_2006_INTER              ,'Zhao et al. 2006 (Inter)'),
+        (ZHAO_ET_AL_2006_IN_SLAB            ,'Zhao et al. 2006 (In-slab)'),
+        (ATKINSON_AND_BOORE_2006            ,'Atkinson and Boore 2006'),
+        (CAMPBELL_2003                      ,'Campbell 2003'),
+        (TORO_ET_AL_2002                    ,'Toro et al. 2002'),
+    )
+
+    branch_set                  = models.ForeignKey(Logic_Tree_Branch_Set)
+    gmpe                        = models.CharField(max_length=50, choices=GMPE_CHOICES, null=True)
+    source_model                = models.ForeignKey(Source_Model, null=True)
+    max_mag_inc                 = models.FloatField(null=True)
+    b_inc                       = models.FloatField(null=True)
+    a_b                         = FloatArrayField(null=True)
+    max_mag                     = models.FloatField(null=True)
+    weight                      = models.FloatField()
+    xml_id                      = models.CharField(max_length=10, null=True)
+
+
+        
 
 
 

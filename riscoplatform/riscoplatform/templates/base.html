@@ -11,6 +11,8 @@
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap-theme-flatly/flatly.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet/dist/leaflet.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet-draw/dist/leaflet.draw.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/gitgraph.js/src/gitgraph.css' %}">
+
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}" />
 
 </head>
@@ -48,7 +50,9 @@
                             <li><a href="{% url 'index_rupture_model' %}">RUPTURE</a></li>
                             <li><a href="{% url 'index_exposure' %}">EXPOSURE</a></li>
                             <li><a href="{% url 'index_fragility' %}">FRAGILITY</a></li>
-                            <li><a href="">VULNERABILITY</a></li>
+                            <li><a href="#">VULNERABILITY</a></li>
+                            <li class="divider"></li>
+                            <li><a href="{% url 'index_logic_tree' %}">LOGIC TREES</a></li>
                         </ul>
                     </li>
                     <li class="dropdown">
@@ -56,16 +60,16 @@
                         <ul class="dropdown-menu">
                             <li class="dropdown-header">SCENARIO</li>
                             <li><a href="{% url 'index_scenario_hazard' %}">HAZARD</a></li>
-                            <li><a href="">RISK</a></li>
+                            <li><a href="#">RISK</a></li>
                             <li><a href="{% url 'index_scenario_damage' %}">DAMAGE</a></li>
                             <li class="divider"></li>
                             <li class="dropdown-header">PSHA</li>
-                            <li><a href="">HAZARD</a></li>
-                            <li><a href="">RISK</a></li>
+                            <li><a href="#">HAZARD</a></li>
+                            <li><a href="#">RISK</a></li>
                             <li class="divider"></li>
                             <li class="dropdown-header">EVENT BASED</li>
-                            <li><a href="">HAZARD</a></li>
-                            <li><a href="">RISK</a></li>
+                            <li><a href="#">HAZARD</a></li>
+                            <li><a href="#">RISK</a></li>
                         </ul>
                     </li>
                     <li class=""><a href="">DOCUMENTATION</a></li>
@@ -77,9 +81,9 @@
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"> username <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a href="">ACCOUNT</a></li>
+                            <li><a href="#">ACCOUNT</a></li>
                             <li class="divider"></li>
-                            <li id="logout-btn" class=""><a href="">LOGOUT  <span class="glyphicon glyphicon-off"> </a></li>
+                            <li id="logout-btn" class=""><a href="#">LOGOUT  <span class="glyphicon glyphicon-off"> </a></li>
                         </ul>
                     </li>
                 </ul>
@@ -98,8 +102,8 @@
 <script type="text/javascript" src="{% static 'bower_components/highcharts/highcharts.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet/dist/leaflet.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-draw/dist/leaflet.draw.js' %}"></script>
-
 <script type="text/javascript" src="{% static 'bower_components/leaflet-tilelayer-geojson/TileLayer.GeoJSON.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/d3/d3.min.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'js/init.js' %}"></script>
 

@@ -1,11 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from eng_models.models import Exposure_Model, Asset, Site_Model, Site, Rupture_Model, Fragility_Model, Fragility_Function, Building_Taxonomy_Source, Building_Taxonomy, Taxonomy_Fragility_Model, Source_Model, Source
+from eng_models.models import *
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from parsers import exposure_parser, fragility_parser, source_parser, site_model_parser
+from parsers import exposure_parser, fragility_parser, source_parser, site_model_parser, logic_tree_parser
 from django.core import serializers
 from django.db import connection
 import json
@@ -366,6 +366,94 @@ def fragility_get_taxonomy(request, model_id, taxonomy_id):
 											and eng_models_taxonomy_fragility_model.id = eng_models_fragility_function.tax_frag_id', [taxonomy_id, model_id])
 	data = serializers.serialize("json", functions)
 	return HttpResponse(data, content_type="application/json")
+
+
+
+
+#######################
+##     LOGIC TREE    ##
+#######################
+
+class LogicTreeForm(forms.ModelForm):
+	class Meta:
+		model = Logic_Tree
+		fields = ['name', 'description', 'xml']
+
+
+def index_logic_tree(request):
+	models = Logic_Tree.objects.all()
+	form = LogicTreeForm()
+	return render(request, 'eng_models/index_logic_tree.html', {'models': models, 'form': form})
+
+def detail_logic_tree(request, model_id):
+	model = get_object_or_404(Logic_Tree ,pk=model_id)
+	return render(request, 'eng_models/detail_logic_tree.html', {'model': model})
+
+def add_logic_tree(request):
+	if request.method == 'POST':
+		form = LogicTreeForm(request.POST, request.FILES)
+		if form.is_valid():
+			model = form.save(commit=False)
+			model.date_created = timezone.now()
+			me = User.objects.get(id=1)
+			model.user = me
+			model.save()
+			logic_tree_parser.start(model)
+			return redirect('detail_logic_tree', model_id=model.id)
+	else:
+		form = LogicTreeForm()
+		return render(request, 'eng_models/index_logic_tree.html', {'form': form})
+
+
+def update_logic_tree(dict, parent_branch, branches):
+	for e in dict:
+		if e['pk'] == parent_branch:
+			e['children'] = branches
+			break
+		else:
+			update_logic_tree(e['children'], parent_branch, branches)
+
+def logic_tree_ajax(request, model_id):
+	json_tree = [{"name": "Logic tree root",
+				    "parent": "null",
+				    "pk": 0,
+				    "children": []}]
+
+	levels = Logic_Tree_Level.objects.filter(logic_tree_id = model_id)
+	for level in levels:
+		branch_sets = Logic_Tree_Branch_Set.objects.filter(level=level)
+		for branch_set in branch_sets:
+			branches = Logic_Tree_Branch.objects.filter(branch_set=branch_set)
+			branches = json.loads(serializers.serialize("json", branches))
+
+			for branch in branches:
+				branch['type'] = branch_set.uncertainty_type
+				if branch['type']== 'gmpeModel':
+					branch['name'] = 'GMPE: '+branch['fields']['gmpe']+' weight:'+str(branch['fields']['weight'])
+				if branch['type']== 'sourceModel':
+					branch['name'] = 'Source Model: '+str(branch['fields']['source_model'])+' weight:'+str(branch['fields']['weight'])
+				if branch['type']== 'maxMagGRRelative':
+					branch['name'] = 'Max Mag Rel: '+str(branch['fields']['max_mag_inc'])+' weight:'+str(branch['fields']['weight'])
+				if branch['type']== 'bGRRelative':
+					branch['name'] = 'b Rel: '+str(branch['fields']['b_inc'])+' weight:'+str(branch['fields']['weight'])
+				if branch['type']== 'abGRAbsolute':
+					a = branch['fields']['a_b'].split(', ')[0].split('[')[1]
+					b = branch['fields']['a_b'].split(', ')[1].split(']')[0]
+					branch['name'] = 'a rel: '+a+' b rel: '+b+' weight:'+str(branch['fields']['weight'])
+				if branch['type']== 'maxMagGRAbsolute':
+					branch['name'] = 'Max Mag Abs: '+str(branch['fields']['max_mag'])+' weight:'+str(branch['fields']['weight'])
+				branch['children']=[]
+
+			if level.level == 1:
+				parent_branch = 0
+			else:
+				parent_branch = branch_set.origin.id
+
+			update_logic_tree(json_tree, parent_branch, branches)
+
+	return HttpResponse(json.dumps(json_tree), content_type="application/json")
+
+
 
 
 
