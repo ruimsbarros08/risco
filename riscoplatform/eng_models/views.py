@@ -391,7 +391,9 @@ class LogicTreeForm(forms.ModelForm):
 def index_logic_tree(request):
 	models = Logic_Tree.objects.all().order_by('-date_created')
 	form = LogicTreeForm()
-	return render(request, 'eng_models/index_logic_tree.html', {'models': models, 'form': form})
+	page = request.GET.get('page')
+
+	return render(request, 'eng_models/index_logic_tree.html', {'models': pagination(models, 10, page), 'form': form})
 
 def detail_logic_tree(request, model_id):
 	model = get_object_or_404(Logic_Tree ,pk=model_id)
