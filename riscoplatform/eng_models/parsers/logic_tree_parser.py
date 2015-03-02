@@ -1,6 +1,6 @@
 
 from xml.dom.minidom import parse
-from eng_models.models import Logic_Tree, Logic_Tree_Level, Logic_Tree_Branch_Set, Logic_Tree_Branch, Source
+from eng_models.models import Logic_Tree, Logic_Tree_Level, Logic_Tree_Branch_Set, Logic_Tree_Branch, Source_Model, Source
 
 
 def start(object):
@@ -69,11 +69,25 @@ def start(object):
 					sources_type = 'SIMPLE_FAULT'
 				elif sources_type =='complexFault':
 					sources_type = 'COMPLEX_FAULT'
-				sources = Source.objects.filter(source_type=sources_type, model_id = source_model_id)
+				sources = Source.objects.raw('select eng_models_source.id \
+					from eng_models_source, eng_models_source_model, \
+					eng_models_logic_tree, eng_models_logic_tree_source_models \
+					where eng_models_source.model_id = eng_models_source_model.id \
+					and eng_models_source.source_type = %s \
+					and eng_models_source_model.id = eng_models_logic_tree_source_models.source_model_id \
+					and eng_models_logic_tree_source_models.logic_tree_id = eng_models_logic_tree.id \
+					and eng_models_logic_tree.id = %s', [sources_type, object.id])
 
 			elif branch_set_tag.getAttribute('applyToTectonicRegionType'):
 				region_type = branch_set_tag.getAttribute('applyToTectonicRegionType')
-				sources = Source.objects.filter(tectonic_region=region_type, model_id = source_model_id)
+				sources = Source.objects.raw('select eng_models_source.id \
+					from eng_models_source, eng_models_source_model, \
+					eng_models_logic_tree, eng_models_logic_tree_source_models \
+					where eng_models_source.model_id = eng_models_source_model.id \
+					and eng_models_source.tectonic_region = %s \
+					and eng_models_source_model.id = eng_models_logic_tree_source_models.source_model_id \
+					and eng_models_logic_tree_source_models.logic_tree_id = eng_models_logic_tree.id \
+					and eng_models_logic_tree.id = %s', [region_type, object.id])
 			else:
 				sources=[]
 
@@ -81,8 +95,8 @@ def start(object):
 
 				branch_set = Logic_Tree_Branch_Set(level=level, uncertainty_type=uncertainty_type, xml_id=xml_id, origin=e)
 				branch_set.save()
-				for s in sources:
-					branch_set.sources.add(s)
+				for src in sources:
+					branch_set.sources.add(src.id)
 
 				branches = branch_set_tag.getElementsByTagName('logicTreeBranch')
 				for branch_tag in branches:
@@ -94,8 +108,9 @@ def start(object):
 						branch = Logic_Tree_Branch(branch_set=branch_set, weight=uncertaintyWeight, gmpe=uncertaintyModel, xml_id=xml_id)
 					
 					if branch_set.uncertainty_type == 'sourceModel':
+						source_model = Source_Model.objects.get(pk=uncertaintyModel)
+						object.source_models.add(source_model)
 						branch = Logic_Tree_Branch(branch_set=branch_set, weight=uncertaintyWeight, source_model_id=int(uncertaintyModel), xml_id=xml_id)
-						source_model_id = int(uncertaintyModel)
 
 					if branch_set.uncertainty_type == 'maxMagGRRelative':
 						branch = Logic_Tree_Branch(branch_set=branch_set, weight=uncertaintyWeight, max_mag_inc=uncertaintyModel, xml_id=xml_id)

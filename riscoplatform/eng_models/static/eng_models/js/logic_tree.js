@@ -18,12 +18,68 @@ var model_id = url[url.length -2];
 
 $.ajax( BASE_URL+'models/logictree/'+model_id+'/ajax' )
     .done(function(data) {
-        var treeData = data;
+        var treeData = data.tree;
         root = treeData[0];
         root.x0 = height / 2;
         root.y0 = 0;
           
         update(root);
+
+        var sources = data.sources;
+        //var control = L.control.layers().addTo(map);
+
+
+        for (var i = 0; i<sources.length;i++) {
+
+            var pointSourceLayer = L.geoJson(sources[i].pointSource, {
+                //style: style,
+                onEachFeature: function (feature, layer) {
+                    //layer.setStyle({"fillColor": feature.properties.color});
+                    layer.on('click', function () {
+                        //info.update(layer.feature.properties);
+                        //layer.setStyle(hoverStyle);
+                        var popupContent = '<b>ID</b>: '+feature.id+'<br><b>Name</b>: '+feature.properties.name;
+                        layer.bindPopup(popupContent).openPopup();
+                    });
+                }
+            }).addTo(map);
+
+
+            var areaSourceLayer = L.geoJson(sources[i].areaSource, {
+                //style: style,
+                onEachFeature: function (feature, layer) {
+                    //layer.setStyle({"fillColor": feature.properties.color});
+                    layer.on('click', function () {
+                        //info.update(layer.feature.properties);
+                        //layer.setStyle(hoverStyle);
+                        var popupContent = '<b>ID</b>: '+feature.id+'<br><b>Name</b>: '+feature.properties.name;
+                        layer.bindPopup(popupContent).openPopup();
+
+                    });
+                }
+            }).addTo(map);
+
+
+            var faultSourceLayer = L.geoJson(sources[i].faultSource, {
+                //style: style,
+                onEachFeature: function (feature, layer) {
+                    //layer.setStyle({"fillColor": feature.properties.color});
+                    layer.on('click', function () {
+                        //info.update(layer.feature.properties);
+                        //layer.setStyle(hoverStyle);
+                        var popupContent = '<b>ID</b>: '+feature.id+'<br><b>Name</b>: '+feature.properties.name;
+                        layer.bindPopup(popupContent).openPopup();
+                    });
+                }
+            }).addTo(map);
+
+            //control.addBaseLayer([pointSourceLayer, areaSourceLayer, faultSourceLayer], sources[i].name);
+
+        }
+
+
+
+
     })
     .fail(function() {
         alert( "error" );

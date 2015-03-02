@@ -233,7 +233,9 @@ def add_source_model(request):
 		return render(request, 'eng_models/index_source.html', {'form': form})
 
 
-def sources_ajax(request, model_id):
+def get_sources(model_id):
+	#model = Source_Model.objects.get(id=model_id)
+
 	point_sources = Source.objects.filter(model_id=model_id, source_type='POINT')
 	point_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
 				geometry = json.loads(source.point.json) ) for source in point_sources]
@@ -246,10 +248,13 @@ def sources_ajax(request, model_id):
 	fault_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
 				geometry = json.loads(source.fault.json) ) for source in fault_sources]	
 
-	data = {'pointSource': {'type': 'FeatureCollection', 'features': point_features},
+	return {'pointSource': {'type': 'FeatureCollection', 'features': point_features},
 			'areaSource': {'type': 'FeatureCollection', 'features': area_features},
 			'faultSource': {'type': 'FeatureCollection', 'features': fault_features}}
+			#'name': model.name}
 
+def sources_ajax(request, model_id):
+	data = get_sources(model_id)
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 
@@ -377,11 +382,14 @@ def fragility_get_taxonomy(request, model_id, taxonomy_id):
 class LogicTreeForm(forms.ModelForm):
 	class Meta:
 		model = Logic_Tree
-		fields = ['name', 'description', 'xml']
+		exclude = ['user', 'date_created']
+		widgets = {
+			'source_models': forms.CheckboxSelectMultiple()
+		}
 
 
 def index_logic_tree(request):
-	models = Logic_Tree.objects.all()
+	models = Logic_Tree.objects.all().order_by('-date_created')
 	form = LogicTreeForm()
 	return render(request, 'eng_models/index_logic_tree.html', {'models': models, 'form': form})
 
@@ -398,11 +406,25 @@ def add_logic_tree(request):
 			me = User.objects.get(id=1)
 			model.user = me
 			model.save()
+			if 'source_models' in request.POST:
+				for e in request.POST['source_models']:
+					model.source_models.add(e)
+					model.save()
 			logic_tree_parser.start(model)
 			return redirect('detail_logic_tree', model_id=model.id)
+
 	else:
 		form = LogicTreeForm()
 		return render(request, 'eng_models/index_logic_tree.html', {'form': form})
+
+def download_logic_tree(request, model_id):
+	model = get_object_or_404(Logic_Tree ,pk=model_id)
+	response = HttpResponse(content_type='application/force-download')
+	response['Content-Disposition'] = 'attachment; filename=%s' % model.name+'.xml'
+	response['X-Sendfile'] = model.xml
+	# It's usually a good idea to set the 'Content-Length' header too.
+	# You can also set any other required headers: Cache-Control, etc.
+	return response
 
 
 def update_logic_tree(dict, parent_branch, branches):
@@ -451,7 +473,19 @@ def logic_tree_ajax(request, model_id):
 
 			update_logic_tree(json_tree, parent_branch, branches)
 
-	return HttpResponse(json.dumps(json_tree), content_type="application/json")
+	source_models = Source_Model.objects.raw('select eng_models_source_model.id \
+					from eng_models_source_model, \
+					eng_models_logic_tree, eng_models_logic_tree_source_models \
+					where eng_models_source_model.id = eng_models_logic_tree_source_models.source_model_id \
+					and eng_models_logic_tree_source_models.logic_tree_id = eng_models_logic_tree.id \
+					and eng_models_logic_tree.id = %s', [model_id])
+	
+	sm=[]
+	for e in source_models:
+		data = get_sources(e.id)
+		sm.append(data)
+
+	return HttpResponse(json.dumps({'tree':json_tree, 'sources':sm}), content_type="application/json")
 
 
 

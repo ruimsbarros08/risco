@@ -32,6 +32,7 @@ urlpatterns = patterns('',
     url(r'^logictree/$', views.index_logic_tree, name='index_logic_tree'),
     url(r'^logictree/(?P<model_id>\d+)/$', views.detail_logic_tree, name='detail_logic_tree'),
     url(r'^logictree/(?P<model_id>\d+)/ajax$', views.logic_tree_ajax, name='logic_tree_ajax'),
+    url(r'^logictree/(?P<model_id>\d+)/download$', views.download_logic_tree, name='download_logic_tree'),
     url(r'^logictree/add/$', views.add_logic_tree, name='add_logic_tree'),
 
 )

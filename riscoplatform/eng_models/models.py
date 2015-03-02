@@ -486,10 +486,18 @@ class Fragility_Function(models.Model):
 
 
 class Logic_Tree(models.Model):
+    SOURCE = 'source'
+    GMPE = 'gmpe'
+    LOGIC_TREE_TYPE = (
+        (SOURCE, 'Source'),
+        (GMPE, 'GMPE'),
+        )
     user                        = models.ForeignKey(User)
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)
     description                 = models.CharField(max_length=200, null=True)
+    type                        = models.CharField(max_length=25, choices=LOGIC_TREE_TYPE, default='source')
+    source_models               = models.ManyToManyField(Source_Model, null=True, blank=True)
     xml                         = models.FileField(upload_to='uploads/logic_tree/', null=True, blank=True)
 
 
@@ -497,6 +505,7 @@ class Logic_Tree_Level(models.Model):
     logic_tree                  = models.ForeignKey(Logic_Tree)
     level                       = models.IntegerField()
     xml_id                      = models.CharField(max_length=10, null=True)
+
 
 class Logic_Tree_Branch_Set(models.Model):
     GMPE_MODEL = 'gmpeModel'
@@ -519,7 +528,6 @@ class Logic_Tree_Branch_Set(models.Model):
     origin                      = models.ForeignKey('Logic_Tree_Branch', null=True)
     sources                     = models.ManyToManyField(Source, null=True)
     xml_id                      = models.CharField(max_length=10, null=True)
-
 
 
 class Logic_Tree_Branch(models.Model):
@@ -576,16 +584,5 @@ class Logic_Tree_Branch(models.Model):
     max_mag                     = models.FloatField(null=True)
     weight                      = models.FloatField()
     xml_id                      = models.CharField(max_length=10, null=True)
-
-
-        
-
-
-
-
-
-
-
-
 
 
