@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect, HttpResponse
+from django.contrib.auth.decorators import login_required
 
 from eng_models.models import Exposure_Model, Site_Model
 from jobs.models import Scenario_Hazard, Scenario_Hazard_Results, Scenario_Damage, Scenario_Damage_Results
@@ -33,32 +34,29 @@ def home(request):
 class ScenarioHazardForm(forms.ModelForm):
 	class Meta:
 		model = Scenario_Hazard
-		exclude = ['user', 'date_created', 'start', 'error', 'ready', 'oq_id']
+		exclude = ['user', 'date_created', 'status', 'oq_id', 'ini_file']
 		widgets = {
 					'description': forms.Textarea(attrs={'rows':5}),
 					'sa_periods': forms.TextInput(attrs={'placeholder': 'Ex: 0.20, 0.5, 0.9, 1.3 ...'}),
            			'region': forms.HiddenInput(),
 					}
 
-		
+@login_required	
 def index_scenario_hazard(request):
 	jobs = Scenario_Hazard.objects.all()
 	form = ScenarioHazardForm()
 	return render(request, 'jobs/index_scenario_hazard.html', {'jobs': jobs, 'form': form})
 
+@login_required
 def add_scenario_hazard(request):
 	if request.method == 'POST':
-		form = ScenarioHazardForm(request.POST, request.FILES)
-		#print form
+		form = ScenarioHazardForm(request.POST)
 		if form.is_valid():
 			job = form.save(commit=False)
 			job.date_created = timezone.now()
 			me = User.objects.get(id=1)
 			job.user = me
 			job.save()
-			if request.FILES:
-				pass
-				#create parser
 
 			#queing to priseOQ
 			conn = redis.Redis('priseOQ.fe.up.pt', 6379)
@@ -73,11 +71,12 @@ def add_scenario_hazard(request):
 		form = ScenarioHazardForm()
 		return render(request, 'jobs/index_scenario_hazard.html', {'form': form})
 
-
+@login_required
 def results_scenario_hazard(request, job_id):
 	job = get_object_or_404(Scenario_Hazard ,pk=job_id)
 	return render(request, 'jobs/results_scenario_hazard.html', {'job': job})
 
+@login_required
 def results_scenario_hazard_ajax(request, job_id):
 	job = Scenario_Hazard.objects.get(pk=job_id)
 
@@ -127,12 +126,13 @@ class ScenarioDamageForm(forms.ModelForm):
            			'region': forms.HiddenInput(),
 					}
 
-		
+@login_required	
 def index_scenario_damage(request):
 	jobs = Scenario_Damage.objects.all()
 	form = ScenarioDamageForm()
 	return render(request, 'jobs/index_scenario_damage.html', {'jobs': jobs, 'form': form})
 
+@login_required
 def add_scenario_damage(request):
 	if request.method == 'POST':
 		form = ScenarioDamageForm(request.POST, request.FILES)
@@ -160,11 +160,12 @@ def add_scenario_damage(request):
 		form = ScenarioDamageForm()
 		return render(request, 'jobs/index_scenario_damage.html', {'form': form})
 
+@login_required
 def results_scenario_damage(request, job_id):
 	job = get_object_or_404(Scenario_Damage ,pk=job_id)
 	return render(request, 'jobs/results_scenario_damage.html', {'job': job})
 
-
+@login_required
 def geojson_tiles(request, job_id, z, x, y):
 	geometries = requests.get(TILESTACHE_HOST+'world/'+str(z)+'/'+str(x)+'/'+str(y)+'.json')
 	geom_dict = json.loads(geometries.text)

@@ -6,7 +6,6 @@ from django.utils import timezone
 def start(object):
 
 	model = parse(object.xml)
-	object.save()
 
 	functions = model.getElementsByTagName('ffs')
 	for ffs in functions:

@@ -169,7 +169,6 @@ def start(object):
 			taxonomy = Building_Taxonomy(name=taxonomy, source=object.taxonomy_source)
 			taxonomy.save()
 
-		print object
 		new_asset = Asset(name = asset_name,
 							taxonomy = taxonomy,
 							parish = None,

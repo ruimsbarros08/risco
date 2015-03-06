@@ -30,3 +30,9 @@ function toWKT(layer) {
     }
 }
 
+$( document ).ready(function() {
+    $('form input').addClass('form-control');
+    $('form select').addClass('form-control');
+    $('form textarea').addClass('form-control');
+});
+

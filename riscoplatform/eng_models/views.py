@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from eng_models.models import *
 from django.contrib.auth.models import User
@@ -43,13 +44,17 @@ class ExposureForm(forms.ModelForm):
 		model = Exposure_Model
 		fields = ['name', 'description', 'taxonomy_source', 'xml']
 
+@login_required
 def index_exposure(request):
-	models = Exposure_Model.objects.all()
+	models = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
 	form = ExposureForm()
-	return render(request, 'eng_models/index_exposure.html', {'models': models, 'form': form})
+	page = request.GET.get('page')
 
+	return render(request, 'eng_models/index_exposure.html', {'models': pagination(models, 10, page), 'form': form})
+
+@login_required
 def detail_exposure(request, model_id):
-	model = get_object_or_404(Exposure_Model ,pk=model_id)
+	model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
 	try:
 		asset_list = Asset.objects.filter(model_id=model_id)
 	except:
@@ -57,6 +62,7 @@ def detail_exposure(request, model_id):
 	page = request.GET.get('page')
 	return render(request, 'eng_models/detail_exposure.html', {'model': model, 'assets': pagination(asset_list, 10, page)})
 
+@login_required
 def add_exposure_model(request):
 	if request.method == 'POST':
 		form = ExposureForm(request.POST, request.FILES)
@@ -68,14 +74,22 @@ def add_exposure_model(request):
 															date_created=timezone.now())
 				new_tax_source.save()
 				model.taxonomy_source = new_tax_source
-			exposure_parser.start(model)
+			if request.FILES:
+				try:
+					exposure_parser.start(model)
+				except:
+					model.delete()
+					return render(request, 'eng_models/index_exposure.html', {'form': form, 'parse_error': True})
+			Exposure_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
 			return redirect('detail_exposure', model_id=model.id)
 		else:
-			print form.errors
+			models = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
+			return render(request, 'eng_models/index_exposure.html', {'models': pagination(models, 10, 1), 'form': form})
 	else:
 		form = ExposureForm()
 		return render(request, 'eng_models/index_exposure.html', {'form': form})
 
+@login_required
 def exposure_geojson_tiles(request, model_id, z, x, y):
 	geometries = requests.get(TILESTACHE_HOST+'world/'+str(z)+'/'+str(x)+'/'+str(y)+'.json')
 	geom_dict = json.loads(geometries.text)
@@ -112,14 +126,17 @@ class SiteForm(forms.ModelForm):
 		model = Site_Model
 		fields = ['name', 'description', 'xml']
 
-
+@login_required
 def index_site(request):
-	models = Site_Model.objects.all()
+	models = Site_Model.objects.filter(site_model_contributor__contributor=request.user).order_by('-date_created')
 	form = SiteForm()
-	return render(request, 'eng_models/index_site.html', {'models': models, 'form': form})
+	page = request.GET.get('page')
 
+	return render(request, 'eng_models/index_site.html', {'models': pagination(models, 10, page), 'form': form})
+
+@login_required
 def detail_site(request, model_id):
-	model = get_object_or_404(Site_Model ,pk=model_id)
+	model = get_object_or_404(Site_Model ,pk=model_id, site_model_contributor__contributor=request.user)
 	try:
 		site_list = Site.objects.filter(model_id=model_id)
 	except:
@@ -127,6 +144,7 @@ def detail_site(request, model_id):
 	#page = request.GET.get('page')
 	return render(request, 'eng_models/detail_site.html', {'model': model, 'sites': site_list})
 
+@login_required
 def detail_site_ajax(request, model_id):
 
     cursor = connection.cursor()
@@ -143,7 +161,7 @@ def detail_site_ajax(request, model_id):
 				geometry=json.loads(cell[0])) for cell in cells]
     return HttpResponse(json.dumps({'type': 'FeatureCollection', 'features': features}), content_type="application/json")
 
-
+@login_required
 def add_site_model(request):
 	if request.method == 'POST':
 		form = SiteForm(request.POST, request.FILES)
@@ -151,9 +169,17 @@ def add_site_model(request):
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
 			model.save()
+			Site_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
 			if request.FILES:
-				site_model_parser.start(model)
+				try:
+					site_model_parser.start(model)
+				except:
+					model.delete()
+					return render(request, 'eng_models/index_site.html', {'form': form, 'parse_error': True})
 			return redirect('detail_site', model_id=model.id)
+		else:
+			models = Site_Model.objects.filter(site_model_contributor__contributor=request.user).order_by('-date_created')
+			return render(request, 'eng_models/index_site.html', {'models': pagination(models, 10, 1), 'form': form})
 	else:
 		form = SiteForm()
 		return render(request, 'eng_models/index_site.html', {'form': form})
@@ -182,14 +208,17 @@ class SourceForm(forms.ModelForm):
             		#'hypo_depth_dist': forms.HiddenInput(),
 					}
 		
-
+@login_required
 def index_source(request):
-	models = Source_Model.objects.all()
+	models = Source_Model.objects.filter(source_model_contributor__contributor=request.user).order_by('-date_created')
 	form = SourceModelForm()
-	return render(request, 'eng_models/index_source.html', {'models': models, 'form': form})
+	page = request.GET.get('page')
 
+	return render(request, 'eng_models/index_source.html', {'models': pagination(models, 10, page), 'form': form})
+
+@login_required
 def detail_source(request, model_id):
-	model = get_object_or_404(Source_Model ,pk=model_id)
+	model = get_object_or_404(Source_Model ,pk=model_id, source_model_contributor__contributor=request.user)
 	try:
 		sources = Source.objects.filter(model_id=model_id)
 	except:
@@ -198,7 +227,7 @@ def detail_source(request, model_id):
 	form = SourceForm()
 	return render(request, 'eng_models/detail_source.html', {'model': model, 'form': form, 'sources': pagination(sources, 10, page)})
 
-
+@login_required
 def add_source(request, model_id):
 	if request.method == 'POST':
 		form = SourceForm(request.POST)
@@ -206,9 +235,6 @@ def add_source(request, model_id):
 			source = form.save(commit=False)
 			source.model_id = model_id
 			source.save()
-			if request.FILES:
-				pass
-				#create  parser
 			return redirect('detail_source', model_id=model_id)
 		else:
 			model = get_object_or_404(Source_Model ,pk=model_id)
@@ -217,7 +243,7 @@ def add_source(request, model_id):
 		form = SourceForm()
 		return render(request, 'eng_models/detail_source.html', {'form': form})
 
-
+@login_required
 def add_source_model(request):
 	if request.method == 'POST':
 		form = SourceModelForm(request.POST, request.FILES)
@@ -225,13 +251,20 @@ def add_source_model(request):
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
 			model.save()
+			Source_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
 			if request.FILES:
-				source_parser.start(model)
+				try:
+					source_parser.start(model)
+				except:
+					model.delete()
+					return render(request, 'eng_models/index_source.html', {'form': form, 'parse_error': True})
 			return redirect('detail_source', model_id=model.id)
+		else:
+			models = Source_Model.objects.filter(source_model_contributor__contributor=request.user).order_by('-date_created')
+			return render(request, 'eng_models/index_source.html', {'models': pagination(models, 10, 1), 'form': form})
 	else:
 		form = SourceModelForm()
 		return render(request, 'eng_models/index_source.html', {'form': form})
-
 
 def get_sources(model_id):
 	#model = Source_Model.objects.get(id=model_id)
@@ -253,7 +286,9 @@ def get_sources(model_id):
 			'faultSource': {'type': 'FeatureCollection', 'features': fault_features}}
 			#'name': model.name}
 
+@login_required
 def sources_ajax(request, model_id):
+	model = get_object_or_404(Source_Model ,pk=model_id, source_model_contributor__contributor=request.user)
 	data = get_sources(model_id)
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -273,41 +308,40 @@ class RuptureForm(forms.ModelForm):
             		'rupture_geom': forms.HiddenInput(),
 					}
 
-		
+@login_required
 def index_rupture_model(request):
-	models = Rupture_Model.objects.all()
+	models = Rupture_Model.objects.filter(user=request.user).order_by('-date_created')
 	form = RuptureForm()
 	return render(request, 'eng_models/index_rupture_model.html', {'models': models, 'form': form})
 
+@login_required
 def add_rupture_model(request):
 	if request.method == 'POST':
 		form = RuptureForm(request.POST, request.FILES)
 		if form.is_valid():
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
-			me = User.objects.get(id=1)
-			model.user = me
+			model.user = request.user
 			model.save()
 			if request.FILES:
 				pass
 				#create parser
-
 			return redirect('index_rupture_model')
 		else:
-			print form.is_valid()
-			print form.errors
+			models = Rupture_Model.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'eng_models/index_rupture_model.html', {'models': pagination(models, 10, 1), 'form': form})
 	else:
 		form = RuptureForm()
 		return render(request, 'eng_models/index_rupture_model.html', {'form': form})
 
-
+@login_required
 def ruptures_ajax(request):
-	point_sources = Rupture_Model.objects.filter(rupture_type='POINT')
+	point_sources = Rupture_Model.objects.filter(rupture_type='POINT', user=request.user)
 	point_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
 				geometry = json.loads(source.location.json) ) for source in point_sources]
 
 
-	fault_sources = Rupture_Model.objects.filter(rupture_type='FAULT')
+	fault_sources = Rupture_Model.objects.filter(rupture_type='FAULT', user=request.user)
 	fault_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
 				geometry = json.loads(source.rupture_geom.json) ) for source in fault_sources]	
 
@@ -329,20 +363,24 @@ class FragilityForm(forms.ModelForm):
 		model = Fragility_Model
 		fields = ['name', 'description', 'taxonomy_source', 'xml']
 
-
+@login_required
 def index_fragility(request):
-	models = Fragility_Model.objects.all()
+	models = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
 	form = FragilityForm()
-	return render(request, 'eng_models/index_fragility.html', {'models': models, 'form': form})
+	page = request.GET.get('page')
 
+	return render(request, 'eng_models/index_fragility.html', {'models': pagination(models, 10, page), 'form': form})
+
+@login_required
 def detail_fragility(request, model_id):
-	model = get_object_or_404(Fragility_Model ,pk=model_id)
+	model = get_object_or_404(Fragility_Model ,pk=model_id, fragility_model_contributor__contributor=request.user)
 	try:
 		tax_list = Taxonomy_Fragility_Model.objects.filter(model_id=model_id)
 	except:
 		tax_list = []
 	return render(request, 'eng_models/detail_fragility.html', {'model': model, 'taxonomies': tax_list})
 
+@login_required
 def add_fragility_model(request):
 	if request.method == 'POST':
 		form = FragilityForm(request.POST, request.FILES)
@@ -355,13 +393,23 @@ def add_fragility_model(request):
 				new_tax_source.save()
 				model.taxonomy_source = new_tax_source
 			model.date_created = timezone.now()
-			fragility_parser.start(model)
+			model.save()
+			if request.FILES:
+				try:
+					fragility_parser.start(model)
+				except:
+					model.delete()
+					return render(request, 'eng_models/index_fragility.html', {'form': form, 'parse_error': True})
+			Fragility_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
 			return redirect('detail_fragility', model_id=model.id)
+		else:
+			models = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
+			return render(request, 'eng_models/index_fragility.html', {'models': pagination(models, 10, 1), 'form': form})
 	else:
 		form = FragilityForm()
 		return render(request, 'eng_models/index_fragility.html', {'form': form})
 
-
+@login_required
 def fragility_get_taxonomy(request, model_id, taxonomy_id):
 
 	functions = Fragility_Function.objects.raw('select * \
@@ -387,40 +435,52 @@ class LogicTreeForm(forms.ModelForm):
 			'source_models': forms.CheckboxSelectMultiple()
 		}
 
-
+@login_required
 def index_logic_tree(request):
-	models = Logic_Tree.objects.all().order_by('-date_created')
+	models = Logic_Tree.objects.filter(user=request.user).order_by('-date_created')
 	form = LogicTreeForm()
+	form.fields["source_models"].queryset = Source_Model.objects.filter(source_model_contributor__contributor=request.user)
 	page = request.GET.get('page')
 
 	return render(request, 'eng_models/index_logic_tree.html', {'models': pagination(models, 10, page), 'form': form})
 
+@login_required
 def detail_logic_tree(request, model_id):
-	model = get_object_or_404(Logic_Tree ,pk=model_id)
+	model = get_object_or_404(Logic_Tree ,pk=model_id, user=request.user)
 	return render(request, 'eng_models/detail_logic_tree.html', {'model': model})
 
+@login_required
 def add_logic_tree(request):
 	if request.method == 'POST':
 		form = LogicTreeForm(request.POST, request.FILES)
+		form.fields["source_models"].queryset = Source_Model.objects.filter(source_model_contributor__contributor=request.user)
 		if form.is_valid():
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
-			me = User.objects.get(id=1)
-			model.user = me
+			model.user = request.user
 			model.save()
 			if 'source_models' in request.POST:
 				for e in request.POST['source_models']:
 					model.source_models.add(e)
 					model.save()
-			logic_tree_parser.start(model)
+			if request.FILES:
+				try:
+					logic_tree_parser.start(model)
+				except:
+					model.delete()
+					return render(request, 'eng_models/index_logic_tree.html', {'form': form, 'parse_error': True})
 			return redirect('detail_logic_tree', model_id=model.id)
-
+		else:
+			models = Logic_Tree.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'eng_models/index_logic_tree.html', {'models': pagination(models, 10, 1), 'form': form})
 	else:
 		form = LogicTreeForm()
+		form.fields["source_models"].queryset = Source_Model.objects.filter(source_model_contributor__contributor=request.user)
 		return render(request, 'eng_models/index_logic_tree.html', {'form': form})
 
+@login_required
 def download_logic_tree(request, model_id):
-	model = get_object_or_404(Logic_Tree ,pk=model_id)
+	model = get_object_or_404(Logic_Tree ,pk=model_id, user=request.user)
 	response = HttpResponse(content_type='application/force-download')
 	response['Content-Disposition'] = 'attachment; filename=%s' % model.name+'.xml'
 	response['X-Sendfile'] = model.xml
@@ -437,13 +497,16 @@ def update_logic_tree(dict, parent_branch, branches):
 		else:
 			update_logic_tree(e['children'], parent_branch, branches)
 
+@login_required
 def logic_tree_ajax(request, model_id):
+	tree = get_object_or_404(Logic_Tree ,pk=model_id, user=request.user)
+
 	json_tree = [{"name": "Logic tree root",
 				    "parent": "null",
 				    "pk": 0,
 				    "children": []}]
 
-	levels = Logic_Tree_Level.objects.filter(logic_tree_id = model_id)
+	levels = Logic_Tree_Level.objects.filter(logic_tree = tree)
 	for level in levels:
 		branch_sets = Logic_Tree_Branch_Set.objects.filter(level=level)
 		for branch_set in branch_sets:
@@ -480,7 +543,7 @@ def logic_tree_ajax(request, model_id):
 					eng_models_logic_tree, eng_models_logic_tree_source_models \
 					where eng_models_source_model.id = eng_models_logic_tree_source_models.source_model_id \
 					and eng_models_logic_tree_source_models.logic_tree_id = eng_models_logic_tree.id \
-					and eng_models_logic_tree.id = %s', [model_id])
+					and eng_models_logic_tree.id = %s', [tree.id])
 	
 	sm=[]
 	for e in source_models:

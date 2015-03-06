@@ -18,52 +18,27 @@
 
 		<div class="col-md-12">
 			
-		<h3>{{ model.name }}</h3>
-		<br>
-		<h4>{{ model.description }}</h4>
-		<br>
-		<h4>Taxonomy source: {{ model.taxonomy_source }}</h4>
-		<br>
-
-		<div id="map" class="vertical-map"></div>
-
-
-		<!--
-			{% if assets %}
-			    <ul>
-			    {% for asset in assets %}
-			    	<li>{{ asset.name }}, </li>
-			    {% endfor %}
-			    </ul>
-			{% else %}
-			    <p>No models are available. Please add the first below</p>
-			{% endif %}
-
-			<div class="pagination">
-			    <span class="step-links">
-			        {% if assets.has_previous %}
-			            <a href="?page={{ assets.previous_page_number }}">previous</a>
-			        {% endif %}
-
-			        <span class="current">
-			            Page {{ assets.number }} of {{ assets.paginator.num_pages }}.
-			        </span>
-
-			        {% if assets.has_next %}
-			            <a href="?page={{ assets.next_page_number }}">next</a>
-			        {% endif %}
-			    </span>
-			</div>
-			-->
+			<h3>{{ model.name }}</h3>
+			<br>
+			<h4>{{ model.description }}</h4>
+			<br>
+			<h4>Taxonomy source: {{ model.taxonomy_source }}</h4>
+			<br>
 
 		</div>
 
 	</div>
 
+	<div class="row">
+		<div class="col-md-12">
+			<div id="map" class="vertical-map"></div>
+		</div>
+	</div>
+
 </div>
 
 {% load staticfiles %}
-<script type="text/javascript" src="{% static 'eng_models/js/exposure_detail.js' %}"></script>
+<script type="text/javascript" src="{% static 'eng_models/js/exposure.js' %}"></script>
 
 
 {% endblock %}

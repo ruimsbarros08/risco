@@ -8,7 +8,6 @@ def start(object):
 
 	model = parse(object.xml)
 	#model = parse(path)
-	object.save()
 	
 	##############
 	#POINT SOURCE#

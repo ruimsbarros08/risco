@@ -17,8 +17,9 @@ from world.models import World, Fishnet
 from django.core.files import File
 from django.template.loader import render_to_string
 from djorm_pgarray.fields import FloatArrayField
-import scipy
 import numpy as np
+from scipy import stats
+
 
 
 class Building_Taxonomy_Source(models.Model):
@@ -403,7 +404,7 @@ class Fragility_Model(models.Model):
     name                        = models.CharField(max_length=200)
     description                 = models.CharField(max_length=200)
     contributors                = models.ManyToManyField(User, through='Fragility_Model_Contributor')
-    taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source)
+    taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source, null=True, blank=True)
     format                      = models.CharField(max_length=10, choices=FORMAT_CHOICES, default=CONTINUOUS)
 
     xml                         = models.FileField(upload_to='uploads/fragility/', null=True, blank=True)
@@ -474,7 +475,7 @@ class Fragility_Function(models.Model):
     cdf                         = FloatArrayField(dimension=2)
 
     def save(self, *args, **kwargs):
-        dist = scipy.stats.lognorm(float(self.stddev), loc = float(self.mean))
+        dist = stats.lognorm(float(self.stddev), loc = float(self.mean))
         #x = np.linspace(0, 2.5, 0.25)
         x = np.array([0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5])
         pdf = dist.pdf(x)

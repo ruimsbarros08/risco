@@ -4,15 +4,15 @@
 
 <div class="container">
 
-<div class="row">
-	<div class="col-md-6">
-		<ul class="breadcrumb">
-		  	<li> <a href="{% url 'eng_models_home' %}">Models</a></li>
-		  	<li><a href="{% url 'index_source' %}"> Source </a></li>
-		  	<li class="active">{{ model.name }}</li>
-		</ul>
+	<div class="row">
+		<div class="col-md-6">
+			<ul class="breadcrumb">
+			  	<li> <a href="{% url 'eng_models_home' %}">Models</a></li>
+			  	<li><a href="{% url 'index_source' %}"> Source </a></li>
+			  	<li class="active">{{ model.name }}</li>
+			</ul>
+		</div>
 	</div>
-</div>
 
 	<div class="row">
 		<div class="col-md-12">
@@ -20,78 +20,23 @@
 			<br>
 			<h4>{{ model.description }}</h4>
 			<br>
-
-			<div id="map" class="vertical-map"></div><br>
 		</div>
-		<!--
-		<div class="col-md-4">
-
-			{% if sources %}
-				<table class="table table-striped table-hover ">
-				<caption>sources</caption>
-					<thead>
-					    <tr>
-						    <th>Name</th>
-					    </tr>
-					</thead>
-					<tbody>
-				    	{% for source in sources %}
-				    	<tr>
-						    <td> {{ source.name }} </td>						    
-					    </tr>
-				    	{% endfor %}
-					</tbody>
-				</table>
-				<div class="pagination">
-				    <span class="step-links">
-				        {% if sources.has_previous %}
-				            <a href="?page={{ sources.previous_page_number }}">previous</a>
-				        {% endif %}
-
-				        <span class="current">
-				            Page {{ sources.number }} of {{ sources.paginator.num_pages }}.
-				        </span>
-
-				        {% if sources.has_next %}
-				            <a href="?page={{ sources.next_page_number }}">next</a>
-				        {% endif %}
-				    </span>
-				</div>
-			{% else %}
-				<div class="alert alert-dismissable alert-info">
-				<button type="button" class="close" data-dismiss="alert">×</button>
-			    	<p>No sources in this model. Please add the first below</p>
-			    </div>
-			{% endif %}
-		</div>
-		-->
 	</div>
 
 
 	<div class="row">
-		<div class="col-md-12">
-			<form class="form-vertical" action="{% url 'add_source' model.id %}" method="post" enctype="multipart/form-data">
+		<div class="col-md-6">
+			<form class="form-horizontal" action="{% url 'add_source' model.id %}" method="post" enctype="multipart/form-data">
 			<fieldset>
 				<legend>Insert new source</legend>
-
-
-				{% if form.errors %}
-					{{ form.errors }}
-				{% endif %}
-				{% csrf_token %}
-			    {{ form }}
-			    <br>
-
-		        <div class="form-group">
-				    <div class="col-lg-5 col-lg-offset-2">
-				        <input class="btn btn-primary" type="submit" value="Add" />
-				    </div>
-			    </div>
-
+					{% csrf_token %}
+					{% include 'form.html' %}
 			</fieldset>
 			</form>
 		</div>
-
+		<div class="col-md-6">
+			<div id="map" class="vertical-map"></div>
+		</div>
 	</div>
 
 </div>

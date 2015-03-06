@@ -3,79 +3,64 @@
 (function($) {
 $( document ).ready(function() {
 
-    $('label').addClass('control-labels col-lg-2');
-    $('input').addClass('form-control');
-    $('select').addClass('form-control');
-    $('textarea').addClass('form-control');
-    $('input').wrap('<div class="col-lg-10"></div>');
-    $('select').wrap('<div class="col-lg-10"></div>');
-    $('textarea').wrap('<div class="col-lg-10"></div>');
-    $('<div class="form-group">').insertBefore('label');
-    $('</div>').insertAfter('</input>');
-    $('</div>').insertAfter('</textarea>');
-    $('</div>').insertAfter('</select>');
-    
-    $('input[name="csrfmiddlewaretoken"]').unwrap();
-    $('#id_point').unwrap();
-    $('#id_area').unwrap();
-    $('#id_fault').unwrap();
 
-    //dividers
-    $('<hr>').insertAfter('#id_rake');
+    $('label[for="point"]').hide('fast');
+    $('label[for="area"]').hide('fast');
+    $('label[for="fault"]').hide('fast');
 
     //hide-show    
-    $( "label[for='id_bin_width']" ).hide( "fast");
-    $( "#id_bin_width" ).parent().hide( "fast");
-    $( "label[for='id_occur_rates']" ).hide( "fast");
-    $( "#id_occur_rates" ).parent().hide( "fast");
+    $( "label[for='bin_width']" ).hide( "fast");
+    $( "#id_bin_width" ).hide( "fast");
+    $( "label[for='occur_rates']" ).hide( "fast");
+    $( "#id_occur_rates" ).hide( "fast");
     $('#id_mag_freq_dist_type').on('change', function() {
         if (this.value == 'TRUNC'){
-            $( "label[for='id_bin_width']" ).hide( "fast");
-            $( "#id_bin_width" ).parent().hide( "fast");
-            $( "label[for='id_occur_rates']" ).hide( "fast");
-            $( "#id_occur_rates" ).parent().hide( "fast");
+            $( "label[for='bin_width']" ).hide( "fast");
+            $( "#id_bin_width" ).hide( "fast");
+            $( "label[for='occur_rates']" ).hide( "fast");
+            $( "#id_occur_rates" ).hide( "fast");
 
-            $( "label[for='id_a']" ).show( "fast");
-            $( "#id_a" ).parent().show( "fast");
-            $( "label[for='id_b']" ).show( "fast");
-            $( "#id_b" ).parent().show( "fast");
-            $( "label[for='id_max_mag']" ).show( "fast");
-            $( "#id_max_mag" ).parent().show( "fast");
+            $( "label[for='a']" ).show( "fast");
+            $( "#id_a" ).show( "fast");
+            $( "label[for='b']" ).show( "fast");
+            $( "#id_b" ).show( "fast");
+            $( "label[for='max_mag']" ).show( "fast");
+            $( "#id_max_mag" ).show( "fast");
         }
         else {
-            $( "label[for='id_bin_width']" ).show( "fast");
-            $( "#id_bin_width" ).parent().show( "fast");
-            $( "label[for='id_occur_rates']" ).show( "fast");
-            $( "#id_occur_rates" ).parent().show( "fast");
+            $( "label[for='bin_width']" ).show( "fast");
+            $( "#id_bin_width" ).show( "fast");
+            $( "label[for='occur_rates']" ).show( "fast");
+            $( "#id_occur_rates" ).show( "fast");
 
-            $( "label[for='id_a']" ).hide( "fast");
-            $( "#id_a" ).parent().hide( "fast");
-            $( "label[for='id_b']" ).hide( "fast");
-            $( "#id_b" ).parent().hide( "fast");
-            $( "label[for='id_max_mag']" ).hide( "fast");
-            $( "#id_max_mag" ).parent().hide( "fast");
+            $( "label[for='a']" ).hide( "fast");
+            $( "#id_a" ).hide( "fast");
+            $( "label[for='b']" ).hide( "fast");
+            $( "#id_b" ).hide( "fast");
+            $( "label[for='max_mag']" ).hide( "fast");
+            $( "#id_max_mag" ).hide( "fast");
 
         }
     });
 
 
     //hide-show    
-    $( "label[for='id_dip']" ).hide( "fast");
-    $( "#id_dip" ).parent().hide( "fast");
-    $( "label[for='id_rake']" ).hide( "fast");
-    $( "#id_rake" ).parent().hide( "fast");
+    $( "label[for='dip']" ).hide( "fast");
+    $( "#id_dip" ).hide( "fast");
+    $( "label[for='rake']" ).hide( "fast");
+    $( "#id_rake" ).hide( "fast");
 
     $('#id_source_type').on('change', function() {
         if (this.value == 'SIMPLE_FAULT'){
-            $( "label[for='id_nodal_plane_dist']" ).hide( "fast");
-            $( "#id_nodal_plane_dist" ).parent().hide( "fast");
-            $( "label[for='id_hypo_depth_dist']" ).hide( "fast");
-            $( "#id_hypo_depth_dist" ).parent().hide( "fast");
+            $( "label[for='nodal_plane_dist']" ).hide( "fast");
+            $( "#id_nodal_plane_dist" ).hide( "fast");
+            $( "label[for='hypo_depth_dist']" ).hide( "fast");
+            $( "#id_hypo_depth_dist" ).hide( "fast");
 
-            $( "label[for='id_dip']" ).show( "fast");
-            $( "#id_dip" ).parent().show( "fast");
-            $( "label[for='id_rake']" ).show( "fast");
-            $( "#id_rake" ).parent().show( "fast");
+            $( "label[for='dip']" ).show( "fast");
+            $( "#id_dip" ).show( "fast");
+            $( "label[for='rake']" ).show( "fast");
+            $( "#id_rake" ).show( "fast");
 
             $('.leaflet-draw-draw-marker').hide();
             $('.leaflet-draw-draw-polyline').show();
@@ -83,15 +68,15 @@ $( document ).ready(function() {
 
         }
         else {
-            $( "label[for='id_dip']" ).hide( "fast");
-            $( "#id_dip" ).parent().hide( "fast");
-            $( "label[for='id_rake']" ).hide( "fast");
-            $( "#id_rake" ).parent().hide( "fast");
+            $( "label[for='dip']" ).hide( "fast");
+            $( "#id_dip" ).hide( "fast");
+            $( "label[for='rake']" ).hide( "fast");
+            $( "#id_rake" ).hide( "fast");
 
-            $( "label[for='id_nodal_plane_dist']" ).show( "fast");
-            $( "#id_nodal_plane_dist" ).parent().show( "fast");
-            $( "label[for='id_hypo_depth_dist']" ).show( "fast");
-            $( "#id_hypo_depth_dist" ).parent().show( "fast");
+            $( "label[for='nodal_plane_dist']" ).show( "fast");
+            $( "#id_nodal_plane_dist" ).show( "fast");
+            $( "label[for='hypo_depth_dist']" ).show( "fast");
+            $( "#id_hypo_depth_dist" ).show( "fast");
 
             if (this.value == 'POINT'){
                 $('.leaflet-draw-draw-marker').show();

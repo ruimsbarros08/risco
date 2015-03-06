@@ -11,14 +11,19 @@
 	height: 500px;
 }
 
-.logic-tree {
-  width: 100%;
-  height: 500px;
-}
-
 .leaflet-container {
 	width: 100%;
 	height: 500px;
+}
+
+.full-size {
+  width: 100%;
+  height: 100%;
+}
+
+.logic-tree {
+  width: 100%;
+  height: 500px;
 }
 
 form {
