@@ -28,6 +28,42 @@
 
 		<div class="col-md-3">
 
+			{% if job.status == 'CREATED' %}
+			<div class="row">
+				<div class="col-md-12">
+					<a href="{% url 'start_scenario_damage' job.id %}"> <button class="btn btn-danger" style="width:100%;">Start job</button></a>
+				</div>
+			</div>
+			<br>
+			{% elif job.status == 'STARTED' %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-warning disabled" style="width:100%;">Calculating...</button>
+				</div>
+			</div>
+			<br>
+			{% elif job.status == 'ERROR' %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-danger disabled" style="width:100%;">ERROR!</button>
+				</div>
+			</div>
+			<br>
+			{% elif job.status == 'FINISHED' %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-success disabled" style="width:100%;">Results ready!</button>
+				</div>
+			</div>
+			<br>
+			{% endif %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-primary" style="width:100%;">Download files</button>
+				</div>
+			</div>
+			<br>
+
 			<ul class="list-group">
 			  	<li class="list-group-item active">
 			  	Job parameters	

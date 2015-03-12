@@ -26,7 +26,10 @@ urlpatterns = patterns('',
 
     url(r'^exposure/$', views.index_exposure, name='index_exposure'),
     url(r'^exposure/(?P<model_id>\d+)/$', views.detail_exposure, name='detail_exposure'),
+    url(r'^exposure/(?P<model_id>\d+)/assets/$', views.ajax_assets, name='ajax_assets'),
+    url(r'^exposure/(?P<model_id>\d+)/heat_assets/$', views.ajax_heat_assets, name='ajax_heat_assets'),
     url(r'^exposure/add/$', views.add_exposure_model, name='add_exposure_model'),
+    url(r'^exposure/(?P<model_id>\d+)/add_asset/$', views.add_asset, name='add_asset'),
     url(r'^exposure/(?P<model_id>\d+)/tiles/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)/$', views.exposure_geojson_tiles, name='exposure_geojson_tiles'),
 
     url(r'^logictree/$', views.index_logic_tree, name='index_logic_tree'),

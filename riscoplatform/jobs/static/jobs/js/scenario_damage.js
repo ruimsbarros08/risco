@@ -3,73 +3,14 @@
 (function($) {
 $( document ).ready(function() {
 
-    $('label').addClass('control-labels col-lg-2');
-    $('input').addClass('form-control');
-    $('select').addClass('form-control');
-    $('textarea').addClass('form-control');
-    $('input').wrap('<div class="col-lg-10"></div>');
-    $('select').wrap('<div class="col-lg-10"></div>');
-    $('textarea').wrap('<div class="col-lg-10"></div>');
-    $('<div class="form-group">').insertBefore('label');
-    $('</div>').insertAfter('</input>');
-    $('</div>').insertAfter('</textarea>');
-    $('</div>').insertAfter('</select>');
-    
-    $('input[name="csrfmiddlewaretoken"]').unwrap();
-    $('#id_region').unwrap();
-    //$('#id_location').unwrap();
-    //$('#id_rupture_geom').unwrap();
+    $( "label[for='region']" ).hide( "fast");
 
-    //dividers
-    $('<hr>').insertAfter('#id_ini_file');
-    
+    var map = new L.Map('map');
+    map.setView(new L.LatLng(40, -8),5);
+    osm.addTo(map);
+    L.control.layers(baseMaps).addTo(map);
 
-    //hide-show    
-    $( "label[for='id_site_model']" ).hide( "fast");
-    $( "#id_site_model" ).hide( "fast");
-    $('#id_sites_type').on('change', function() {
-        if (this.value == 'VARIABLE_CONDITIONS'){
-            $( "label[for='id_vs30']" ).hide( "fast", 'swing');
-            $( "#id_vs30" ).hide( "fast", 'swing');
-            $( "label[for='id_vs30type']" ).hide( "fast", 'swing');
-            $( "#id_vs30type" ).hide( "fast", 'swing');
-            $( "label[for='id_z1pt0']" ).hide( "fast", 'swing');
-            $( "#id_z1pt0" ).hide( "fast", 'swing');
-            $( "label[for='id_z2pt5']" ).hide( "fast", 'swing');
-            $( "#id_z2pt5" ).hide( "fast", 'swing');
-
-            $( "label[for='id_site_model']" ).show( "fast", 'swing');
-            $( "#id_site_model" ).show( "fast", 'swing');
-        }
-        else {
-            $( "label[for='id_vs30']" ).show( "fast", 'swing');
-            $( "#id_vs30" ).show( "fast", 'swing');
-            $( "label[for='id_vs30type']" ).show( "fast", 'swing');
-            $( "#id_vs30type" ).show( "fast", 'swing');
-            $( "label[for='id_z1pt0']" ).show( "fast", 'swing');
-            $( "#id_z1pt0" ).show( "fast", 'swing');
-            $( "label[for='id_z2pt5']" ).show( "fast", 'swing');
-            $( "#id_z2pt5" ).show( "fast", 'swing');
-
-            $( "label[for='id_site_model']" ).hide( "fast", 'swing');
-            $( "#id_site_model" ).hide( "fast", 'swing');
-
-        }
-    });
-
-
-
-	var map = new L.Map('map');
-	var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-	var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
-	var osm = new L.TileLayer(osmUrl, {minZoom: 3, maxZoom: 16, attribution: osmAttrib});
-
-	map.setView(new L.LatLng(40, -8),5);
-	map.addLayer(osm);
-
-
-
-    // Initialise the FeatureGroup to store editable layers
+    // Initialize the FeatureGroup to store editable layers
     var drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
@@ -87,7 +28,7 @@ $( document ).ready(function() {
                 showArea: true,
             };
 
-    // Initialise the draw control and pass it the FeatureGroup of editable layers
+    // Initialize the draw control and pass it the FeatureGroup of editable layers
     var drawControl = new L.Control.Draw({
         edit: {
             featureGroup: drawnItems,
@@ -108,16 +49,7 @@ $( document ).ready(function() {
     map.on('draw:created', function (e) {
         var type = e.layerType,
             layer = e.layer;
-        /*
-        if (type == 'marker'){
-            $('.leaflet-draw-draw-marker').hide();
-            $("#id_location").attr('value', toWKT(layer));
-        }
-        if (type == 'polyline'){
-            $('.leaflet-draw-draw-polyline').hide();
-            $("#id_rupture_geom").attr('value', toWKT(layer));
-        }
-        */
+
         if (type == 'polygon'){
             $('.leaflet-draw-draw-polygon').hide();
             $("#id_region").attr('value', toWKT(layer));
@@ -130,14 +62,7 @@ $( document ).ready(function() {
     map.on('draw:edited', function (e) {
         var layers = e.layers;
         layers.eachLayer(function (layer) {
-            /*
-            if (layer instanceof L.Marker){
-                $("#id_location").attr('value', toWKT(layer));  
-            }
-            if (layer instanceof L.Polyline){
-                $("#id_rupture_geom").attr('value', toWKT(layer));
-            }
-            */
+
             if (layer instanceof L.Polygon){
                 $("#id_region").attr('value', toWKT(layer));
             }
@@ -147,16 +72,7 @@ $( document ).ready(function() {
     map.on('draw:deleted', function (e) {
         var layers = e.layers;
         layers.eachLayer(function (layer) {
-            /*
-            if (layer instanceof L.Marker){
-                $('.leaflet-draw-draw-marker').show();
-                $("#id_location").attr('value', '');
-            }
-            if (layer instanceof L.Polyline){
-                $('.leaflet-draw-draw-polyline').show();
-                $("#id_rupture_geom").attr('value', '');
-            }
-            */
+
             if (layer instanceof L.Polygon){
                 $('.leaflet-draw-draw-polygon').show();
                 $("#id_region").attr('value', '');

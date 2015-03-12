@@ -21,51 +21,61 @@
 		</div>
 	</div>
 
+	{% if queue_error %}
+	<br>
+	<div class="row">
+		<div class="col-md-8 col-md-offset-2">
+			<div class="alert alert-dismissible alert-danger">
+			  	Error: Your job could not be able to be calculated in our servers
+			</div>
+		</div>
+	</div>
+	{% endif %}
+
 	<div class="row">
 		<div class="col-md-8">
 			<form class="form-horizontal" action="{% url 'add_scenario_damage' %}" method="post" enctype="multipart/form-data">
-				{% csrf_token %}
 				<fieldset>
 					<legend>Insert new job</legend>
-					{{ form }}
-				    <br>
-				        <div class="form-group">
-					      <div class="col-lg-5 col-lg-offset-2">
-					       <input class="btn btn-primary" type="submit" value="Add" />
-					      </div>
-					    </div>
+					{% csrf_token %}
+					{% include 'form.html' %}
 			    </fieldset>
 			</form>
 			
 		</div>
 
 		<div class="col-md-4">
-
 			{% if jobs %}
-				<table class="table table-striped table-hover ">
-				<caption>Jobs</caption>
-					<thead>
-					    <tr>
-						    <th>Name</th>
-						    <th></th>
-					    </tr>
-					</thead>
-					<tbody>
-				    	{% for job in jobs %}
-				    	<tr>
-						    <td> {{ job.name }} </td>
-						    <td> <a href="{% url 'results_scenario_damage' job.id %}"> <button class="btn btn-sm btn-success"> Results </button> </a></td>
-				    
-					    </tr>
-				    	{% endfor %}
-					</tbody>
-				</table>
+			<div class="row">
+				{% for job in jobs %}
+				<div class="col-md-12">
+					<div class="well">
+						<div class="row">
+
+							<div class="col-md-4">
+								<h4><a href="{% url 'results_scenario_damage' job.id %}">{{ job.name }}</a></h4>
+							</div>
+							<div class="col-md-4">
+								<a href="#"><div class="btn btn-primary btn-sm">Download XML</div></a>
+							</div>
+							<div class="col-md-4">
+								{{ job.date_created|date:"M d, Y" }}
+							</div>
+						</div>
+					</div>
+				</div>
+				{% endfor %}
 
 			{% else %}
-				<div class="alert alert-dismissable alert-info">
-				<button type="button" class="close" data-dismiss="alert">×</button>
-			    	<p>No jobs. Please add the first.</p>
-			    </div>
+				<br>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="alert alert-dismissable alert-info">
+						<button type="button" class="close" data-dismiss="alert">×</button>
+					    	<p>No jobs are available. Please add the first</p>
+					    </div>
+					</div>
+				</div>
 			{% endif %}
 
 		</div>
@@ -75,6 +85,7 @@
 </div>
 
 {% load staticfiles %}
+
 <script type="text/javascript" src="{% static 'jobs/js/scenario_damage.js' %}"></script>
 
 

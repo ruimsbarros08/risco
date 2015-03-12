@@ -16,22 +16,177 @@
 	
 	<div class="row">
 
-		<div class="col-md-12">
+		<div class="col-md-8">
 			
 			<h3>{{ model.name }}</h3>
 			<br>
 			<h4>{{ model.description }}</h4>
 			<br>
-			<h4>Taxonomy source: {{ model.taxonomy_source }}</h4>
+			<p>Authors:
+			{% for contributor in model.exposure_model_contributor_set.all %}
+				{% if contributor.author %}
+					<a href="#">{{ contributor.contributor.first_name }} {{ contributor.contributor.last_name }}</a>
+					{% if model.exposure_model_contributor_set.all|length > 1 %}
+						{% if not forloop.last %},{% else %} and {% endif %}
+					{% endif %}
+				{% endif %}
+			{% endfor %}
+			</p>
+			<p>Contributors:
+			{% for contributor in model.exposure_model_contributor_set.all %}
+				{% if not contributor.author %}
+					<a href="#">{{ contributor.contributor.first_name }} {{ contributor.contributor.last_name }}</a>
+					{% if model.exposure_model_contributor_set.all|length > 1 %}
+						{% if not forloop.last %},{% else %} and {% endif %}
+					{% endif %}
+				{% endif %}
+			{% endfor %}
+			</p>
 			<br>
 
+		</div>
+		<div class="col-md-4">
+			<div class="well">
+				<div class="row">
+					<div class="col-md-12">
+						<h3>Settings</h3>
+						<p>Taxonomy source: {{ model.taxonomy_source }}</p>
+						<p>Area type: {{ model.get_area_type_display }}</p>
+						<p>Area units: {{ model.get_area_unit_display }}</p>
+						<p>Costs: {{model.get_aggregation_display}}</p>
+						<p>Currency: {{model.get_currency_display}}</p>
+						<p>Deductible: {{ model.get_deductible_display }}</p>
+						<p>Insurance limit: {{ model.get_insurance_limit_display }}</p>
+					</div>
+				</div>
+			</div>
 		</div>
 
 	</div>
 
 	<div class="row">
-		<div class="col-md-12">
-			<div id="map" class="vertical-map"></div>
+		<div class="col-md-8">
+			<div class="row">
+				<div class="col-md-12">
+					<div id="map" class="vertical-map"></div><br>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<form class="form-horizontal" action="{% url 'add_asset' model.id %}" method="post" enctype="multipart/form-data">
+						<fieldset>
+							<legend>Insert new asset</legend>
+							{% csrf_token %}
+
+							{% for field in form %}
+
+							{% if field.name == 'struct_deductible' or field.name == 'struct_insurance_limit' or field.name == 'retrofitting_cost' or field.name == 'non_struct_deductible' or  field.name == 'non_struct_insurance_limit' or field.name == 'contents_deductible' or field.name == 'contents_insurance_limit' or field.name == 'business_int_deductible' or field.name == 'business_int_insurance_limit' %}
+
+								{% if model.deductible == 'relative' %}
+									{% if field.errors %}
+									<div class="form-group has-error">
+									{% else %}
+									<div class="form-group">
+									{% endif %}
+								      	<label for="{{ field.name }}" class="col-lg-2 control-label">{{ field.label }}</label>
+								      	<div class="col-lg-10">
+								        	{{ field }}
+								        	{% if field.errors %}
+								        	<span class="help-block">{{ field.errors }}</span>
+								        	{% endif %}
+								      	</div>
+								    </div>
+								{% endif %}
+							
+							{% else %}
+
+								{% if field.errors %}
+								<div class="form-group has-error">
+								{% else %}
+								<div class="form-group">
+								{% endif %}
+							      	<label for="{{ field.name }}" class="col-lg-2 control-label">{{ field.label }}</label>
+							      	<div class="col-lg-10">
+							        	{{ field }}
+							        	{% if field.errors %}
+							        	<span class="help-block">{{ field.errors }}</span>
+							        	{% endif %}
+							      	</div>
+							    </div>
+
+							{% endif %}
+
+							{% endfor %}
+
+							<div class="form-group">
+							    <div class="col-lg-5 col-lg-offset-2">
+							        <input class="btn btn-primary" type="submit" value="Add" />
+							    </div>
+							</div>
+					    </fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			
+			<div style="height: 1500px; overflow-y: scroll;">
+				
+				<div class="row">
+					<div class="col-md-12">
+					<table id='assets_table' class="table table-striped table-hover ">
+						<caption>Assets</caption>
+						  	<thead>
+							    <tr>
+							      <th>Name</th>
+							      <th>Taxonomy</th>
+							      <th>Number of buildings</th>
+							      <th>Area</th>
+							      <th>Structural cost ({{model.currency}})</th>
+							    </tr>
+							</thead>
+							<tbody>
+
+							</tbody>
+						</table>
+					<!--
+						{% if assets %}
+						<table id='assets_table' class="table table-striped table-hover ">
+						<caption>Assets</caption>
+						  	<thead>
+							    <tr>
+							      <th>Name</th>
+							      <th>Taxonomy</th>
+							      <th>Number of buildings</th>
+							      <th>Area</th>
+							      <th>Structural cost ({{model.currency}})</th>
+							    </tr>
+							</thead>
+
+							{% for asset in assets %}
+							<tbody>
+							    <tr>
+							      <td><a href="#"> {{ asset.name }} </a></td>
+							      <td><a href="#"> {{ asset.taxonomy }} </a></td>
+							      <td>{{ asset.n_buildings }}</td>
+							      <td>{{ asset.area }}</td>
+							      <td>{{ asset.struct_cost }}</td>
+							    </tr>
+							</tbody>
+
+							{% endfor %}
+						</table>
+
+						{% else %}
+							<div class="alert alert-dismissable alert-info">
+							<button type="button" class="close" data-dismiss="alert">×</button>
+						    	<p>No assets are available. Please add the first</p>
+						    </div>
+						{% endif %}
+						-->
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 

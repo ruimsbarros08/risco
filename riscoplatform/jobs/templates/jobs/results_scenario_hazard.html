@@ -24,82 +24,121 @@
 	<div class="row">
 		
 		<div class="col-md-9">
-			<div id='map' class="vertical-map"></div><br>
+			<div id='map' style="height:700px;"></div><br>
 		</div>
 
 		<div class="col-md-3">
 
-			<ul class="list-group">
-			  	<li class="list-group-item active">
-			  	Job parameters	
-			  	</li>
+			{% if job.status == 'CREATED' %}
+			<div class="row">
+				<div class="col-md-12">
+					<a href="{% url 'start_scenario_hazard' job.id %}"> <button class="btn btn-danger" style="width:100%;">Start job</button></a>
+				</div>
+			</div>
+			<br>
+			{% elif job.status == 'STARTED' %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-warning disabled" style="width:100%;">Calculating...</button>
+				</div>
+			</div>
+			<br>
+			{% elif job.status == 'ERROR' %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-danger disabled" style="width:100%;">ERROR!</button>
+				</div>
+			</div>
+			<br>
+			{% elif job.status == 'FINISHED' %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-success disabled" style="width:100%;">Results ready!</button>
+				</div>
+			</div>
+			<br>
+			{% endif %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-primary" style="width:100%;">Download files</button>
+				</div>
+			</div>
+			<br>
 
-			  	<li class="list-group-item">
-			    <b>Grid spacing:</b> {{ job.grid_spacing }} 
-			  	</li>
+			<div class="row">
+				<div class="col-md-12">
 
-			  	{% if job.sites_type == 'VARIABLE_CONDITIONS' %}
-			  	<li class="list-group-item">
-				<b>Site model:</b> <a href="{% url 'detail_site' job.site_model.id %}">{{ job.site_model }} </a> 
-			  	</li>
-				{% else %}
-				<li class="list-group-item">
-				<b>vs30:</b> {{ job.vs30 }} 
-			  	</li>
+					<ul class="list-group">
+					  	<li class="list-group-item active">
+					  	Job parameters	
+					  	</li>
 
-			  	<li class="list-group-item">
-				<b>vs30type:</b> {{ job.vs30type }}
-			  	</li>
-			    
-			    <li class="list-group-item">
-				<b>z1pt0:</b> {{ job.z1pt0 }}
-			  	</li>
-			    
-			    <li class="list-group-item">
-				<b>z2pt5:</b> {{ job.z2pt5 }}
-			  	</li>
-				{% endif %}
+					  	<li class="list-group-item">
+					    <b>Grid spacing:</b> {{ job.grid_spacing }} 
+					  	</li>
 
-				<li class="list-group-item">
-				<b>Random seed:</b> {{ job.random_seed }}
-			  	</li>
+					  	{% if job.sites_type == 'VARIABLE_CONDITIONS' %}
+					  	<li class="list-group-item">
+						<b>Site model:</b> <a href="{% url 'detail_site' job.site_model.id %}">{{ job.site_model }} </a> 
+					  	</li>
+						{% else %}
+						<li class="list-group-item">
+						<b>vs30:</b> {{ job.vs30 }} 
+					  	</li>
 
-			  	<li class="list-group-item">
-				<b>Rupture mesh spacing:</b> {{ job.rupture_mesh_spacing }}
-			  	</li>
+					  	<li class="list-group-item">
+						<b>vs30type:</b> {{ job.vs30type }}
+					  	</li>
+					    
+					    <li class="list-group-item">
+						<b>z1pt0:</b> {{ job.z1pt0 }}
+					  	</li>
+					    
+					    <li class="list-group-item">
+						<b>z2pt5:</b> {{ job.z2pt5 }}
+					  	</li>
+						{% endif %}
 
-			  	<li class="list-group-item">
-				<b>Rupture model:</b> <a href="{% url 'index_rupture_model' %}">{{ job.site_model }} </a> 
-			  	</li>
+						<li class="list-group-item">
+						<b>Random seed:</b> {{ job.random_seed }}
+					  	</li>
 
-			  	<li class="list-group-item">
-				<b>Truncation level:</b> {{ job.truncation_level }}
-			  	</li>
+					  	<li class="list-group-item">
+						<b>Rupture mesh spacing:</b> {{ job.rupture_mesh_spacing }}
+					  	</li>
 
-			  	<li class="list-group-item">
-				<b>Max distance:</b> {{ job.max_distance }}
-			  	</li>
+					  	<li class="list-group-item">
+						<b>Rupture model:</b> <a href="{% url 'index_rupture_model' %}">{{ job.rupture_model }} </a> 
+					  	</li>
 
-			  	<li class="list-group-item">
-				<b>GMPE:</b> {{ job.gmpe }}
-			  	</li>
+					  	<li class="list-group-item">
+						<b>Truncation level:</b> {{ job.truncation_level }}
+					  	</li>
 
-			  	<li class="list-group-item">
-				<b>Correlation model:</b> {{ job.correlation_model }}
-			  	</li>
+					  	<li class="list-group-item">
+						<b>Max distance:</b> {{ job.max_distance }}
+					  	</li>
 
-			  	<li class="list-group-item">
-				<b>vs30 clustering:</b> {{ job.vs30_clustering }}
-			  	</li>
+					  	<li class="list-group-item">
+						<b>GMPE:</b> {{ job.gmpe }}
+					  	</li>
 
-			  	<li class="list-group-item">
-				<b>Number of gmf:</b> {{ job.n_gmf }}
-			  	</li>
+					  	<li class="list-group-item">
+						<b>Correlation model:</b> {{ job.correlation_model }}
+					  	</li>
 
-			</ul>
+					  	<li class="list-group-item">
+						<b>vs30 clustering:</b> {{ job.vs30_clustering }}
+					  	</li>
 
+					  	<li class="list-group-item">
+						<b>Number of gmf:</b> {{ job.n_gmf }}
+					  	</li>
+
+					</ul>
+				</div>
+			</div>
 		</div>
-
 	</div>
 </div>
 

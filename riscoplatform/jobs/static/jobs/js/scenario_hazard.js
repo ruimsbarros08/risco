@@ -6,8 +6,6 @@ $( document ).ready(function() {
     //hide-show    
     $( "label[for='region']" ).hide( "fast");
     $( "label[for='site_model']" ).hide( "fast");
-    $( "label[for='site_model']" ).hide( "fast");
-    $( "label[for='site_model']" ).hide( "fast");
 
 
     $( "label[for='site_model']" ).hide( "fast");
@@ -55,32 +53,16 @@ $( document ).ready(function() {
     });
 
 
-	var map = new L.Map('map');
-    //var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    //var osmUrl='http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png';
-	var osmUrl='http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png';
-	var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
-	var osm = new L.TileLayer(osmUrl, {minZoom: 3, maxZoom: 16, attribution: osmAttrib});
-
-	map.setView(new L.LatLng(40, -8),5);
-	map.addLayer(osm);
-
-
+    var map = new L.Map('map');
+    map.setView(new L.LatLng(40, -8),5);
+    osm.addTo(map);
+    L.control.layers(baseMaps).addTo(map);
 
     // Initialize the FeatureGroup to store editable layers
     var drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
 
-    /*
-    var polylineOptions = {
-                allowIntersection: false,
-                shapeOptions: {
-                    color: '#f00',
-                    weight: 3
-                }
-            };
-    */
     var polygonOptions = {
                 showArea: true,
             };
@@ -106,16 +88,7 @@ $( document ).ready(function() {
     map.on('draw:created', function (e) {
         var type = e.layerType,
             layer = e.layer;
-        /*
-        if (type == 'marker'){
-            $('.leaflet-draw-draw-marker').hide();
-            $("#id_location").attr('value', toWKT(layer));
-        }
-        if (type == 'polyline'){
-            $('.leaflet-draw-draw-polyline').hide();
-            $("#id_rupture_geom").attr('value', toWKT(layer));
-        }
-        */
+
         if (type == 'polygon'){
             $('.leaflet-draw-draw-polygon').hide();
             $("#id_region").attr('value', toWKT(layer));
@@ -128,14 +101,7 @@ $( document ).ready(function() {
     map.on('draw:edited', function (e) {
         var layers = e.layers;
         layers.eachLayer(function (layer) {
-            /*
-            if (layer instanceof L.Marker){
-                $("#id_location").attr('value', toWKT(layer));  
-            }
-            if (layer instanceof L.Polyline){
-                $("#id_rupture_geom").attr('value', toWKT(layer));
-            }
-            */
+
             if (layer instanceof L.Polygon){
                 $("#id_region").attr('value', toWKT(layer));
             }
@@ -145,16 +111,7 @@ $( document ).ready(function() {
     map.on('draw:deleted', function (e) {
         var layers = e.layers;
         layers.eachLayer(function (layer) {
-            /*
-            if (layer instanceof L.Marker){
-                $('.leaflet-draw-draw-marker').show();
-                $("#id_location").attr('value', '');
-            }
-            if (layer instanceof L.Polyline){
-                $('.leaflet-draw-draw-polyline').show();
-                $("#id_rupture_geom").attr('value', '');
-            }
-            */
+
             if (layer instanceof L.Polygon){
                 $('.leaflet-draw-draw-polygon').show();
                 $("#id_region").attr('value', '');

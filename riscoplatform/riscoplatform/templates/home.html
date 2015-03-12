@@ -5,11 +5,25 @@
 	<div class="row">
 		<div class="col-md-12">
 			
-			<h1>Risco</h1>
+			<h1>risco</h1>
 
 			<h3>The web interface for openquake users</h3>
+
+			<div id="map" style="height:500px;"></div>
 
 		</div>
 	</div>
 </div>
+
+<script type="text/javascript">
+(function($) {
+	$( document ).ready(function() {
+		var map = new L.Map('map');
+	    map.setView(new L.LatLng(40, -8),5);
+	    osm.addTo(map);
+		L.control.layers(baseMaps).addTo(map);
+	});
+})($)
+</script>
+
 {% endblock %}

@@ -80,6 +80,15 @@ class Exposure_Model(models.Model):
         (PER_AREA, 'Per area'),
     )
 
+    AGGREGATED = 'aggregated'
+    PER_UNIT = 'per_unit'
+    PER_ASSET = 'per_asset'
+    AGG_AREA_CHOICES = (
+        (AGGREGATED, 'Aggregated'),
+        (PER_UNIT, 'Per unit'),
+        (PER_ASSET, 'Per asset'),
+    )
+
     EURO = 'EUR'
     DOLLAR = 'DOL'
     CURRENCY_CHOICES = (
@@ -90,8 +99,8 @@ class Exposure_Model(models.Model):
     ABSOLUTE = 'absolute'
     RELATIVE = 'relative'
     INSURANCE_SETTINGS = (
-        (ABSOLUTE, 'absolute'),
-        (RELATIVE, 'relative')
+        (ABSOLUTE, 'Absolute'),
+        (RELATIVE, 'Relative')
     )
 
 
@@ -100,7 +109,7 @@ class Exposure_Model(models.Model):
     description                 = models.CharField(max_length=200)
     contributors                = models.ManyToManyField(User, through='Exposure_Model_Contributor')
     taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source, blank=True, null=True)
-    area_type                   = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
+    area_type                   = models.CharField(max_length=20, choices=AGG_AREA_CHOICES, null=True)
     area_unit                   = models.CharField(max_length=20, choices=UNIT_CHOICES, null=True)
     struct_cost_type            = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
     struct_cost_currency        = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
@@ -110,12 +119,26 @@ class Exposure_Model(models.Model):
     contents_cost_currency      = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
     business_int_cost_type      = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
     business_int_cost_currency  = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
-    deductible                  = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True)
-    insurance_limit             = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True)
+    deductible                  = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True, default='absolute')
+    insurance_limit             = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True, default='absolute')
     xml                         = models.FileField(upload_to='uploads/exposure/', null=True, blank=True)
     oq_id                       = models.IntegerField(null=True)
 
+    aggregation                 = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
+    currency                    = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
+
     def save(self, *args, **kwargs):
+        if self.aggregation:
+            self.struct_cost_type = self.aggregation
+            self.non_struct_cost_type = self.aggregation
+            self.contents_cost_type = self.aggregation
+            self.business_int_cost_type = self.aggregation
+            
+        if self.currency:
+            self.struct_cost_currency = self.currency
+            self.non_struct_cost_currency = self.currency
+            self.contents_cost_currency = self.currency
+            self.business_int_cost_currency = self.currency
         super(Exposure_Model, self).save(*args, **kwargs)
 
     class Meta:
@@ -375,10 +398,10 @@ class Rupture_Model(models.Model):
 
     def save(self, *args, **kwargs):
 
-        if self.rupture_type == 'POINT':
-            string = str(render_to_string('eng_models/rupture_point_source.xml', {'rupture': self}))
-        else:
-            string = str(render_to_string('eng_models/rupture_fault_source.xml', {'rupture': self}))
+        #if self.rupture_type == 'POINT':
+        #    string = str(render_to_string('eng_models/rupture_point_source.xml', {'rupture': self}))
+        #else:
+        #    string = str(render_to_string('eng_models/rupture_fault_source.xml', {'rupture': self}))
         #f = open('/tmp/rupture.xml', 'rw')
         #djangofile = File(f)
         #djangofile.write(string)

@@ -10,6 +10,7 @@ $( document ).ready(function() {
 
 	map.setView(new L.LatLng(40, -8),5);
 	map.addLayer(osm);
+    L.control.layers(baseMaps).addTo(map);
 
 
     var info = L.control({position: 'bottomleft'});
@@ -42,9 +43,9 @@ $( document ).ready(function() {
     
     $.ajax( BASE_URL+'jobs/scenario/hazard/results_ajax/'+job_id )
     .done(function(data) {
-        for (var i = 0; i<data.length;i++) {
+        for (var i = 0; i<data.hazard.length;i++) {
 
-            var geoJsonTileLayer = L.geoJson(data[i], {
+            var geoJsonTileLayer = L.geoJson(data.hazard[i], {
                 style: style,
                 onEachFeature: function (feature, layer) {
                     layer.setStyle({"fillColor": feature.properties.color});
@@ -59,9 +60,22 @@ $( document ).ready(function() {
                 }
             }).addTo(map);
 
-            control.addBaseLayer(geoJsonTileLayer, data[i].name);
+            control.addBaseLayer(geoJsonTileLayer, data.hazard[i].name);
 
         }
+
+        var ruptureLayer = L.geoJson(data.rupture, {
+        //style: style,
+        onEachFeature: function (feature, layer) {
+            //layer.setStyle({"fillColor": feature.properties.color});
+            layer.on('click', function () {
+                //info.update(layer.feature.properties);
+                //layer.setStyle(hoverStyle);
+            });
+        }
+    }).addTo(map);
+
+    control.addOverlay(ruptureLayer, 'Rupture')
 
     })
     .fail(function() {

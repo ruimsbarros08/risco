@@ -9,6 +9,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from parsers import exposure_parser, fragility_parser, source_parser, site_model_parser, logic_tree_parser
 from django.core import serializers
 from django.db import connection
+from django.db.models import F
 import json
 import requests
 
@@ -42,25 +43,52 @@ class ExposureForm(forms.ModelForm):
 	tax_source_desc = forms.CharField(required=False)
 	class Meta:
 		model = Exposure_Model
-		fields = ['name', 'description', 'taxonomy_source', 'xml']
+		fields = ['name', 'description', 'taxonomy_source', 'area_type', 'area_unit', 'aggregation', 'currency', 'deductible', 'insurance_limit', 'xml']
 
+class AssetForm(forms.ModelForm):
+	class Meta:
+		model = Asset
+		exclude = ['model', 'parish']
+		widgets = {
+		    'location': forms.HiddenInput(),
+		}
+
+			
 @login_required
 def index_exposure(request):
 	models = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
 	form = ExposureForm()
 	page = request.GET.get('page')
-
 	return render(request, 'eng_models/index_exposure.html', {'models': pagination(models, 10, page), 'form': form})
 
 @login_required
 def detail_exposure(request, model_id):
 	model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
+	form = AssetForm()
+	form.fields["taxonomy"].queryset = Building_Taxonomy.objects.filter(source=model.taxonomy_source)
+	return render(request, 'eng_models/detail_exposure.html', {'model': model, 'form': form})
+
+
+@login_required
+def ajax_assets(request, model_id):
+	model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
 	try:
-		asset_list = Asset.objects.filter(model_id=model_id)
+		page = int(request.GET.get('page'))
 	except:
-		asset_list = []
-	page = request.GET.get('page')
-	return render(request, 'eng_models/detail_exposure.html', {'model': model, 'assets': pagination(asset_list, 10, page)})
+		page = 1
+	asset_list = Asset.objects.filter(model=model)[page:page+49]
+	json_list = serializers.serialize("json", asset_list)
+	return HttpResponse(json_list, content_type="application/json")
+
+
+@login_required
+def ajax_heat_assets(request, model_id):
+	model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
+	
+	cursor = connection.cursor()
+	cursor.execute('select st_y(location), st_x(location), id from eng_models_asset where model_id = %s', [model.id])
+	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
+
 
 @login_required
 def add_exposure_model(request):
@@ -88,6 +116,31 @@ def add_exposure_model(request):
 	else:
 		form = ExposureForm()
 		return render(request, 'eng_models/index_exposure.html', {'form': form})
+
+
+@login_required
+def add_asset(request, model_id):
+	if request.method == 'POST':
+		model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
+		form = AssetForm(request.POST)
+		form.fields["taxonomy"].queryset = Building_Taxonomy.objects.filter(source=model.taxonomy_source)
+		if form.is_valid():
+			asset = form.save(commit=False)
+			asset.model_id = model_id
+			asset.save()
+			return redirect('detail_exposure', model_id=model_id)
+		else:
+			model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
+			try:
+				asset_list = Asset.objects.filter(model_id=model_id)[1:50]
+			except:
+				asset_list = []
+			return render(request, 'eng_models/detail_exposure.html', {'model': model, 'form': form, 'assets': asset_list})
+	else:
+		model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
+		form = AssetForm()
+		return render(request, 'eng_models/detail_exposure.html', {'model': model, 'form': form})
+
 
 @login_required
 def exposure_geojson_tiles(request, model_id, z, x, y):

@@ -4,14 +4,14 @@
 
 <div class="container">
 
-<div class="row">
-	<div class="col-md-6">
-		<ul class="breadcrumb">
-		  	<li> <a href="{% url 'jobs_home' %}">Jobs</a></li>
-		  	<li class="active">Scenario Hazard</li>
-		</ul>
+	<div class="row">
+		<div class="col-md-6">
+			<ul class="breadcrumb">
+			  	<li> <a href="{% url 'jobs_home' %}">Jobs</a></li>
+			  	<li class="active">Scenario Hazard</li>
+			</ul>
+		</div>
 	</div>
-</div>
 
 
 	<div class="row">
@@ -20,6 +20,17 @@
 			<div id='map' class="vertical-map"></div><br>
 		</div>
 	</div>
+
+	{% if queue_error %}
+	<br>
+	<div class="row">
+		<div class="col-md-8 col-md-offset-2">
+			<div class="alert alert-dismissible alert-danger">
+			  	Error: Your job could not be able to be calculated in our servers
+			</div>
+		</div>
+	</div>
+	{% endif %}
 
 	<div class="row">
 		<div class="col-md-8">
