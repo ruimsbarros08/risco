@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+
+<div class="container">
+
+	<div class="row">
+		<div class="col-md-6">
+			<ul class="breadcrumb">
+			  	<li> <a href="{% url 'eng_models_home' %}">Models</a></li>
+			  	<li><a href="{% url 'index_taxonomy' %}"> Taxonomy Sources</a></li>
+			  	<li class="active">{{ model.name }}</li>
+			</ul>
+		</div>
+	</div>
+	
+	<div class="row">
+
+		<div class="col-md-12">
+			
+			<h3>{{ model.name }}</h3>
+			<br>
+			<h4>{{ model.description }}</h4>
+			<br>
+			<p>Authors:
+			{% for contributor in model.building_taxonomy_source_contributor_set.all %}
+				{% if contributor.author %}
+					<a href="#">{{ contributor.contributor.first_name }} {{ contributor.contributor.last_name }}</a>
+					{% if model.building_taxonomy_source_contributor_set.all|length > 1 %}
+						{% if not forloop.last %},{% else %} and {% endif %}
+					{% endif %}
+				{% endif %}
+			{% endfor %}
+			</p>
+			<p>Contributors:
+			{% for contributor in model.building_taxonomy_source_contributor_set.all %}
+				{% if not contributor.author %}
+					<a href="#">{{ contributor.contributor.first_name }} {{ contributor.contributor.last_name }}</a>
+					{% if model.building_taxonomy_source_contributor_set.all|length > 1 %}
+						{% if not forloop.last %},{% else %} and {% endif %}
+					{% endif %}
+				{% endif %}
+			{% endfor %}
+			</p>
+			<br>
+
+		</div>
+
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<table class="table table-striped table-hover ">
+			  <thead>
+			    <tr>
+			      <th>Name</th>
+			      <th>Description</th>
+			      <th>Material</th>
+			      <th>Height</th>
+			      <th>Code</th>
+			    </tr>
+			  </thead>
+			  <tbody>
+			  {% for tax in taxonomies %}
+			    <tr>
+			      <td>{{ tax.name }}</td>
+			      <td>{{ tax.description }}</td>
+			      <td>{{ tax.material }}</td>
+			      <td>{{ tax.nstoreys }}</td>
+			      <td>{{ tax.code }}</td>
+			    </tr>
+			  {% endfor %}
+			   </tbody>
+			  </table>
+		</div>
+
+	</div>
+</div>
+
+
+{% endblock %}

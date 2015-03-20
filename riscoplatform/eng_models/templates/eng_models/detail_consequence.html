@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+<div class="row">
+	<div class="col-md-6">
+		<ul class="breadcrumb">
+		  	<li> <a href="{% url 'eng_models_home' %}">Models</a></li>
+		  	<li><a href="{% url 'index_consequence' %}"> Consequence </a></li>
+		  	<li class="active">{{ model.name }}</li>
+		</ul>
+	</div>
+</div>
+	
+	<div class="row">
+		<div class="col-md-12">
+			<h3>{{ model.name }}</h3>
+			<br>
+			<h4>{{ model.description }}</h4>
+			<br>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div id="chart-container"></div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-3">
+			<div>
+				<input type="text" class="form-control" id="limit-state">
+				<button id='add-limit-state' class="btn btn-sm btn-success">Add Limit State</button>
+			</div>
+			<div>
+				<select class="form-control" id="limit-state-dropdown">
+					<option></option>
+				</select>
+				<input type="text" class="form-control" id="limit-state-value">
+				<button id='update-value' class="btn btn-sm btn-success">Update value</button>
+			</div>			
+		</div>
+	</div>
+
+</div>
+
+
+{% load staticfiles %}
+<script type="text/javascript" src="{% static 'eng_models/js/consequence.js' %}"></script>
+
+
+{% endblock %}

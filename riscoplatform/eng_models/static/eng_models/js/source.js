@@ -4,15 +4,15 @@
 $( document ).ready(function() {
 
 
-    $('label[for="point"]').hide('fast');
-    $('label[for="area"]').hide('fast');
-    $('label[for="fault"]').hide('fast');
+    $('label[for="point"]').hide();
+    $('label[for="area"]').hide();
+    $('label[for="fault"]').hide();
 
     //hide-show    
-    $( "label[for='bin_width']" ).hide( "fast");
-    $( "#id_bin_width" ).hide( "fast");
-    $( "label[for='occur_rates']" ).hide( "fast");
-    $( "#id_occur_rates" ).hide( "fast");
+    $( "label[for='bin_width']" ).hide();
+    $( "#id_bin_width" ).hide();
+    $( "label[for='occur_rates']" ).hide();
+    $( "#id_occur_rates" ).hide();
     $('#id_mag_freq_dist_type').on('change', function() {
         if (this.value == 'TRUNC'){
             $( "label[for='bin_width']" ).hide( "fast");
@@ -45,10 +45,10 @@ $( document ).ready(function() {
 
 
     //hide-show    
-    $( "label[for='dip']" ).hide( "fast");
-    $( "#id_dip" ).hide( "fast");
-    $( "label[for='rake']" ).hide( "fast");
-    $( "#id_rake" ).hide( "fast");
+    $( "label[for='dip']" ).hide();
+    $( "#id_dip" ).hide();
+    $( "label[for='rake']" ).hide();
+    $( "#id_rake" ).hide();
 
     $('#id_source_type').on('change', function() {
         if (this.value == 'SIMPLE_FAULT'){
@@ -98,66 +98,62 @@ $( document ).ready(function() {
     var map = new L.Map('map');
     map.setView(new L.LatLng(40, -8),5);
     osm.addTo(map);
-    L.control.layers(baseMaps).addTo(map);
+    var control = L.control.layers(baseMaps).addTo(map);
 
     var url = document.URL.split('/');
     var model_id = url[url.length -2];
 
+    var getContentPopup = function(feature) {
+        return '<h5>'+feature.id+' - '+feature.properties.name+'</h5>'
+                /*<ul> \
+                <li>Tectonic region:'+feature.properties.tectonic_region+'</li> \
+                <li>Magnitude scale relation:'+feature.properties.mag_scale_rel+'</li> \
+                <li>Rupture Aspect Ratio:'+feature.properties.rupt_aspect_ratio+'</li> \
+                <li>Magnitude frequency distribution:'+feature.properties.mag_freq_dist_type+'</li> \
+                </ul>*/
+    }
     
     $.ajax( BASE_URL+'models/sources/'+model_id+'/ajax' )
     .done(function(data) {
 
-    var pointSourceLayer = L.geoJson(data.pointSource, {
-        //style: style,
-        onEachFeature: function (feature, layer) {
-            //layer.setStyle({"fillColor": feature.properties.color});
-            layer.on('click', function () {
-                //info.update(layer.feature.properties);
-                //layer.setStyle(hoverStyle);
-                var popupContent = '<b>ID</b>: '+feature.id+'<br><b>Name</b>: '+feature.properties.name;
-                layer.bindPopup(popupContent).openPopup();
-            });
-        }
-    }).addTo(map);
+        var pointSourceLayer = L.geoJson(data.pointSource, {
+            //style: style,
+            onEachFeature: function (feature, layer) {
+                layer.on('click', function () {
+                    var popupContent = getContentPopup(feature);
+                    layer.bindPopup(popupContent).openPopup();
+                });
+            }
+        }).addTo(map);
+        control.addOverlay(pointSourceLayer, 'Point Sources');
 
 
-    var areaSourceLayer = L.geoJson(data.areaSource, {
-        //style: style,
-        onEachFeature: function (feature, layer) {
-            //layer.setStyle({"fillColor": feature.properties.color});
-            layer.on('click', function () {
-                //info.update(layer.feature.properties);
-                //layer.setStyle(hoverStyle);
-                var popupContent = '<b>ID</b>: '+feature.id+'<br><b>Name</b>: '+feature.properties.name;
-                layer.bindPopup(popupContent).openPopup();
+        var areaSourceLayer = L.geoJson(data.areaSource, {
+            //style: style,
+            onEachFeature: function (feature, layer) {
+                layer.on('click', function () {
+                    var popupContent = getContentPopup(feature);
+                    layer.bindPopup(popupContent).openPopup();
 
-            });
-        }
-    }).addTo(map);
+                });
+            }
+        }).addTo(map);
+        control.addOverlay(areaSourceLayer, 'Area Sources');
 
 
-    var faultSourceLayer = L.geoJson(data.faultSource, {
-        //style: style,
-        onEachFeature: function (feature, layer) {
-            //layer.setStyle({"fillColor": feature.properties.color});
-            layer.on('click', function () {
-                //info.update(layer.feature.properties);
-                //layer.setStyle(hoverStyle);
-                var popupContent = '<b>ID</b>: '+feature.id+'<br><b>Name</b>: '+feature.properties.name;
-                layer.bindPopup(popupContent).openPopup();
-            });
-        }
-    }).addTo(map);
+        var faultSourceLayer = L.geoJson(data.faultSource, {
+            //style: style,
+            onEachFeature: function (feature, layer) {
+                layer.on('click', function () {
+                    var popupContent = getContentPopup(feature);
+                    layer.bindPopup(popupContent).openPopup();
+                });
+            }
+        }).addTo(map);
+        control.addOverlay(faultSourceLayer, 'Fault Sources');
 
+        map.fitBounds([areaSourceLayer.getBounds(), faultSourceLayer.getBounds(), pointSourceLayer.getBounds()]);
 
-    //map.fitBounds(areaSourceLayer.getBounds());
-
-    })
-    .fail(function() {
-        alert( "error" );
-    })
-    .always(function() {
-        //alert( "complete" );
     });
 
 

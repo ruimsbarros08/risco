@@ -7,6 +7,13 @@ def start(object):
 
 	model = parse(object.xml)
 
+	limit_states = model.getElementsByTagName('limitStates')[0].firstChild.nodeValue
+	limit_states = limit_states.split('\n')
+	limit_states = [ e.strip() for e in limit_states if e and e.strip()]
+
+	object.limit_states = limit_states
+	object.save()
+
 	functions = model.getElementsByTagName('ffs')
 	for ffs in functions:
 
@@ -36,7 +43,8 @@ def start(object):
 											imt = imt,
 											sa_period = sa_period,
 											min_iml = min_iml,
-											max_iml = max_iml)
+											max_iml = max_iml,
+											unit = unit)
 		tax_frag.save()
 
 		ffcs = ffs.getElementsByTagName('ffc')

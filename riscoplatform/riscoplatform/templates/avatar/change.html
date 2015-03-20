@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load i18n avatar_tags %}
+{% load url from future %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                    
+                <div>
+                <h3>{% trans "Your current avatar: " %}</h3>
+                {% avatar user %}
+                <br><br>
+                {% if not avatars %}
+                    <p>{% trans "You haven't uploaded an avatar yet. Please upload one now." %}</p>
+                    <br>
+                </div>
+                {% else %}
+                <div>  
+                    <form method="POST" action="{% url 'avatar_change' %}" class="form-horizontal">
+                    <fieldset>
+                        <legend>Choose an avatar</legend>
+                        {% for field in primary_avatar_form %}
+                            {% if field.errors %}
+                            <div class="form-group has-error">
+                            {% else %}
+                            <div class="form-group">
+                            {% endif %}
+                                <label for="{{ field.name }}" class="col-lg-2 control-label">{{ field.label }}</label>
+                                <div class="col-lg-10">
+                                    {{ field }}
+                                    {% if field.errors %}
+                                    <span class="help-block">{{ field.errors }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <div class="form-group">
+                            <div class="col-lg-5 col-lg-offset-2">
+                                {% csrf_token %}
+                                <input class="btn btn-primary" type="submit" value="{% trans "Choose new Default" %}" />
+                            </div>
+                        </div>
+                    </fieldset>
+                    </form>
+                    <br>
+                </div>
+                {% endif %}
+                
+                <div>
+                    <form enctype="multipart/form-data" method="POST" action="{% url 'avatar_add' %}" class="form-horizontal">
+                    <legend>Upload an avatar</legend>
+                    <fieldset>
+                        {% for field in upload_avatar_form %}
+                            {% if field.errors %}
+                            <div class="form-group has-error">
+                            {% else %}
+                            <div class="form-group">
+                            {% endif %}
+                                <label for="{{ field.name }}" class="col-lg-2 control-label">{{ field.label }}</label>
+                                <div class="col-lg-10">
+                                    {{ field }}
+                                    {% if field.errors %}
+                                    <span class="help-block">{{ field.errors }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <div class="form-group">
+                            <div class="col-lg-5 col-lg-offset-2">
+                                {% csrf_token %}
+                                <input class="btn btn-primary" type="submit" value="{% trans "Upload New Image" %}" />
+                            </div>
+                        </div>
+                    </fieldset>
+                    </form><br>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

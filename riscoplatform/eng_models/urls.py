@@ -19,10 +19,19 @@ urlpatterns = patterns('',
     url(r'^site/(?P<model_id>\d+)/map_grid$', views.detail_site_ajax, name='detail_site_ajax'),
     url(r'^site/add/$', views.add_site_model, name='add_site_model'),
 
+    url(r'^taxonomies/$', views.index_taxonomy, name='index_taxonomy'),
+    url(r'^taxonomies/(?P<model_id>\d+)/$', views.detail_taxonomy, name='detail_taxonomy'),
+    
     url(r'^fragility/$', views.index_fragility, name='index_fragility'),
     url(r'^fragility/(?P<model_id>\d+)/$', views.detail_fragility, name='detail_fragility'),
     url(r'^fragility/(?P<model_id>\d+)/taxonomy/(?P<taxonomy_id>\d+)/$', views.fragility_get_taxonomy, name='fragility_get_taxonomy'),
     url(r'^fragility/add/$', views.add_fragility_model, name='add_fragility_model'),
+
+    url(r'^consequence/$', views.index_consequence, name='index_consequence'),
+    url(r'^consequence/(?P<model_id>\d+)/$', views.detail_consequence, name='detail_consequence'),
+    url(r'^consequence/(?P<model_id>\d+)/ajax/$', views.consequence_ajax, name='consequence_ajax'),
+    url(r'^consequence/add/$', views.add_consequence_model, name='add_consequence_model'),
+
 
     url(r'^exposure/$', views.index_exposure, name='index_exposure'),
     url(r'^exposure/(?P<model_id>\d+)/$', views.detail_exposure, name='detail_exposure'),

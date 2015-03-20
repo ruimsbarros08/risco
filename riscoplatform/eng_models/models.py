@@ -16,16 +16,24 @@ from django.contrib.auth.models import User
 from world.models import World, Fishnet
 from django.core.files import File
 from django.template.loader import render_to_string
-from djorm_pgarray.fields import FloatArrayField
+from djorm_pgarray.fields import FloatArrayField, TextArrayField
 import numpy as np
 from scipy import stats
 
 
+#class Eng_Models(models.Model):
+#    date_created                = models.DateTimeField('date created')
+#    name                        = models.CharField(max_length=200)
+#    description                 = models.CharField(max_length=200, null=True)
+    
+#    def __unicode__(self):
+#        return self.name
 
 class Building_Taxonomy_Source(models.Model):
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)
     description                 = models.CharField(max_length=200, null=True)
+    #model                       = models.OneToOneField(Eng_Models, primary_key=True) 
     contributors                = models.ManyToManyField(User, through='Building_Taxonomy_Source_Contributor')
 
     class Meta:
@@ -107,6 +115,7 @@ class Exposure_Model(models.Model):
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)
     description                 = models.CharField(max_length=200)
+    #model                       = models.OneToOneField(Eng_Models, primary_key=True) 
     contributors                = models.ManyToManyField(User, through='Exposure_Model_Contributor')
     taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source, blank=True, null=True)
     area_type                   = models.CharField(max_length=20, choices=AGG_AREA_CHOICES, null=True)
@@ -200,6 +209,7 @@ class Site_Model(models.Model):
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)
     description                 = models.CharField(max_length=200)
+    #model                       = models.OneToOneField(Eng_Models, primary_key=True)
     contributors                = models.ManyToManyField(User, through='Site_Model_Contributor')
     xml                         = models.FileField(upload_to='uploads/site/', null=True, blank=True)
 
@@ -260,6 +270,7 @@ class Source_Model(models.Model):
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)
     description                 = models.CharField(max_length=200)
+    #model                       = models.OneToOneField(Eng_Models, primary_key=True)
     contributors                = models.ManyToManyField(User, through='Source_Model_Contributor')
     xml                         = models.FileField(upload_to='uploads/source/', null=True, blank=True)
 
@@ -372,6 +383,7 @@ class Rupture_Model(models.Model):
         (FAULT, 'Fault'),
         )
 
+    #model                       = models.OneToOneField(Eng_Models, primary_key=True) 
     user                        = models.ForeignKey(User)
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)
@@ -426,9 +438,11 @@ class Fragility_Model(models.Model):
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)
     description                 = models.CharField(max_length=200)
+    #model                       = models.OneToOneField(Eng_Models, primary_key=True) 
     contributors                = models.ManyToManyField(User, through='Fragility_Model_Contributor')
     taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source, null=True, blank=True)
     format                      = models.CharField(max_length=10, choices=FORMAT_CHOICES, default=CONTINUOUS)
+    limit_states                = TextArrayField()
 
     xml                         = models.FileField(upload_to='uploads/fragility/', null=True, blank=True)
 
@@ -476,21 +490,21 @@ class Taxonomy_Fragility_Model(models.Model):
         
 class Fragility_Function(models.Model):
 
-    NO_DAMAGE = 'no_damage'
-    SLIGHT = 'slight'
-    MODERATE = 'moderate'
-    EXTENSIVE = 'extensive'
-    COMPLETE = 'complete'
-    LIMIT_STATES = (
-        (NO_DAMAGE, 'No damage'),
-        (SLIGHT, 'Slight'),
-        (MODERATE, 'Moderate'),
-        (EXTENSIVE, 'Extensive'),
-        (COMPLETE, 'Complete'),
-        )
+    #NO_DAMAGE = 'no_damage'
+    #SLIGHT = 'slight'
+    #MODERATE = 'moderate'
+    #EXTENSIVE = 'extensive'
+    #COMPLETE = 'complete'
+    #LIMIT_STATES = (
+    #    (NO_DAMAGE, 'No damage'),
+    #    (SLIGHT, 'Slight'),
+    #    (MODERATE, 'Moderate'),
+    #    (EXTENSIVE, 'Extensive'),
+    #    (COMPLETE, 'Complete'),
+    #    )
 
     tax_frag                    = models.ForeignKey(Taxonomy_Fragility_Model, null=True)
-    limit_state                 = models.CharField(max_length=20, choices=LIMIT_STATES)
+    limit_state                 = models.CharField(max_length=20)
     #limit_state                 = models.ForeignKey(Limit_State)
     mean                        = models.FloatField(null=True)
     stddev                      = models.FloatField(null=True)
@@ -509,6 +523,89 @@ class Fragility_Function(models.Model):
         super(Fragility_Function, self).save(*args, **kwargs)
 
 
+
+class Consequence_Model(models.Model):
+    date_created                = models.DateTimeField('date created')
+    name                        = models.CharField(max_length=200)
+    description                 = models.CharField(max_length=200)
+    contributors                = models.ManyToManyField(User, through='Consequence_Model_Contributor')
+    limit_states                = TextArrayField(null=True, blank=True)
+    values                      = FloatArrayField(null=True, blank=True)
+
+
+class Consequence_Model_Contributor(models.Model):
+    contributor                 = models.ForeignKey(User)
+    model                       = models.ForeignKey(Consequence_Model)
+    author                      = models.BooleanField(default=False)
+    date_joined                 = models.DateTimeField('date joined')
+
+
+
+class Vulnerability_Model(models.Model):
+    BUILDINGS = 'buildings'
+    CONTENTS = 'contents'
+    POPULATION = 'population'
+    ASSET_CATEGORY_CHOICES = (
+        (BUILDINGS, 'Buildings'),
+        (CONTENTS, 'Contents'),
+        (POPULATION, 'Population'),
+        )
+
+    ECONOMIC_LOSS = 'economic_loss'
+    FATALITIES = 'fatalities'
+    LOSS_CATEGORY_CHOICES = (
+        (ECONOMIC_LOSS, 'Economic loss'),
+        (FATALITIES, 'Fatalities'),
+        )
+
+    PGA = 'PGA'
+    PGV = 'PGV'
+    MMI = 'MMI'
+    SA = 'SA'
+    IMT_CHOICES = (
+        (PGA, 'PGA'),
+        (PGV, 'PGV'),
+        (MMI, 'MMI'),
+        (SA, 'Sa'),
+        )
+
+    date_created                = models.DateTimeField('date created')
+    name                        = models.CharField(max_length=200)
+    description                 = models.CharField(max_length=200)
+    contributors                = models.ManyToManyField(User, through='Vulnerability_Model_Contributor')
+    asset_category              = models.CharField(max_length=20, choices=ASSET_CATEGORY_CHOICES)
+    loss_category               = models.CharField(max_length=20, choices=LOSS_CATEGORY_CHOICES)
+    imt                         = models.CharField(max_length=3, choices=IMT_CHOICES)
+    sa_period                   = models.FloatField(null=True)
+    iml                         = FloatArrayField()
+    fragility_model             = models.ForeignKey(Fragility_Model, null=True)
+    consequnce_model            = models.ForeignKey(Consequence_Model, null=True)
+    taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source)
+
+
+class Vulnerability_Model_Contributor(models.Model):
+    contributor                 = models.ForeignKey(User)
+    model                       = models.ForeignKey(Vulnerability_Model)
+    author                      = models.BooleanField(default=False)
+    date_joined                 = models.DateTimeField('date joined')
+
+
+class Vulnerability_Function(models.Model):
+    LOGNORMAL = 'LN'
+    BETA = 'BT'
+    PROBABILISTIC_DISTRIBUTION_CHOICES = (
+        (LOGNORMAL, 'Lognormal'),
+        (BETA, 'Beta'),
+        )
+
+    model                       = models.ForeignKey(Vulnerability_Model)
+    taxonomy                    = models.ForeignKey(Building_Taxonomy)
+    probabilistic_distribution  = models.CharField(max_length=2, choices=PROBABILISTIC_DISTRIBUTION_CHOICES)
+    loss_ratio                  = FloatArrayField()
+    coefficients_variation      = FloatArrayField()
+
+
+
 class Logic_Tree(models.Model):
     SOURCE = 'source'
     GMPE = 'gmpe'
@@ -516,6 +613,8 @@ class Logic_Tree(models.Model):
         (SOURCE, 'Source'),
         (GMPE, 'GMPE'),
         )
+
+    #model                       = models.OneToOneField(Eng_Models, primary_key=True) 
     user                        = models.ForeignKey(User)
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)

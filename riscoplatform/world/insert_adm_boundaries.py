@@ -61,7 +61,6 @@ world_mapping = {
 world_shp = os.path.abspath(os.path.join(os.path.dirname(__file__), 'gadm_v2_shp/gadm2.shp'))
 
 def run(verbose=True):
-    lm = LayerMapping(World, world_shp, world_mapping,
-                      transform=False, encoding='iso-8859-1')
+    lm = LayerMapping(World, world_shp, world_mapping, transform=False, encoding='latin-1')
 
     lm.save(strict=True, verbose=verbose)

@@ -72,6 +72,9 @@ class World(models.Model):
     geom = models.MultiPolygonField()
     objects = models.GeoManager()
 
+    def __unicode__(self):
+        return self.name_0
+
     class Meta:
         managed = True
         db_table = 'world_world'

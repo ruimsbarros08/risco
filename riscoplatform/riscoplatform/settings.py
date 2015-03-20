@@ -31,6 +31,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'djgeojson',
+    'avatar',
     'world',
     'eng_models',
     'jobs'
@@ -78,6 +80,15 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+MEDIA_URL = '/media/'
+
 LOGIN_REDIRECT_URL ='/'
+
+AVATAR_GRAVATAR_BACKUP = False
+AVATAR_STORAGE_DIR = 'uploads/avatars'
+
+SERIALIZATION_MODULES = {
+    'geojson' : 'djgeojson.serializers'
+}
 
 

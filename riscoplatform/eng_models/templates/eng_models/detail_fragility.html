@@ -21,7 +21,7 @@
 		<br>
 		<h4>{{ model.description }}</h4>
 		<br>
-		<h4>Taxonomy source: {{ model.taxonomy_source }}</h4>
+		<p>Taxonomy source: <a href="{% url 'detail_taxonomy' model.taxonomy_source.id %}">{{ model.taxonomy_source }}</a></p>
 		<br>
 
 		</div>
@@ -29,6 +29,7 @@
 
 	<div class="row">
 		<div class="col-md-6">
+				<label for="select" class="control-label">Select a taxonomy</label>
 		        <select class="form-control" id="select">
 					{% for tax in taxonomies %}
 						<option value="{{ tax.taxonomy.id }}" > {{ tax.taxonomy }} </option>
@@ -41,25 +42,57 @@
 		<div style="height:50px;"></div>
 	</div>
 
-	<div class="row">
+	<div class="row" id='fragility-info'>
 		<div class="col-md-6">
+
+			<div>
+				<p>
+					<div style='display:inline-block;'>Intensity measure type (IMT): &nbsp;</div><div style='display:inline-block;' id='imt'></div>
+				</p>
+				<p>
+					<div style='display:inline-block;'>Period (s): &nbsp;</div><div style='display:inline-block;' id='sa_period'></div>
+				</p>
+				<p>
+					<div style='display:inline-block;'>Units:&nbsp;</div><div style='display:inline-block;' id='unit'></div>
+				</p>
+				<p>
+					<div style='display:inline-block;'>Min IML:&nbsp;</div><div style='display:inline-block;' id='min_iml'></div>
+				</p>
+				<p>
+					<div style='display:inline-block;'>Max IML:&nbsp;</div><div style='display:inline-block;' id='max_iml'></div>
+				</p>
+			</div>
+
 			<div id="chart-container-prob">
 			<table class="table table-striped table-hover" id='values-table'>
-			  <thead>
-			    <tr>
-			    	<th>Limit state</th>
-			      	<th>Mean</th>
-			      	<th>Standard deviation</th>
-			    </tr>
-			  </thead>
-			  <tbody>
+			  	<thead>
+			    	<tr>
+			    		<th>Limit state</th>
+			      		<th>Mean</th>
+			      		<th>Standard deviation</th>
+			    	</tr>
+			  	</thead>
+			  	<tbody>
 
-			</tbody>
+				</tbody>
 			</table>
 			</div>
 		</div>
 		<div class="col-md-6">
 			<div id="chart-container-cum"></div>
+		</div>
+	</div>
+	<br>
+
+	<div class="row">
+		<div class="col-md-6">
+			<form class="form-horizontal">
+				<fieldset>
+					<legend>Convert to Vulnerability</legend>
+					{% csrf_token %}
+					{% include 'form.html' %}
+				</fieldset>
+			</form>
 		</div>
 	</div>
 

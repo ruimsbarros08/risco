@@ -65,6 +65,7 @@
 							<div class="col-md-6">
 								<h4><a href="{% url 'detail_exposure' model.id %}">{{ model.name }}</a></h4>
 								<p>{{ model.description }}</p>
+								<p>Taxonomy source: <a href="{% url 'detail_taxonomy' model.taxonomy_source.id %}">{{ model.taxonomy_source }}</a></p>
 								<p>Authors:
 								{% for contributor in model.exposure_model_contributor_set.all %}
 									{% if contributor.author %}
@@ -121,10 +122,10 @@
 
 <script type="text/javascript">
     
-    $( "label[for='tax_source_name']" ).hide( "fast");
-    $( "#id_tax_source_name" ).hide( "fast");
-    $( "label[for='tax_source_desc']" ).hide( "fast");
-    $( "#id_tax_source_desc" ).hide( "fast");
+    $( "label[for='tax_source_name']" ).hide();
+    $( "#id_tax_source_name" ).hide();
+    $( "label[for='tax_source_desc']" ).hide();
+    $( "#id_tax_source_desc" ).hide();
     $('#id_add_tax_source').change( function() {
         if ($(this).is(":checked")){
             $( "label[for='tax_source_name']" ).show( "fast");

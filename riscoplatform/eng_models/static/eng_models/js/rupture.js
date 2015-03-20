@@ -8,43 +8,38 @@ $( document ).ready(function() {
     osm.addTo(map);
     L.control.layers(baseMaps).addTo(map);
 
+    var getContentPopup = function(feature) {
+        return '<h5>'+feature.id+' - '+feature.properties.name+'</h5>'
+    }
+
     $.ajax( BASE_URL+'models/rupture/ajax' )
     .done(function(data) {
 
-    var pointSourceLayer = L.geoJson(data.pointSource, {
-        //style: style,
-        onEachFeature: function (feature, layer) {
-            //layer.setStyle({"fillColor": feature.properties.color});
-            layer.on('click', function () {
-                //info.update(layer.feature.properties);
-                //layer.setStyle(hoverStyle);
-            });
-        }
-    }).addTo(map);
+        var pointSourceLayer = L.geoJson(data.pointSource, {
+            //style: style,
+            onEachFeature: function (feature, layer) {
+                layer.on('click', function () {
+                    var popupContent = getContentPopup(feature);
+                    layer.bindPopup(popupContent).openPopup();
+                });
+            }
+        }).addTo(map);
 
 
-    var faultSourceLayer = L.geoJson(data.faultSource, {
-        //style: style,
-        onEachFeature: function (feature, layer) {
-            //layer.setStyle({"fillColor": feature.properties.color});
-            layer.on('click', function () {
-                //info.update(layer.feature.properties);
-                //layer.setStyle(hoverStyle);
-            });
-        }
-    }).addTo(map);
+        var faultSourceLayer = L.geoJson(data.faultSource, {
+            //style: style,
+            onEachFeature: function (feature, layer) {
+                layer.on('click', function () {
+                    var popupContent = getContentPopup(feature);
+                    layer.bindPopup(popupContent).openPopup();
+                });
+            }
+        }).addTo(map);
 
 
-    //map.fitBounds(areaSourceLayer.getBounds());
+        map.fitBounds([pointSourceLayer.getBounds() ,faultSourceLayer.getBounds()]);
 
-    })
-    .fail(function() {
-        alert( "error" );
-    })
-    .always(function() {
-        //alert( "complete" );
     });
-
 
 
     // Initialise the FeatureGroup to store editable layers
@@ -127,11 +122,11 @@ $( document ).ready(function() {
     });
 
 
-    $( "label[for='location']" ).hide( "fast");
-    $( "label[for='rupture_geom']" ).hide( "fast");
+    $( "label[for='location']" ).hide();
+    $( "label[for='rupture_geom']" ).hide();
 
-    $( "label[for='xml']" ).hide( "fast");
-    $( "#id_xml" ).hide( "fast");
+    $( "label[for='xml']" ).hide();
+    $( "#id_xml" ).hide();
     
     $('#id_input_type').on('change', function() {
         if (this.value == 'CUSTOM_RUPTURE'){

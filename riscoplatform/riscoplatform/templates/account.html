@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load avatar_tags %}
+{% block content %}
+<!--
+<div class="container">
+	<div class="row">
+		<div class="col-md-6 col-md-offset-3">
+			
+		<form class="form-horizontal">
+			<fieldset>
+				<legend>Profile</legend>
+				{% csrf_token %}
+				{% include 'form.html' %}
+			</fieldset>
+		</form>
+
+		</div>
+	</div>
+</div>
+-->
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-3">
+			<div>
+				{% if user|has_avatar %}
+					{% avatar user 200 %}
+				{% else %}
+					<img style="height:200px;" src="{% static 'img/default-avatar.jpg' %}">
+				{% endif %}
+			</div>
+			<div>
+				<a href="{% url 'avatar_change' %}">Change profile picture <span class="glyphicon glyphicon-pencil" aria-hidden="true"></a></span>
+			</div>
+			<div>
+				<h3>{{ user.username }}</h3>
+				<p><a href="#"> Edit Profile <span class="glyphicon glyphicon-pencil" aria-hidden="true"> </a></p>
+				<br>
+			</div>
+			<div>
+				<h4>Models</h4>
+				<ul class="list-group">
+				  <li class="list-group-item"><span class="badge">{{ source_models.count }}</span><a href="{% url 'index_source' %}"> Source </a></li>
+				  <li class="list-group-item"><span class="badge">{{ site_models.count }}</span><a href="{% url 'index_site' %}">Site conditions </a></li>
+				  <li class="list-group-item"><span class="badge">{{ rupture_models.count }}</span><a href="{% url 'index_rupture_model' %}">Rupture</a></li>
+				  <li class="list-group-item"><span class="badge">{{ exposure_models.count }}</span><a href="{% url 'index_exposure' %}">Exposure </a></li>
+				  <li class="list-group-item"><span class="badge">{{ fragility_models.count }}</span><a href="{% url 'index_fragility' %}">Fragility </a></li>
+				  <li class="list-group-item"><span class="badge">#</span><a href="#">Vulnerability </a></li>
+				  <li class="list-group-item"><span class="badge">{{ logic_trees.count }}</span><a href="{% url 'index_logic_tree' %}">Logic Trees </a></li>
+				</ul>
+			</div>
+			<div>
+				<h4>Jobs</h4>
+				<ul class="list-group">
+				  <li class="list-group-item"><span class="badge">#</span><a href="{% url 'index_scenario_hazard' %}">Scenario Hazard</a></li>
+				  <li class="list-group-item"><span class="badge">#</span><a href="#">Scenario Risk</a></li>
+				  <li class="list-group-item"><span class="badge">#</span><a href="{% url 'index_scenario_damage' %}">Scenario Damage</a></li>
+				  <li class="list-group-item"><span class="badge">#</span><a href="#">PSHA Hazard</a></li>
+				  <li class="list-group-item"><span class="badge">#</span><a href="#">PSHA Risk</a></li>
+				  <li class="list-group-item"><span class="badge">#</span><a href="#">Event Based Hazard</a></li>
+				  <li class="list-group-item"><span class="badge">#</span><a href="#">Event Based Hazard</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-md-9">
+			<h1>{{ user.first_name }} {{ user.last_name }}</h1>
+			<h3>{{ user.email }}</h3>
+		</div>
+	</div>
+</div>
+
+
+{% endblock %}
