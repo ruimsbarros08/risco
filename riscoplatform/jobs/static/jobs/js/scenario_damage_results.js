@@ -89,7 +89,7 @@ $( document ).ready(function() {
     var url = document.URL.split('/');
     var job_id = url[url.length -2];
 
-    var geoJsonURL = BASE_URL+'jobs/scenario/damage/results/'+job_id+'/tiles/{z}/{x}/{y}';
+    var geoJsonURL = '/jobs/scenario/damage/results/'+job_id+'/tiles/{z}/{x}/{y}';
     var geoJsonTileLayer = new L.TileLayer.GeoJSON(geoJsonURL, {
             clipTiles: true,
             unique: function (feature) {

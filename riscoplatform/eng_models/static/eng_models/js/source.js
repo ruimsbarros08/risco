@@ -113,7 +113,7 @@ $( document ).ready(function() {
                 </ul>*/
     }
     
-    $.ajax( BASE_URL+'models/sources/'+model_id+'/ajax' )
+    $.ajax('/models/sources/'+model_id+'/ajax' )
     .done(function(data) {
 
         var pointSourceLayer = L.geoJson(data.pointSource, {

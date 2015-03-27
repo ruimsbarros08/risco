@@ -8,6 +8,7 @@
     {% load staticfiles %}
     {% load avatar_tags %}
     <!--<link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/jquery-ui-bootstrap/jquery.ui.theme.css' %}" />-->
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css' %}" />
     <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap/dist/css/bootstrap.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap-theme-flatly/flatly.min.css' %}" />
@@ -50,7 +51,7 @@
                                     <li><a href="{% url 'index_exposure' %}">EXPOSURE</a></li>
                                     <li><a href="{% url 'index_fragility' %}">FRAGILITY</a></li>
                                     <li><a href="{% url 'index_consequence' %}">CONSEQUENCE</a></li>
-                                    <li><a href="#">VULNERABILITY</a></li>
+                                    <li><a href="{% url 'index_vulnerability' %}">VULNERABILITY</a></li>
                                     <li class="divider"></li>
                                     <li><a href="{% url 'index_logic_tree' %}">LOGIC TREES</a></li>
                                 </ul>

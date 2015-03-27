@@ -103,7 +103,7 @@ $( document ).ready(function() {
     var page = 1;
     var assets = []
     var load_assets = function(page) {
-        $.ajax( BASE_URL+'models/exposure/'+model_id+'/assets?page='+page )
+        $.ajax('/models/exposure/'+model_id+'/assets?page='+page )
         .done(function(data) {
             if (page == 1){assets = [];}
             for(var i=0; i<data.length; i++){
@@ -123,7 +123,7 @@ $( document ).ready(function() {
     var heat;
     var load_heat_layer = function() {
 
-        $.ajax( BASE_URL+'models/exposure/'+model_id+'/heat_assets' )
+        $.ajax('/models/exposure/'+model_id+'/heat_assets' )
         .done(function(data) {
             heat = L.heatLayer(data, {radius: 10}).addTo(map);
             control.addOverlay(heat, 'Assets heatmap');
@@ -132,7 +132,7 @@ $( document ).ready(function() {
     }
 
     var load_countries = function() {
-        $.ajax( BASE_URL+'countries')
+        $.ajax('/countries')
         .done(function(data){
             for (var i = 0; i<data.length; i++){
                 $("#country").append('<option value='+data[i][0]+'>'+data[i][1]+'</option>');

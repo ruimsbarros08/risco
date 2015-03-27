@@ -16,7 +16,7 @@ $( document ).ready(function() {
 var url = document.URL.split('/');
 var model_id = url[url.length -2];
 
-$.ajax( BASE_URL+'models/logictree/'+model_id+'/ajax' )
+$.ajax('/models/logictree/'+model_id+'/ajax' )
     .done(function(data) {
         var treeData = data.tree;
         root = treeData[0];

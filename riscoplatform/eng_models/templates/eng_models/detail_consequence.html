@@ -24,23 +24,92 @@
 	</div>
 
 	<div class="row">
-		<div class="col-md-12">
-			<div id="chart-container"></div>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-md-3">
+		<div class="col-md-4">
+			<!--
 			<div>
 				<input type="text" class="form-control" id="limit-state">
 				<button id='add-limit-state' class="btn btn-sm btn-success">Add Limit State</button>
 			</div>
 			<div>
-				<select class="form-control" id="limit-state-dropdown">
-					<option></option>
-				</select>
-				<input type="text" class="form-control" id="limit-state-value">
+				<select class="form-control" id="limit-state-dropdown"></select>
+				<input type="text" class="form-control" id="limit-state-name">
+				<input type="number" class="form-control" id="limit-state-value">
 				<button id='update-value' class="btn btn-sm btn-success">Update value</button>
-			</div>			
+			</div>
+			-->
+
+			<div class="row">
+				<div class="col-md-12">
+					
+					<div class="form-group">
+				      	<label for="new_limit" class="col-lg-2 control-label">Limit state name</label>
+				      	<div class="col-lg-10">
+				        	<input type="text" class="form-control" id="limit-state">
+				      	</div>
+				    </div>
+
+				    <div class="form-group">
+				      	<div class="col-lg-10 col-lg-offset-2">
+				        	<button id='add-limit-state' class="btn btn-sm btn-success">Add Limit State</button>
+				      	</div>
+				    </div>
+				    <div class="form-group">
+				    	<div class="col-lg-12">
+				    		<hr>
+				    	</div>
+				    </div>
+
+					<div class="form-group">
+				      	<label for="limit-state-dropdown" class="col-lg-2 control-label">Select limit state</label>
+				      	<div class="col-lg-10">
+				        	<select class="form-control" id="limit-state-dropdown"></select>
+				      	</div>
+				    </div>
+
+				    <div class="form-group">
+				      	<label for="limit-state-value" class="col-lg-2 control-label">Value</label>
+				      	<div class="col-lg-10">
+				        	<input type="text" class="form-control" id="limit-state-value">
+				      	</div>
+				    </div>
+
+				    <div class="form-group">
+				      	<div class="col-lg-10 col-lg-offset-2">
+				        	<button id='update-value' class="btn btn-sm btn-success">Update value</button>
+				      	</div>
+				    </div>
+
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-12">
+					<form action="{% url 'save_consequence_model' model.id %}" method="post" enctype="multipart/form-data">
+						<fieldset>
+
+						    <div class="form-group">
+						      	<div class="col-lg-10 col-lg-offset-2">
+									<button type='submit' class="btn btn-sm btn-success">Save changes</button>
+						      	</div>
+						    </div>
+							
+							{% csrf_token %}
+							{{ form }}
+						</fieldset>
+					</form>
+				</div>
+			</div>
+
+
+			{% if save_error %}
+			<div class="alert alert-dismissible alert-danger">
+			  	<button type="button" class="close" data-dismiss="alert">×</button>
+			  	<strong>Error!</strong> This model could not be saved.
+			</div>
+			{% endif %}
+		</div>
+		<div class="col-md-8">
+			<div id="chart-container"></div>
 		</div>
 	</div>
 

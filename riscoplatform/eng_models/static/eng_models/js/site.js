@@ -34,7 +34,7 @@ $( document ).ready(function() {
     var model_id = url[url.length -2];
 
 
-	$.ajax( BASE_URL+'models/site/'+model_id+'/map_grid' )
+	$.ajax('/models/site/'+model_id+'/map_grid' )
 	.done(function(data) {
     	var geoJsonTileLayer = L.geoJson(data, {
         style: style,

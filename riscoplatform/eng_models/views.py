@@ -438,7 +438,7 @@ class FragilityForm(forms.ModelForm):
 class CovertToVulnarabilityForm(forms.ModelForm):
 	class Meta:
 		model = Vulnerability_Model
-		fields = ['name', 'description', 'consequnce_model']	
+		fields = ['name', 'description', 'consequence_model']	
 		
 
 @login_required
@@ -455,6 +455,7 @@ def detail_fragility(request, model_id):
 	model = get_object_or_404(Fragility_Model ,pk=model_id, fragility_model_contributor__contributor=request.user)
 	tax_list = Taxonomy_Fragility_Model.objects.filter(model_id=model_id)
 	convert_form = CovertToVulnarabilityForm()
+	convert_form.fields["consequence_model"].queryset = Consequence_Model.objects.filter(consequence_model_contributor__contributor=request.user).filter(limit_states__len=len(model.limit_states))
 	return render(request, 'eng_models/detail_fragility.html', {'model': model, 'taxonomies': tax_list, 'form': convert_form})
 
 @login_required
@@ -490,8 +491,72 @@ def add_fragility_model(request):
 		form = FragilityForm()
 		return render(request, 'eng_models/index_fragility.html', {'form': form})
 
+
+@login_required
+def convert_to_vulnerability(request, model_id):
+	if request.method == 'POST':
+		fragility_model = get_object_or_404(Fragility_Model ,pk=model_id, fragility_model_contributor__contributor=request.user)
+		form = CovertToVulnarabilityForm(request.POST)
+		form.fields["consequence_model"].queryset = Consequence_Model.objects.filter(consequence_model_contributor__contributor=request.user).filter(limit_states__len=len(fragility_model.limit_states))
+		if form.is_valid():
+			model = form.save(commit=False)
+			model.date_created = timezone.now()
+			model.asset_category = 'buildings'
+			model.loss_category = 'economic_loss'
+			model.fragility_model = fragility_model
+			model.taxonomy_source = fragility_model.taxonomy_source
+
+			taxonomies_fragility = Taxonomy_Fragility_Model.objects.filter(model=fragility_model)
+			model.imt = taxonomies_fragility[0].imt
+			model.sa_period = taxonomies_fragility[0].sa_period
+			
+			for tax in taxonomies_fragility:
+				functions = Fragility_Function.objects.filter(tax_frag=tax)
+				model.iml = functions[0].cdf[0]
+				model.save()
+
+				ordered_functions = []
+				for state in fragility_model.limit_states:
+					for f in functions:
+						if state == f.limit_state:
+							ordered_functions.append(f)
+
+				i = 0
+				values = []
+				cf = []
+				for intensity in model.iml:
+					sum = 0
+					j = 0
+					for c in model.consequence_model.values:
+						if j <len(model.consequence_model.values)-1:
+							sum += c*(ordered_functions[j].cdf[1][i] - ordered_functions[j+1].cdf[1][i])
+						else:
+							sum += c*(ordered_functions[j].cdf[1][i])
+						j += 1
+					values.append(sum)
+					cf.append(0)
+					i += 1
+
+				vulnerability_function = Vulnerability_Function(model=model, taxonomy=tax.taxonomy, probabilistic_distribution='LN', loss_ratio=values, coefficients_variation=cf)
+				vulnerability_function.save()
+
+			Vulnerability_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
+
+			return redirect('detail_vulnerability', model_id=model.id)
+		else:
+			tax_list = Taxonomy_Fragility_Model.objects.filter(model_id=model_id)
+			return render(request, 'eng_models/detail_fragility.html', {'model': fragility_model, 'taxonomies': tax_list, 'form': form})
+	else:
+		form = CovertToVulnarabilityForm()
+		model = get_object_or_404(Fragility_Model ,pk=model_id, fragility_model_contributor__contributor=request.user)
+		tax_list = Taxonomy_Fragility_Model.objects.filter(model_id=model_id)
+		return render(request, 'eng_models/detail_fragility.html', {'model': model, 'taxonomies': tax_list, 'form': form})
+
+
+
 @login_required
 def fragility_get_taxonomy(request, model_id, taxonomy_id):
+	model = get_object_or_404(Fragility_Model ,pk=model_id, fragility_model_contributor__contributor=request.user)
 
 	info = Taxonomy_Fragility_Model.objects.raw('select * \
 											from eng_models_taxonomy_fragility_model \
@@ -500,13 +565,14 @@ def fragility_get_taxonomy(request, model_id, taxonomy_id):
 	info_data = serializers.serialize("json", info)
 
 	functions = Fragility_Function.objects.raw('select * \
-											from eng_models_fragility_function, eng_models_taxonomy_fragility_model \
+											from eng_models_fragility_function, eng_models_taxonomy_fragility_model\
 											where eng_models_taxonomy_fragility_model.taxonomy_id = %s \
 											and eng_models_taxonomy_fragility_model.model_id = %s \
 											and eng_models_taxonomy_fragility_model.id = eng_models_fragility_function.tax_frag_id', [taxonomy_id, model_id])
+	
 	functions_data = serializers.serialize("json", functions)
 	
-	return HttpResponse(json.dumps({'info': json.loads(info_data), 'functions': json.loads(functions_data)}), content_type="application/json")
+	return HttpResponse(json.dumps({'limit_states': model.limit_states, 'info': json.loads(info_data), 'functions': json.loads(functions_data)}), content_type="application/json")
 
 
 ########################
@@ -517,6 +583,15 @@ class ConsequenceForm(forms.ModelForm):
 	class Meta:
 		model = Consequence_Model
 		fields = ['name', 'description']
+
+class ConsequenceDetailForm(forms.ModelForm):
+	class Meta:
+		model = Consequence_Model
+		fields = ['limit_states', 'values']
+		widgets = {
+			'limit_states': forms.HiddenInput(),
+			'values': forms.HiddenInput(),
+		}
 
 
 @login_required
@@ -529,16 +604,31 @@ def index_consequence(request):
 @login_required
 def detail_consequence(request, model_id):
 	model = get_object_or_404(Consequence_Model ,pk=model_id, consequence_model_contributor__contributor=request.user)
-	return render(request, 'eng_models/detail_consequence.html', {'model': model})
+	form = ConsequenceDetailForm()
+	return render(request, 'eng_models/detail_consequence.html', {'model': model, 'form': form})
+
+
+@login_required
+def save_consequence_model(request, model_id):
+	if request.method == 'POST':
+		model = get_object_or_404(Consequence_Model ,pk=model_id, consequence_model_contributor__contributor=request.user)
+		form = ConsequenceDetailForm(request.POST, instance=model)
+		if form.is_valid():
+			form.save()
+			return redirect('detail_consequence', model_id=model.id)
+		else:
+			model = get_object_or_404(Consequence_Model ,pk=model_id, consequence_model_contributor__contributor=request.user)
+			return render(request, 'eng_models/detail_consequence.html', {'model': model, 'form': form, 'save_error': True})
+	else:
+		form = ConsequenceDetailForm()
+		return render(request, 'eng_models/detail_consequence.html', {'form': form})	
+
+
 
 @login_required
 def consequence_ajax(request, model_id):
-	#model = get_object_or_404(Consequence_Model ,pk=model_id, consequence_model_contributor__contributor=request.user)
-	model = Consequence_Model.objects.filter(pk=model_id, consequence_model_contributor__contributor=request.user)
-	data = serializers.serialize("json", model)
-	data = json.loads(data)
-	data = data[0]['fields']
-	return HttpResponse(json.dumps(data), content_type="application/json")
+	model = get_object_or_404(Consequence_Model ,pk=model_id, consequence_model_contributor__contributor=request.user)
+	return HttpResponse(json.dumps({'limit_states': model.limit_states, 'values': model.values}), content_type="application/json")
 
 
 @login_required
@@ -557,6 +647,81 @@ def add_consequence_model(request):
 	else:
 		form = ConsequenceForm()
 		return render(request, 'eng_models/index_consequence.html', {'form': form})
+
+
+
+
+
+##########################
+##     VULNERABILITY    ##
+##########################
+
+class VulnerabilityForm(forms.ModelForm):
+	add_tax_source = forms.BooleanField(required=False)
+	tax_source_name = forms.CharField(required=False)
+	tax_source_desc = forms.CharField(required=False)
+	class Meta:
+		model = Fragility_Model
+		fields = ['name', 'description','limit_states', 'taxonomy_source', 'xml']
+		widgets = {
+			'limit_states': forms.TextInput(attrs={'placeholder': 'Ex: slight, moderate, extensive, complete...'}),
+		}
+		
+
+@login_required
+def index_vulnerability(request):
+	models = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).order_by('-date_created')
+	form = VulnerabilityForm()
+	form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(building_taxonomy_source_contributor__contributor=request.user).order_by('-date_created')
+	page = request.GET.get('page')
+
+	return render(request, 'eng_models/index_vulnerability.html', {'models': pagination(models, 10, page), 'form': form})
+
+@login_required
+def detail_vulnerability(request, model_id):
+	model = get_object_or_404(Vulnerability_Model ,pk=model_id, vulnerability_model_contributor__contributor=request.user)
+	tax_list = Vulnerability_Function.objects.filter(model=model)
+	return render(request, 'eng_models/detail_vulnerability.html', {'model': model, 'taxonomies': tax_list})
+
+@login_required
+def add_vulnerability_model(request):
+	if request.method == 'POST':
+		form = VulnerabilityForm(request.POST, request.FILES)
+		form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(building_taxonomy_source_contributor__contributor=request.user).order_by('-date_created')
+		if form.is_valid():
+			model = form.save(commit=False)
+			if 'add_tax_source' in request.POST:
+				new_tax_source = Building_Taxonomy_Source(name=request.POST['tax_source_name'],
+															description=request.POST['tax_source_desc'],
+															date_created=timezone.now())
+				new_tax_source.save()
+				Building_Taxonomy_Source_Contributor.objects.create(contributor=request.user, source=new_tax_source, date_joined=new_tax_source.date_created, author=True)
+				model.taxonomy_source = new_tax_source
+			model.date_created = timezone.now()
+			if request.FILES:
+				try:
+					#vulnerability_parser.start(model)
+					model.save()
+				except Exception as e:
+					return render(request, 'eng_models/index_fragility.html', {'form': form, 'parse_error': e})
+			else:
+				model.save()
+			Vulnerability_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
+			return redirect('detail_vulnerability', model_id=model.id)
+		else:
+			models = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).order_by('-date_created')
+			return render(request, 'eng_models/index_vulnerability.html', {'models': pagination(models, 10, 1), 'form': form})
+	else:
+		form = VulnerabilityForm()
+		return render(request, 'eng_models/index_vulnerability.html', {'form': form})
+
+
+@login_required
+def vulnerability_get_taxonomy(request, model_id, taxonomy_id):
+	model = get_object_or_404(Vulnerability_Model ,pk=model_id, vulnerability_model_contributor__contributor=request.user)
+	function = Vulnerability_Function.objects.get(model=model, taxonomy_id=taxonomy_id)
+	return HttpResponse(json.dumps({'iml': model.iml, 'function': function.loss_ratio}), content_type="application/json")
+
 
 
 #######################

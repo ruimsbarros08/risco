@@ -41,7 +41,7 @@ $( document ).ready(function() {
     
     var control = L.control.layers().addTo(map);
     
-    $.ajax( BASE_URL+'jobs/scenario/hazard/results_ajax/'+job_id )
+    $.ajax( '/jobs/scenario/hazard/results_ajax/'+job_id )
     .done(function(data) {
         for (var i = 0; i<data.hazard.length;i++) {
 

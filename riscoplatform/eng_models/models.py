@@ -532,6 +532,9 @@ class Consequence_Model(models.Model):
     limit_states                = TextArrayField(null=True, blank=True)
     values                      = FloatArrayField(null=True, blank=True)
 
+    def __unicode__(self):
+        return self.name
+
 
 class Consequence_Model_Contributor(models.Model):
     contributor                 = models.ForeignKey(User)
@@ -579,7 +582,7 @@ class Vulnerability_Model(models.Model):
     sa_period                   = models.FloatField(null=True)
     iml                         = FloatArrayField()
     fragility_model             = models.ForeignKey(Fragility_Model, null=True)
-    consequnce_model            = models.ForeignKey(Consequence_Model, null=True)
+    consequence_model            = models.ForeignKey(Consequence_Model, null=True)
     taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source)
 
 

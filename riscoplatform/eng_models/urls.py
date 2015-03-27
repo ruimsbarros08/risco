@@ -27,9 +27,16 @@ urlpatterns = patterns('',
     url(r'^fragility/(?P<model_id>\d+)/taxonomy/(?P<taxonomy_id>\d+)/$', views.fragility_get_taxonomy, name='fragility_get_taxonomy'),
     url(r'^fragility/add/$', views.add_fragility_model, name='add_fragility_model'),
 
+    url(r'^vulnerability/$', views.index_vulnerability, name='index_vulnerability'),
+    url(r'^vulnerability/(?P<model_id>\d+)/$', views.detail_vulnerability, name='detail_vulnerability'),
+    url(r'^vulnerability/(?P<model_id>\d+)/convert_to_vulnerability/$', views.convert_to_vulnerability, name='convert_to_vulnerability'),
+    url(r'^vulnerability/(?P<model_id>\d+)/taxonomy/(?P<taxonomy_id>\d+)/$', views.vulnerability_get_taxonomy, name='vulnerability_get_taxonomy'),
+    url(r'^vulnerability/add/$', views.add_vulnerability_model, name='add_vulnerability_model'),
+
     url(r'^consequence/$', views.index_consequence, name='index_consequence'),
     url(r'^consequence/(?P<model_id>\d+)/$', views.detail_consequence, name='detail_consequence'),
     url(r'^consequence/(?P<model_id>\d+)/ajax/$', views.consequence_ajax, name='consequence_ajax'),
+    url(r'^consequence/(?P<model_id>\d+)/save/$', views.save_consequence_model, name='save_consequence_model'),
     url(r'^consequence/add/$', views.add_consequence_model, name='add_consequence_model'),
 
 

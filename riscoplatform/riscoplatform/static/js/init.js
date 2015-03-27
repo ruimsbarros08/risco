@@ -1,11 +1,4 @@
-//vars
 
-if (location.host == 'localhost:8000'){   
-    var BASE_URL = 'http://'+location.host+'/';
-}
-else {
-    var BASE_URL = 'http://'+location.host+'/risco/';
-}
 
 //functions
 function toWKT(layer) {
