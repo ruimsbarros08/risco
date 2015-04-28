@@ -6,9 +6,9 @@ from django.db import connection
 from django.contrib.auth.models import User
 from django.contrib.auth import forms
 from django.contrib.auth.decorators import login_required
-
 import json
-
+from riscoplatform.local_settings import *
+import requests
 
 def home(request):
 	return render(request, 'home.html')
@@ -26,6 +26,8 @@ def account(request):
 	rupture_models = Rupture_Model.objects.filter(user=request.user).order_by('-date_created')
 	exposure_models = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
 	fragility_models = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
+	consequence_models = Consequence_Model.objects.filter(consequence_model_contributor__contributor=request.user).order_by('-date_created')
+	vulnerability_models = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).order_by('-date_created')
 	logic_trees = Logic_Tree.objects.filter(user=request.user).order_by('-date_created')
 
 	return render(request, 'account.html', {'source_models': source_models, 
@@ -33,6 +35,8 @@ def account(request):
 											'rupture_models': rupture_models, 
 											'exposure_models': exposure_models,
 											'fragility_models': fragility_models,
+											'consequence_models': consequence_models,
+											'vulnerability_models': vulnerability_models,
 											'logic_trees': logic_trees})
 	#models = Eng_Models.objects.filter(source_model__source_model_contributor__contributor=request.user)
 	#return render(request, 'account.html', {'models': models})
@@ -43,16 +47,20 @@ def account_settings(request):
 	pass
 
 
+def world_geojson(request, z, x, y):
+	geometries = requests.get(TILESTACHE_HOST+'world/'+str(z)+'/'+str(x)+'/'+str(y)+'.json')
+	geom_dict = json.loads(geometries.text)
+	return HttpResponse(json.dumps(geom_dict), content_type="application/json")
 
 def countries(request):
 	cursor = connection.cursor()
-	cursor.execute('select distinct id_0, name_0 from world_world order by name_0')
+	cursor.execute('select id, name from world_country order by name')
 	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
 
 def level1(request):
 	country = request.GET.get('country')
 	cursor = connection.cursor()
-	cursor.execute('select distinct id_1, name_1 from world_world where id_0 = %s order by name_1', [country])
+	cursor.execute('select id, name from world_adm_1 where country_id = %s order by name', [country])
 	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
 
 def level2(request):

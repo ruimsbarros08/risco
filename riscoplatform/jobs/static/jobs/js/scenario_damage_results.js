@@ -60,8 +60,41 @@ $( document ).ready(function() {
 	var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
 	var osm = new L.TileLayer(osmUrl, {minZoom: 3, maxZoom: 16, attribution: osmAttrib});
 
+    //L.control.layers(baseMaps).addTo(map);
+
 	map.setView(new L.LatLng(40, -8),5);
 	map.addLayer(osm);
+
+    var hazard_url = $('#hazard_id').attr("href").split('/');
+    var hazard_job_id = hazard_url[hazard_url.length -2];
+
+    
+    var control = L.control.layers().addTo(map);
+    
+    $.ajax( '/jobs/scenario/hazard/results_ajax/'+hazard_job_id )
+    .done(function(data) {
+        for (var i = 0; i<data.hazard.length;i++) {
+
+            var geoJsonTileLayer = L.geoJson(data.hazard[i], {
+                style: style,
+                onEachFeature: function (feature, layer) {
+                    layer.setStyle({"fillColor": feature.properties.color});
+                    layer.on('mouseover', function () {
+                        info.update(layer.feature.properties);
+                        layer.setStyle(hoverStyle);
+                    });
+                    layer.on('mouseout', function () {
+                        info.update();
+                        layer.setStyle(style);
+                    });
+                }
+            }).addTo(map);
+
+            control.addBaseLayer(geoJsonTileLayer, data.hazard[i].name);
+
+        }
+    });
+
 
 
     var info = L.control({position: 'bottomleft'});
@@ -89,6 +122,7 @@ $( document ).ready(function() {
     var url = document.URL.split('/');
     var job_id = url[url.length -2];
 
+    /*
     var geoJsonURL = '/jobs/scenario/damage/results/'+job_id+'/tiles/{z}/{x}/{y}';
     var geoJsonTileLayer = new L.TileLayer.GeoJSON(geoJsonURL, {
             clipTiles: true,
@@ -113,7 +147,7 @@ $( document ).ready(function() {
             }
         }
     ).addTo(map);
-
+*/
 
 });
 })($); 

@@ -7,6 +7,7 @@ from django.conf.urls.static import static
 urlpatterns = patterns('',
     url(r'^$', 'riscoplatform.views.home', name='home'),
 
+    url(r'^world/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)$', 'riscoplatform.views.world_geojson', name='world_geojson'),
     url(r'^countries$', 'riscoplatform.views.countries', name='countries'),
     url(r'^level1$', 'riscoplatform.views.level1', name='level1'),
     url(r'^level2$', 'riscoplatform.views.level2', name='level2'),

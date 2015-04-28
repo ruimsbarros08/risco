@@ -1,6 +1,12 @@
 import os
 from django.contrib.gis.utils import LayerMapping
-from models import World
+#from django.contrib.gis.db.models import Union
+from django.db import connection
+from models import *
+from django.contrib.gis import geos
+
+
+cursor = connection.cursor()
 
 world_mapping = {
     'objectid' : 'OBJECTID',
@@ -61,6 +67,22 @@ world_mapping = {
 world_shp = os.path.abspath(os.path.join(os.path.dirname(__file__), 'gadm_v2_shp/gadm2.shp'))
 
 def run(verbose=True):
-    lm = LayerMapping(World, world_shp, world_mapping, transform=False, encoding='latin-1')
+    lm = LayerMapping(World, world_shp, world_mapping, transform=False, encoding='utf-8')
 
     lm.save(strict=True, verbose=verbose)
+
+
+def add_countries():
+    cursor.execute('select distinct id_0, name_0, iso from world_world')
+    countries = cursor.fetchall()
+
+    for country in countries:
+        parishes = World.objects.filter(id_0=country[0])
+        #geom = parishes.aggregate(area=Union('geom'))['area']
+        geom = parishes.unionagg()
+
+        c = Country(name=country[1], id_0=country[0], iso=country[2], geom=geom)
+        c.save()
+
+
+

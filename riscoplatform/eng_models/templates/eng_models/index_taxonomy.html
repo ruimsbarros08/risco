@@ -2,6 +2,8 @@
 
 {% block content %}
 {% load staticfiles%}
+{% load humanize %}
+
 
 <div class="container">
 
@@ -66,7 +68,7 @@
 								<a href="#"><div class="btn btn-primary btn-sm">Download XML</div></a>
 							</div>
 							<div class="col-md-2">
-								{{ model.date_created|date:"M d, Y" }}
+								{{ model.date_created|naturalday }}
 							</div>
 						</div>
 					</div>

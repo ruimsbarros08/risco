@@ -1,0 +1,15 @@
+{
+  "name": "leaflet-coordinates",
+  "homepage": "https://github.com/MrMufflon/Leaflet.Coordinates",
+  "version": "0.1.4",
+  "_release": "0.1.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.1.4",
+    "commit": "dc2a7e88848135aeaf34c68ff85c5d0aecca2edd"
+  },
+  "_source": "git://github.com/MrMufflon/Leaflet.Coordinates.git",
+  "_target": "~0.1.4",
+  "_originalSource": "leaflet-coordinates",
+  "_direct": true
+}

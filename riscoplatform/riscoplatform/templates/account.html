@@ -31,7 +31,7 @@
 				{% endif %}
 			</div>
 			<div>
-				<a href="{% url 'avatar_change' %}">Change profile picture <span class="glyphicon glyphicon-pencil" aria-hidden="true"></a></span>
+				<a href="{% url 'avatar_change' %}">Change profile picture <span class="glyphicon glyphicon-camera" aria-hidden="true"></a></span>
 			</div>
 			<div>
 				<h3>{{ user.username }}</h3>
@@ -46,7 +46,8 @@
 				  <li class="list-group-item"><span class="badge">{{ rupture_models.count }}</span><a href="{% url 'index_rupture_model' %}">Rupture</a></li>
 				  <li class="list-group-item"><span class="badge">{{ exposure_models.count }}</span><a href="{% url 'index_exposure' %}">Exposure </a></li>
 				  <li class="list-group-item"><span class="badge">{{ fragility_models.count }}</span><a href="{% url 'index_fragility' %}">Fragility </a></li>
-				  <li class="list-group-item"><span class="badge">#</span><a href="#">Vulnerability </a></li>
+				  <li class="list-group-item"><span class="badge">{{ consequence_models.count }}</span><a href="{% url 'index_consequence' %}">Consequence </a></li>
+				  <li class="list-group-item"><span class="badge">{{ vulnerability_models.count }}</span><a href="{% url 'index_vulnerability' %}">Vulnerability </a></li>
 				  <li class="list-group-item"><span class="badge">{{ logic_trees.count }}</span><a href="{% url 'index_logic_tree' %}">Logic Trees </a></li>
 				</ul>
 			</div>

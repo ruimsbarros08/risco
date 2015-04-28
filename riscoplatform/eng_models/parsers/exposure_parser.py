@@ -28,8 +28,11 @@ def start(object):
 	if area != []:
 		area_type = area[0].getAttribute('type')
 		area_unit = area[0].getAttribute('unit')
+	else:
+		area_type = None
+		area_unit = None
 
-	deductible = conversions[0].getElementsByTagName('deductible')
+	deductible = conversions[0].getElementsByTagName('deductible')[0]
 
 	deductible_abs 					= 'true'
 	insuranceLimit_abs 				= 'true'
@@ -46,7 +49,7 @@ def start(object):
 	if deductible != []:
 		deductible_abs = deductible.getAttribute('isAbsolute')
 
-	insuranceLimit = conversions[0].getElementsByTagName('insuranceLimit')
+	insuranceLimit = conversions[0].getElementsByTagName('insuranceLimit')[0]
 
 	if insuranceLimit != []:
 		insuranceLimit_abs = deductible.getAttribute('isAbsolute')
@@ -56,7 +59,7 @@ def start(object):
 		if cost.getAttribute('name') == 'structural':
 			structural_cost_type = cost.getAttribute('type')
 			structural_cost_unit = cost.getAttribute('unit')
-		if cost.getAttribute('name') == 'non_structural':
+		if cost.getAttribute('name') == 'nonstructural':
 			non_structural_cost_type = cost.getAttribute('type')
 			non_structural_cost_unit = cost.getAttribute('unit')
 		if cost.getAttribute('name') == 'business_interruption':
@@ -78,7 +81,7 @@ def start(object):
 	object.contents_cost_currency = contents_cost_unit
 	object.business_int_cost_type = business_interruption_cost_type
 	object.business_int_cost_currency = business_interruption_cost_unit
-	object.date_created = timezone.now()
+	#object.date_created = timezone.now()
 	object.save()
 
 
@@ -112,8 +115,17 @@ def start(object):
 		oc_transit 									= None
 
 		asset_name = asset.getAttribute('id').strip()
-		area = asset.getAttribute('area').strip()
-		number = asset.getAttribute('number').strip()
+
+		if asset.getAttribute('area'):
+			area = asset.getAttribute('area').strip()
+		else:
+			area = None
+
+		if asset.getAttribute('number'):
+			number = asset.getAttribute('number').strip()
+		else:
+			number = None
+
 		taxonomy = asset.getAttribute('taxonomy').strip()
 
 		location = asset.getElementsByTagName('location')[0]
@@ -133,7 +145,7 @@ def start(object):
 				if ('insuranceLimit_abs' in locals() and insuranceLimit_abs == 'false'):
 					structural_insuranceLimit_value = cost.getAttribute('insuranceLimit')
 
-			if cost.getAttribute('type') == 'non_structural':
+			if cost.getAttribute('type') == 'nonstructural':
 				non_structural_value = cost.getAttribute('value')
 				if ('deductible_abs' in locals() and deductible_abs == 'false'):
 					non_structural_deductible_percentage = cost.getAttribute('deductible')
@@ -156,11 +168,11 @@ def start(object):
 
 		occupancies = asset.getElementsByTagName('occupancies')[0].getElementsByTagName('occupancy')
 		for oc in occupancies:
-			if oc.getAttribute('period') == 'Day':
+			if oc.getAttribute('period').lower() == 'day':
 				oc_day = oc.getAttribute('occupants')
-			if oc.getAttribute('period') == 'Night':
+			if oc.getAttribute('period').lower() == 'night':
 				oc_night = oc.getAttribute('occupants')
-			if oc.getAttribute('period') == 'Transit':
+			if oc.getAttribute('period').lower() == 'transit':
 				oc_transit = oc.getAttribute('occupants')
 
 		try:

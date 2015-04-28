@@ -8,12 +8,14 @@
     {% load staticfiles %}
     {% load avatar_tags %}
     <!--<link rel="stylesheet" type="text/css" href="{% static 'eng_models/bower_components/jquery-ui-bootstrap/jquery.ui.theme.css' %}" />-->
-    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css' %}" />
+    <!--<link rel="stylesheet" type="text/css" href="{% static 'bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css' %}" />-->
     <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap/dist/css/bootstrap.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap-theme-flatly/flatly.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet/dist/leaflet.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet-draw/dist/leaflet.draw.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet.markercluster/dist/MarkerCluster.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet.markercluster/dist/MarkerCluster.Default.css' %}" />
 
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}" />
 
@@ -61,12 +63,13 @@
                                 <ul class="dropdown-menu">
                                     <li class="dropdown-header">SCENARIO</li>
                                     <li><a href="{% url 'index_scenario_hazard' %}">HAZARD</a></li>
-                                    <li><a href="#">RISK</a></li>
+                                    <li><a href="{% url 'index_scenario_risk' %}">RISK</a></li>
                                     <li><a href="{% url 'index_scenario_damage' %}">DAMAGE</a></li>
                                     <li class="divider"></li>
                                     <li class="dropdown-header">PSHA</li>
-                                    <li><a href="#">HAZARD</a></li>
-                                    <li><a href="#">RISK</a></li>
+                                    <li><a href="{% url 'index_psha_hazard' %}">HAZARD</a></li>
+                                    <li><a href="{% url 'index_psha_risk' %}">RISK</a></li>
+                                    <li><a href="#">DISAGGREGATION</a></li>
                                     <li class="divider"></li>
                                     <li class="dropdown-header">EVENT BASED</li>
                                     <li><a href="#">HAZARD</a></li>
@@ -110,12 +113,17 @@
 
 <script type="text/javascript" src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'bower_components/jquery-ui/jquery-ui.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/bootstrap/js/transition.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/bootstrap/js/modal.js' %}"></script>
+<!--<script type="text/javascript" src="{% static 'bower_components/jquery-ui/jquery-ui.min.js' %}"></script>-->
 <script type="text/javascript" src="{% static 'bower_components/highcharts/highcharts.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/highcharts/highcharts-more.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet/dist/leaflet.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-draw/dist/leaflet.draw.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-tilelayer-geojson/TileLayer.GeoJSON.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/Leaflet.heat/dist/leaflet-heat.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/leaflet-coordinates/dist/Leaflet.Coordinates-0.1.4.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/leaflet.markercluster/dist/leaflet.markercluster.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/d3/d3.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/infinite-scroll/jquery.infinitescroll.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/chained/jquery.chained.remote.min.js' %}"></script>
@@ -131,9 +139,6 @@
         <div style="height:100px;"></div>
     </div>
 </div>
-
-
-
 
 </body>
 </html>

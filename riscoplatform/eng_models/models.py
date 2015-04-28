@@ -98,10 +98,10 @@ class Exposure_Model(models.Model):
     )
 
     EURO = 'EUR'
-    DOLLAR = 'DOL'
+    DOLLAR = 'USD'
     CURRENCY_CHOICES = (
         (EURO, 'Euro'),
-        (DOLLAR, 'Dollar'),
+        (DOLLAR, 'US Dollar'),
     )
 
     ABSOLUTE = 'absolute'
@@ -118,23 +118,23 @@ class Exposure_Model(models.Model):
     #model                       = models.OneToOneField(Eng_Models, primary_key=True) 
     contributors                = models.ManyToManyField(User, through='Exposure_Model_Contributor')
     taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source, blank=True, null=True)
-    area_type                   = models.CharField(max_length=20, choices=AGG_AREA_CHOICES, null=True)
-    area_unit                   = models.CharField(max_length=20, choices=UNIT_CHOICES, null=True)
-    struct_cost_type            = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
-    struct_cost_currency        = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
-    non_struct_cost_type        = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
-    non_struct_cost_currency    = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
-    contents_cost_type          = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
-    contents_cost_currency      = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
-    business_int_cost_type      = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
-    business_int_cost_currency  = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
+    area_type                   = models.CharField(max_length=20, choices=AGG_AREA_CHOICES, null=True, blank=True)
+    area_unit                   = models.CharField(max_length=20, choices=UNIT_CHOICES, null=True, blank=True)
+    struct_cost_type            = models.CharField(max_length=20, choices=AGG_CHOICES, null=True, blank=True)
+    struct_cost_currency        = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True, blank=True)
+    non_struct_cost_type        = models.CharField(max_length=20, choices=AGG_CHOICES, null=True, blank=True)
+    non_struct_cost_currency    = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True, blank=True)
+    contents_cost_type          = models.CharField(max_length=20, choices=AGG_CHOICES, null=True, blank=True)
+    contents_cost_currency      = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True, blank=True)
+    business_int_cost_type      = models.CharField(max_length=20, choices=AGG_CHOICES, null=True, blank=True)
+    business_int_cost_currency  = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True, blank=True)
     deductible                  = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True, default='absolute')
     insurance_limit             = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True, default='absolute')
     xml                         = models.FileField(upload_to='uploads/exposure/', null=True, blank=True)
     oq_id                       = models.IntegerField(null=True)
 
-    aggregation                 = models.CharField(max_length=20, choices=AGG_CHOICES, null=True)
-    currency                    = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True)
+    aggregation                 = models.CharField(max_length=20, choices=AGG_CHOICES, null=True, blank=True)
+    currency                    = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.aggregation:
@@ -178,8 +178,8 @@ class Asset(models.Model):
     parish                      = models.ForeignKey(World, null=True)
     location                    = models.PointField(null=True, srid=4326)
     name                        = models.CharField(max_length=10)
-    n_buildings                 = models.IntegerField()
-    area                        = models.FloatField()
+    n_buildings                 = models.IntegerField(null=True)
+    area                        = models.FloatField(null=True)
     struct_cost                 = models.FloatField(null=True)
     struct_deductible           = models.FloatField(null=True)
     struct_insurance_limit      = models.FloatField(null=True)
@@ -545,6 +545,21 @@ class Consequence_Model_Contributor(models.Model):
 
 
 class Vulnerability_Model(models.Model):
+
+    STRUCTURAL_VULNERABILITY = 'structural_vulnerability'
+    NONSTRUCTURAL_VULNERABILITY = 'nonstructural_vulnerability'
+    CONTENTS_VULNERABILITY = 'contents_vulnerability'
+    BUSINESS_INTERRUPTION_VULNERABILITY = 'business_interruption_vulnerability'
+    OCCUPANTS_VULNERABILITY = 'occupants_vulnerability'
+    VULNERABILITY_TYPES_CHOICES = (
+        (STRUCTURAL_VULNERABILITY, 'Structural_vulnerability'),
+        (NONSTRUCTURAL_VULNERABILITY, 'Non structural vulnerability'),
+        (CONTENTS_VULNERABILITY, 'Contents vulnerability'),
+        (BUSINESS_INTERRUPTION_VULNERABILITY, 'Business interruption vulnerability'),
+        (OCCUPANTS_VULNERABILITY, 'Occupants vulnerability'),
+        )
+
+
     BUILDINGS = 'buildings'
     CONTENTS = 'contents'
     POPULATION = 'population'
@@ -561,29 +576,22 @@ class Vulnerability_Model(models.Model):
         (FATALITIES, 'Fatalities'),
         )
 
-    PGA = 'PGA'
-    PGV = 'PGV'
-    MMI = 'MMI'
-    SA = 'SA'
-    IMT_CHOICES = (
-        (PGA, 'PGA'),
-        (PGV, 'PGV'),
-        (MMI, 'MMI'),
-        (SA, 'Sa'),
-        )
 
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)
     description                 = models.CharField(max_length=200)
     contributors                = models.ManyToManyField(User, through='Vulnerability_Model_Contributor')
+    type                        = models.CharField(max_length=50, choices=VULNERABILITY_TYPES_CHOICES)
     asset_category              = models.CharField(max_length=20, choices=ASSET_CATEGORY_CHOICES)
     loss_category               = models.CharField(max_length=20, choices=LOSS_CATEGORY_CHOICES)
-    imt                         = models.CharField(max_length=3, choices=IMT_CHOICES)
-    sa_period                   = models.FloatField(null=True)
     iml                         = FloatArrayField()
     fragility_model             = models.ForeignKey(Fragility_Model, null=True)
-    consequence_model            = models.ForeignKey(Consequence_Model, null=True)
+    consequence_model           = models.ForeignKey(Consequence_Model, null=True)
     taxonomy_source             = models.ForeignKey(Building_Taxonomy_Source)
+    xml                         = models.FileField(upload_to='uploads/vulnerability/', null=True, blank=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 class Vulnerability_Model_Contributor(models.Model):
@@ -594,6 +602,16 @@ class Vulnerability_Model_Contributor(models.Model):
 
 
 class Vulnerability_Function(models.Model):
+    PGA = 'PGA'
+    PGV = 'PGV'
+    MMI = 'MMI'
+    SA = 'SA'
+    IMT_CHOICES = (
+        (PGA, 'PGA'),
+        (PGV, 'PGV'),
+        (MMI, 'MMI'),
+        (SA, 'Sa'),
+        )
     LOGNORMAL = 'LN'
     BETA = 'BT'
     PROBABILISTIC_DISTRIBUTION_CHOICES = (
@@ -606,6 +624,8 @@ class Vulnerability_Function(models.Model):
     probabilistic_distribution  = models.CharField(max_length=2, choices=PROBABILISTIC_DISTRIBUTION_CHOICES)
     loss_ratio                  = FloatArrayField()
     coefficients_variation      = FloatArrayField()
+    imt                         = models.CharField(max_length=3, choices=IMT_CHOICES)
+    sa_period                   = models.FloatField(null=True, blank=True)
 
 
 
@@ -625,6 +645,9 @@ class Logic_Tree(models.Model):
     type                        = models.CharField(max_length=25, choices=LOGIC_TREE_TYPE, default='source')
     source_models               = models.ManyToManyField(Source_Model, null=True, blank=True)
     xml                         = models.FileField(upload_to='uploads/logic_tree/', null=True, blank=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 class Logic_Tree_Level(models.Model):

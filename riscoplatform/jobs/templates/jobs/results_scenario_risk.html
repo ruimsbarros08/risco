@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+<div class="container">
+
+<div class="row">
+	<div class="col-md-6">
+		<ul class="breadcrumb">
+		  	<li> <a href="{% url 'jobs_home' %}">Jobs</a></li>
+		  	<li> <a href="{% url 'index_scenario_risk' %}">Scenario Risk</a></li>
+		  	<li class="active">{{ job.name }}</li>
+		</ul>
+	</div>
+</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<h3> {{ job.name }} </h3><br>
+			<h4> {{ job.description }} </h4><br>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-9">
+			<div id='map' class="vertical-map"></div><br>
+		</div>
+
+		<div class="col-md-3">
+
+			{% if job.status == 'CREATED' %}
+			<div class="row">
+				<div class="col-md-12">
+					<a href="{% url 'start_scenario_risk' job.id %}"> <button class="btn btn-danger" style="width:100%;">Start job <span class="glyphicon glyphicon-play" aria-hidden="true"></span> </button></a>
+				</div>
+			</div>
+			<br>
+			{% elif job.status == 'STARTED' %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-warning disabled" style="width:100%;">Calculating...</button>
+				</div>
+			</div>
+			<br>
+			{% elif job.status == 'ERROR' %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-danger disabled" style="width:100%;">ERROR!</button>
+				</div>
+			</div>
+			<br>
+			{% elif job.status == 'FINISHED' %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-success disabled" style="width:100%;">Results ready!</button>
+				</div>
+			</div>
+			<br>
+			{% endif %}
+
+			{% if connection_error %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-error" style="width:100%;">Impossible to lauch the job. Please try again later</button>
+				</div>
+			</div>
+			{% endif %}
+			
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-primary" style="width:100%;">Download files <span class="glyphicon glyphicon-download" aria-hidden="true"></span> </button>
+				</div>
+			</div>
+			<br>
+
+			<ul class="list-group">
+			  	<li class="list-group-item active">
+			  	Job parameters	
+			  	</li>
+
+			  	<li class="list-group-item">
+			    <b>Hazard job:</b> <a id='hazard_id' href="{% url 'results_scenario_hazard' job.hazard_job.id %}">{{ job.hazard_job }} </a> 
+			  	</li>
+
+			  	<li class="list-group-item">
+			    <b>Exposure model:</b> <a href="{% url 'detail_exposure' job.exposure_model.id %}">{{ job.exposure_model }} </a> 
+			  	</li>
+
+			  	<li class="list-group-item">
+			    <b>Max hazard distance:</b> {{ job.max_hazard_dist }} km 
+			  	</li>
+
+			  	<li class="list-group-item">
+			    <b>Master seed:</b> {{ job.master_seed }} 
+			  	</li>
+
+			  	<li class="list-group-item">
+			    <b>Vulnerability correlation coefficient:</b> {{ job.vul_correlation_coefficient }}
+			  	</li>
+
+			  	<li class="list-group-item">
+			    <b>Insured losses:</b> {{ job.insured_losses }} 
+			  	</li>
+
+			  	<li class="list-group-item">
+			    <b>Time of the day:</b> {{ job.time_of_the_day }} 
+			  	</li>
+
+			</ul>
+
+		</div>
+
+	</div>
+
+	<div class="row">
+		<div class="col-md-9">
+
+				<ul id='vulnerability-selector' class="nav nav-tabs">
+
+			
+			  	{% for model in job.scenario_risk_vulnerability_model_set.all %}
+
+					{% for vulnerability in results %}
+
+					{% if model.vulnerability_model.type == vulnerability.type %}
+
+
+					<li class=""><a href="#{{ model.vulnerability_model.type }}" data-toggle="tab" aria-expanded="true">{{ model.vulnerability_model.type }}</a></li>
+
+
+					{% endif %}
+
+					{% endfor %}
+
+			  	{% endfor %}
+
+				</ul>
+
+				<div id="myTabContent" class="tab-content">
+				  
+			  	{% for model in job.scenario_risk_vulnerability_model_set.all %}
+
+					{% for vulnerability in results %}
+
+					{% if model.vulnerability_model.type == vulnerability.type %}
+
+					<div class="tab-pane fade in" id="{{ model.vulnerability_model.type }}">
+
+						<h4>Model: <a href="{% url 'detail_vulnerability' model.vulnerability_model.id %}">{{ model.vulnerability_model }}</a></h4>
+
+					    <p>Total: {{ vulnerability.total|intword }} </p>
+
+					    <p>Per region:</p>
+					    <div id='{{ model.vulnerability_model.type }}_region_name'></div>
+					    <div id='{{ model.vulnerability_model.type }}_region_total'></div>
+					</div>
+
+					{% endif %}
+
+					{% endfor %}
+
+			  	{% endfor %}
+
+			  	</div>
+			
+		</div>
+
+		<div class="col-md-3">
+			<form class="form-horizontal">
+				<fieldset>
+					<legend>Select by Region</legend>
+
+					<div class="form-group">
+						<label for="country" class="col-lg-2 control-label">Country</label>
+						<div class="col-lg-10">
+							<select id='country' name='country' class="form-control">
+								<option value="">--</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="level1" class="col-lg-2 control-label">Level 1</label>
+						<div class="col-lg-10">
+							<select id='level1' name='level1' class="form-control">
+								<option value="">--</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="level2" class="col-lg-2 control-label">Level 2</label>
+						<div class="col-lg-10">
+							<select id='level2' name='level2' class="form-control">
+								<option value="">--</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="level3" class="col-lg-2 control-label">Level 3</label>
+						<div class="col-lg-10">
+							<select id='level3' name='level3' class="form-control">
+								<option value="">--</option>
+							</select>
+						</div>
+					</div>
+
+				</fieldset>
+			</form>
+		</div>
+
+	</div>
+
+</div>
+
+{% load staticfiles %}
+<script type="text/javascript" src="{% static 'jobs/js/scenario_risk_results.js' %}"></script>
+
+{% endblock %}

@@ -16,4 +16,22 @@ urlpatterns = patterns('',
     url(r'^scenario/damage/results/(?P<job_id>\d+)/$', views.results_scenario_damage, name='results_scenario_damage'),
     url(r'^scenario/damage/(?P<job_id>\d+)/start/$', views.start_scenario_damage, name='start_scenario_damage'),
     url(r'^scenario/damage/results/(?P<job_id>\d+)/tiles/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)/$', views.geojson_tiles, name='geojson_tiles'),
+
+    url(r'^scenario/risk/$', views.index_scenario_risk, name='index_scenario_risk'),
+    url(r'^scenario/risk/add/$', views.add_scenario_risk, name='add_scenario_risk'),
+    url(r'^scenario/risk/results/(?P<job_id>\d+)/$', views.results_scenario_risk, name='results_scenario_risk'),
+    url(r'^scenario/risk/results_per_region/(?P<job_id>\d+)/$', views.results_scenario_risk_per_region, name='results_scenario_risk_per_region'),
+    url(r'^scenario/risk/(?P<job_id>\d+)/start/$', views.start_scenario_risk, name='start_scenario_risk'),
+
+    url(r'^psha/hazard/$', views.index_psha_hazard, name='index_psha_hazard'),
+    url(r'^psha/hazard/add/$', views.add_psha_hazard, name='add_psha_hazard'),
+    url(r'^psha/hazard/results/(?P<job_id>\d+)/$', views.results_psha_hazard, name='results_psha_hazard'),
+    url(r'^psha/hazard/(?P<job_id>\d+)/start/$', views.start_psha_hazard, name='start_psha_hazard'),
+
+    url(r'^psha/risk/$', views.index_psha_risk, name='index_psha_risk'),
+    url(r'^psha/risk/add/$', views.add_psha_risk, name='add_psha_risk'),
+    url(r'^psha/risk/results/(?P<job_id>\d+)/$', views.results_psha_risk, name='results_psha_risk'),
+    url(r'^psha/risk/(?P<job_id>\d+)/start/$', views.start_psha_risk, name='start_psha_risk'),
+
+
 )

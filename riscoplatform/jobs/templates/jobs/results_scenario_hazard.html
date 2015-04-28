@@ -32,7 +32,7 @@
 			{% if job.status == 'CREATED' %}
 			<div class="row">
 				<div class="col-md-12">
-					<a href="{% url 'start_scenario_hazard' job.id %}"> <button class="btn btn-danger" style="width:100%;">Start job</button></a>
+					<a href="{% url 'start_scenario_hazard' job.id %}"> <button class="btn btn-danger" style="width:100%;">Start job <span class="glyphicon glyphicon-play" aria-hidden="true"></span></button></a>
 				</div>
 			</div>
 			<br>
@@ -58,9 +58,18 @@
 			</div>
 			<br>
 			{% endif %}
+
+			{% if connection_error %}
 			<div class="row">
 				<div class="col-md-12">
-					<button class="btn btn-primary" style="width:100%;">Download files</button>
+					<button class="btn btn-error" style="width:100%;">Impossible to lauch the job. Please try again later</button>
+				</div>
+			</div>
+			{% endif %}
+			
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-primary" style="width:100%;">Download files <span class="glyphicon glyphicon-download" aria-hidden="true"></span> </button>
 				</div>
 			</div>
 			<br>

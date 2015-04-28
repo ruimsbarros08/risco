@@ -1,15 +1,17 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from eng_models.models import *
+from world.models import *
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from parsers import exposure_parser, fragility_parser, source_parser, site_model_parser, logic_tree_parser
+from parsers import exposure_parser, fragility_parser, source_parser, site_model_parser, logic_tree_parser, vulnerability_parser
 from django.core import serializers
 from djgeojson.serializers import Serializer as GeoJSONSerializer
 from django.db import connection
+#from django.db.models import Q
 #from django.db.models import F
 import json
 import requests
@@ -96,18 +98,62 @@ def ajax_assets(request, model_id):
 		page = int(request.GET.get('page'))
 	except:
 		page = 1
-	asset_list = Asset.objects.filter(model=model)[page:page+49]
-	json_list = serializers.serialize("json", asset_list)
-	return HttpResponse(json_list, content_type="application/json")
-
-
-@login_required
-def ajax_heat_assets(request, model_id):
-	model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
 	
 	cursor = connection.cursor()
-	cursor.execute('select st_y(location), st_x(location), id from eng_models_asset where model_id = %s', [model.id])
-	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
+
+	if request.GET.get('country') != 'undefined':
+		
+		country_id = request.GET.get('country')
+		#country = Country.objects.get(pk=country_id)
+		#asset_list = Asset.objects.filter(model=model, location__intersects=country.geom)[page:page+49]
+
+		cursor.execute('select st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+						eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+						eng_models_asset.n_buildings, eng_models_asset.area \
+						from eng_models_asset, world_country, eng_models_building_taxonomy \
+						where eng_models_asset.model_id = %s \
+						and eng_models_building_taxonomy.id = eng_models_asset.taxonomy_id \
+						and ST_Intersects(eng_models_asset.location, world_country.geom)\
+						and world_country.id = %s \
+						order by id asc', [model.id, country_id])
+
+	elif request.GET.get('adm1') != 'undefined':
+		adm1_id = request.GET.get('adm1')
+		#adm1 = Adm_1.objects.get(pk=adm1_id)
+		#asset_list = Asset.objects.filter(model=model, location__intersects=adm1.geom)[page:page+49]
+
+		cursor.execute('select st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+						eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+						eng_models_asset.n_buildings, eng_models_asset.area \
+						from eng_models_asset, world_adm_1, eng_models_building_taxonomy \
+						where eng_models_asset.model_id = %s \
+						and eng_models_building_taxonomy.id = eng_models_asset.taxonomy_id \
+						and ST_Intersects(eng_models_asset.location, world_adm_1.geom)\
+						and world_adm_1.id = %s \
+						order by id asc', [model.id, adm1_id])
+	else:
+		#asset_list = Asset.objects.filter(model=model)[page:page+49]
+		cursor.execute('select st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+						eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+						eng_models_asset.n_buildings, eng_models_asset.area \
+						from eng_models_asset, eng_models_building_taxonomy \
+						where eng_models_asset.model_id = %s \
+						and eng_models_building_taxonomy.id = eng_models_asset.taxonomy_id \
+						order by eng_models_asset.id asc', [model.id])
+
+	#assets = serializers.serialize("json", asset_list)
+	#assets = json.loads(assets)
+	
+	#return HttpResponse(json.dumps({'assets': assets, 'heatmap': cursor.fetchall()}), content_type="application/json")
+	return HttpResponse(json.dumps({'assets': cursor.fetchall() }), content_type="application/json")
+
+
+#@login_required
+#def ajax_heat_assets(request, model_id):
+#	model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
+#	cursor = connection.cursor()
+#	cursor.execute('select st_y(location), st_x(location), id from eng_models_asset where model_id = %s', [model.id])
+#	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
 
 
 @login_required
@@ -117,6 +163,8 @@ def add_exposure_model(request):
 		form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(building_taxonomy_source_contributor__contributor=request.user).order_by('-date_created')
 		if form.is_valid():
 			model = form.save(commit=False)
+			model.date_created = timezone.now()
+			model.save()
 			if 'add_tax_source' in request.POST:
 				new_tax_source = Building_Taxonomy_Source(name=request.POST['tax_source_name'],
 															description=request.POST['tax_source_desc'],
@@ -127,9 +175,9 @@ def add_exposure_model(request):
 			if request.FILES:
 				try:
 					exposure_parser.start(model)
-				except:
+				except Exception as e:
 					model.delete()
-					return render(request, 'eng_models/index_exposure.html', {'form': form, 'parse_error': True})
+					return render(request, 'eng_models/index_exposure.html', {'form': form, 'parse_error': e})
 			Exposure_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
 			return redirect('detail_exposure', model_id=model.id)
 		else:
@@ -225,6 +273,7 @@ def detail_site_ajax(request, model_id):
 					where eng_models_site.model_id = %s \
 					and eng_models_site.cell_id = world_fishnet.id \
 					group by world_fishnet.id', [model_id])
+					#and st_intersects(world_fishnet.cell, eng_models_site.location)\
 
     cells = cursor.fetchall()
     features = [dict(type='Feature', id=cell[4], properties=dict(color='#FF0000', vs30="{0:.4f}".format(cell[1]),
@@ -245,9 +294,9 @@ def add_site_model(request):
 			if request.FILES:
 				try:
 					site_model_parser.start(model)
-				except:
+				except Exception as e:
 					model.delete()
-					return render(request, 'eng_models/index_site.html', {'form': form, 'parse_error': True})
+					return render(request, 'eng_models/index_site.html', {'form': form, 'parse_error': e})
 			return redirect('detail_site', model_id=model.id)
 		else:
 			models = Site_Model.objects.filter(site_model_contributor__contributor=request.user).order_by('-date_created')
@@ -269,6 +318,23 @@ class SourceModelForm(forms.ModelForm):
 		fields = ['name', 'description', 'xml']
 
 class SourceForm(forms.ModelForm):
+
+	def clean(self):
+		form_data = self.cleaned_data
+		if 'lower_depth' in form_data and 'upper_depth' in form_data:
+			if form_data['lower_depth'] <= form_data['upper_depth']:
+				self._errors["lower_depth"] = "Lower depth value must be higher than upper depth"
+				self._errors["upper_depth"] = "Lower depth value must be higher than upper depth"
+				del form_data['lower_depth']
+				del form_data['upper_depth']
+		if 'max_mag' in form_data and 'min_mag' in form_data:
+			if form_data['max_mag'] <= form_data['min_mag']:
+				self._errors["max_mag"] = "Max magnitude value must be higher than min magnitude"
+				self._errors["min_mag"] = "Max magnitude value must be higher than min magnitude"
+				del form_data['max_mag']
+				del form_data['min_mag']
+		return form_data
+
 	class Meta:
 		model = Source
 		fields = ['name', 'tectonic_region', 'mag_scale_rel', 'rupt_aspect_ratio', 'mag_freq_dist_type', 'a', 'b', 'min_mag', 'max_mag', 'bin_width', 'occur_rates', 'source_type', 'upper_depth', 'lower_depth', 'nodal_plane_dist', 'hypo_depth_dist', 'dip', 'rake', 'point', 'area', 'fault']
@@ -368,6 +434,17 @@ def sources_ajax(request, model_id):
 
 
 class RuptureForm(forms.ModelForm):
+
+	def clean(self):
+	    form_data = self.cleaned_data
+	    if 'lower_depth' in form_data and 'upper_depth' in form_data:
+		    if form_data['lower_depth'] <= form_data['upper_depth']:
+		        self._errors["lower_depth"] = "Lower depth value must be higher than upper depth"
+		        self._errors["upper_depth"] = "Lower depth value must be higher than upper depth"
+		        del form_data['lower_depth']
+		        del form_data['upper_depth']
+	    return form_data
+
 	class Meta:
 		model = Rupture_Model
 		exclude = ['user', 'date_created']
@@ -501,14 +578,15 @@ def convert_to_vulnerability(request, model_id):
 		if form.is_valid():
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
+			model.type = 'structural_vulnerability'
 			model.asset_category = 'buildings'
 			model.loss_category = 'economic_loss'
 			model.fragility_model = fragility_model
 			model.taxonomy_source = fragility_model.taxonomy_source
 
 			taxonomies_fragility = Taxonomy_Fragility_Model.objects.filter(model=fragility_model)
-			model.imt = taxonomies_fragility[0].imt
-			model.sa_period = taxonomies_fragility[0].sa_period
+			#model.imt = taxonomies_fragility[0].imt
+			#model.sa_period = taxonomies_fragility[0].sa_period
 			
 			for tax in taxonomies_fragility:
 				functions = Fragility_Function.objects.filter(tax_frag=tax)
@@ -537,7 +615,10 @@ def convert_to_vulnerability(request, model_id):
 					cf.append(0)
 					i += 1
 
-				vulnerability_function = Vulnerability_Function(model=model, taxonomy=tax.taxonomy, probabilistic_distribution='LN', loss_ratio=values, coefficients_variation=cf)
+				vulnerability_function = Vulnerability_Function(model=model, taxonomy=tax.taxonomy,
+																probabilistic_distribution='LN',
+																loss_ratio=values, coefficients_variation=cf,
+																imt=tax.imt, sa_period = tax.sa_period)
 				vulnerability_function.save()
 
 			Vulnerability_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
@@ -661,12 +742,13 @@ class VulnerabilityForm(forms.ModelForm):
 	tax_source_name = forms.CharField(required=False)
 	tax_source_desc = forms.CharField(required=False)
 	class Meta:
-		model = Fragility_Model
-		fields = ['name', 'description','limit_states', 'taxonomy_source', 'xml']
-		widgets = {
-			'limit_states': forms.TextInput(attrs={'placeholder': 'Ex: slight, moderate, extensive, complete...'}),
-		}
-		
+		model = Vulnerability_Model
+		fields = ['name', 'description', 'type', 'iml', 'xml', 'taxonomy_source']
+
+class VulnerabilityFunctionForm(forms.ModelForm):
+	class Meta:
+		model = Vulnerability_Function
+		fields = ['taxonomy', 'probabilistic_distribution', 'loss_ratio', 'coefficients_variation', 'imt', 'sa_period']				
 
 @login_required
 def index_vulnerability(request):
@@ -681,7 +763,9 @@ def index_vulnerability(request):
 def detail_vulnerability(request, model_id):
 	model = get_object_or_404(Vulnerability_Model ,pk=model_id, vulnerability_model_contributor__contributor=request.user)
 	tax_list = Vulnerability_Function.objects.filter(model=model)
-	return render(request, 'eng_models/detail_vulnerability.html', {'model': model, 'taxonomies': tax_list})
+	form = VulnerabilityFunctionForm()
+	form.fields['taxonomy'].queryset = Building_Taxonomy.objects.filter(source = model.taxonomy_source).exclude(id__in = [e.taxonomy.id for e in tax_list])
+	return render(request, 'eng_models/detail_vulnerability.html', {'model': model, 'taxonomies': tax_list, 'form': form})
 
 @login_required
 def add_vulnerability_model(request):
@@ -700,11 +784,21 @@ def add_vulnerability_model(request):
 			model.date_created = timezone.now()
 			if request.FILES:
 				try:
-					#vulnerability_parser.start(model)
+					vulnerability_parser.start(model)
 					model.save()
 				except Exception as e:
-					return render(request, 'eng_models/index_fragility.html', {'form': form, 'parse_error': e})
+					print e
+					return render(request, 'eng_models/index_vulnerability.html', {'form': form, 'parse_error': e})
 			else:
+				if model.type == 'structural_vulnerability' or model.type == 'nonstructural_vulnerability':
+					model.asset_category = 'buildings'
+					model.loss_category = 'economic_loss'
+				elif model.type == 'contents_vulnerability' or model.type == 'business_interruption_vulnerability':
+					model.asset_category = 'contents'
+					model.loss_category = 'economic_loss'
+				elif model.type == 'occupants_vulnerability':
+					model.asset_category = 'population'
+					model.loss_category = 'fatalities'
 				model.save()
 			Vulnerability_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
 			return redirect('detail_vulnerability', model_id=model.id)
@@ -716,11 +810,35 @@ def add_vulnerability_model(request):
 		return render(request, 'eng_models/index_vulnerability.html', {'form': form})
 
 
+
+@login_required
+def add_vulnerability_function(request, model_id):
+	if request.method == 'POST':
+		model = get_object_or_404(Vulnerability_Model ,pk=model_id, vulnerability_model_contributor__contributor=request.user)
+		tax_list = Vulnerability_Function.objects.filter(model=model)
+		form = VulnerabilityFunctionForm(request.POST)
+		form.fields['taxonomy'].queryset = Building_Taxonomy.objects.filter(source = model.taxonomy_source).exclude(id__in = [e.taxonomy.id for e in tax_list])
+		if form.is_valid():
+			function = form.save(commit=False)
+			function.model = model
+			function.save()
+			return redirect('detail_vulnerability', model_id=model.id)
+		else:
+			return render(request, 'eng_models/detail_vulnerability.html', {'model': model, 'taxonomies': tax_list, 'form': form})
+	else:
+		form = VulnerabilityFunctionForm()
+		return render(request, 'eng_models/detail_vulnerability.html', {'form': form})
+
+
+
 @login_required
 def vulnerability_get_taxonomy(request, model_id, taxonomy_id):
 	model = get_object_or_404(Vulnerability_Model ,pk=model_id, vulnerability_model_contributor__contributor=request.user)
 	function = Vulnerability_Function.objects.get(model=model, taxonomy_id=taxonomy_id)
-	return HttpResponse(json.dumps({'iml': model.iml, 'function': function.loss_ratio}), content_type="application/json")
+	error = []
+	for loss, std_dev in zip(function.loss_ratio, function.coefficients_variation):
+		error.append([loss-std_dev, loss+std_dev])
+	return HttpResponse(json.dumps({'iml': model.iml, 'function': function.loss_ratio, 'error': error}), content_type="application/json")
 
 
 

@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load humanize %}
+
 {% block content %}
 
 <div class="container">
@@ -21,16 +23,6 @@
 		</div>
 	</div>
 
-	{% if queue_error %}
-	<br>
-	<div class="row">
-		<div class="col-md-8 col-md-offset-2">
-			<div class="alert alert-dismissible alert-danger">
-			  	Error: Your job could not be able to be calculated in our servers
-			</div>
-		</div>
-	</div>
-	{% endif %}
 
 	<div class="row">
 		<div class="col-md-8">
@@ -59,7 +51,7 @@
 								<a href="#"><div class="btn btn-primary btn-sm">Download XML</div></a>
 							</div>
 							<div class="col-md-4">
-								{{ job.date_created|date:"M d, Y" }}
+								{{ job.date_created|naturalday }}
 							</div>
 						</div>
 					</div>

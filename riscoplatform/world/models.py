@@ -15,6 +15,39 @@ class Fishnet(models.Model):
         db_table = 'world_fishnet'
 
 
+class Country(models.Model):
+    name = models.CharField(max_length=75)
+    id_0 = models.IntegerField()
+    iso = models.CharField(max_length=3)
+    geom = models.MultiPolygonField()
+    objects = models.GeoManager()
+
+    def __unicode__(self):
+        return self.name
+
+class Adm_1(models.Model):
+    country = models.ForeignKey(Country, null=True)
+    name = models.CharField(max_length=75)
+    id_1 = models.IntegerField(null=True)
+    type = models.CharField(max_length=50, null=True)
+    geom = models.MultiPolygonField()
+    objects = models.GeoManager()
+
+    def __unicode__(self):
+        return self.name
+
+class Adm_2(models.Model):
+    adm_1 = models.ForeignKey(Adm_1, null=True) 
+    name = models.CharField(max_length=75)
+    id_2 = models.IntegerField(null=True)
+    type = models.CharField(max_length=50, null=True)
+    geom = models.MultiPolygonField()
+    objects = models.GeoManager()
+
+    def __unicode__(self):
+        return self.name
+
+
 class World(models.Model):
     #id = models.IntegerField(primary_key=True)  # AutoField?
     objectid = models.IntegerField()
@@ -72,9 +105,8 @@ class World(models.Model):
     geom = models.MultiPolygonField()
     objects = models.GeoManager()
 
-    def __unicode__(self):
-        return self.name_0
-
     class Meta:
         managed = True
         db_table = 'world_world'
+
+

@@ -15,6 +15,9 @@ DROP FOREIGN TABLE IF EXISTS foreign_gmf;
 DROP FOREIGN TABLE IF EXISTS foreign_gmf_data;
 DROP FOREIGN TABLE IF EXISTS foreign_hazard_site;
 
+DROP FOREIGN TABLE IF EXISTS foreign_loss_map;
+DROP FOREIGN TABLE IF EXISTS foreign_loss_map_data;
+
 
 
 CREATE FOREIGN TABLE foreign_dmg_dist_per_asset (
@@ -51,6 +54,9 @@ SERVER priseoq OPTIONS (schema_name 'riski', table_name 'exposure_model');
 CREATE FOREIGN TABLE foreign_gmf_data (
 	id integer,
 	gmf_id integer,
+	imt character varying,
+	sa_period double precision,
+	sa_damping double precision,
 	gmvs double precision[],
 	site_id integer
 )
@@ -67,3 +73,22 @@ CREATE FOREIGN TABLE foreign_hazard_site (
 	location geography(Point,4326)
 )
 SERVER priseoq OPTIONS (schema_name 'hzrdi', table_name 'hazard_site');
+
+
+
+CREATE FOREIGN TABLE foreign_loss_map (
+	id integer,
+	output_id integer,
+	loss_type character varying
+)
+SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'loss_map');
+
+CREATE FOREIGN TABLE foreign_loss_map_data (
+	id integer,
+	loss_map_id integer,
+	asset_ref character varying,
+	value double precision,
+	std_dev double precision
+)
+SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'loss_map_data');
+

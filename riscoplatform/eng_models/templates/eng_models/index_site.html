@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% load humanize %}
+
 
 <div class="container">
 
@@ -37,7 +39,8 @@
 	<div class="row">
 		<div class="col-md-8 col-md-offset-2">
 			<div class="alert alert-dismissible alert-danger">
-			  	Error: Your file is not a valid xml input file for Openquake 
+			  	<p>Error: Your file is not a valid xml input file for Openquake</p>
+			  	<p>{{ parse_error }}</p> 
 			</div>
 		</div>
 	</div>
@@ -87,7 +90,7 @@
 								<a href="#"><div class="btn btn-primary btn-sm">Download XML</div></a>
 							</div>
 							<div class="col-md-2">
-								{{ model.date_created|date:"M d, Y" }}
+								{{ model.date_created|naturalday }}
 							</div>
 						</div>
 					</div>

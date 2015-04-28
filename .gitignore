@@ -1,9 +1,10 @@
 *.pyc
 riscoplatform/uploads/
 tilestache/local_tilestache.cfg
+tilestache/tmp/
 tilestache.wsgi
 riscoplatform/riscoplatform/local_settings.py
-riscoplatform/world/gadm_v2_shp/
+riscoplatform/world/datasources/
 
 
 # Compiled source #

@@ -3,11 +3,14 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 
 from eng_models.models import *
-from jobs.models import Scenario_Hazard, Scenario_Hazard_Results, Scenario_Damage, Scenario_Damage_Results
+from jobs.models import *
+from world.models import *
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import connection
+from django.contrib.gis.measure import Distance, D
+from django.db.models import Sum
 
 #from django.core import serializers
 from django.contrib.auth.models import User
@@ -16,7 +19,6 @@ from rq import Queue
 import json
 import colors
 import requests
-import socket
 
 from riscoplatform.local_settings import *
 
@@ -37,12 +39,60 @@ def home(request):
 	return render(request, 'jobs/home.html')
 
 
+def queue_job(job, type):
+	conn = redis.Redis('priseOQ.fe.up.pt', 6379)
+	q = Queue('risco', connection=conn)
+	job_queue = q.enqueue('controller.start', job.id, type, DATABASE, timeout=3600)
+	job.status = 'STARTED'
+	job.save()
+
+
+def get_imt_from_vul(model, job):
+	if model.imt == 'PGA':
+		if not job.pga:
+			job.pga = True
+	    
+    	if model.imt == 'SA':
+    		if model.sa_period not in job.sa_periods:
+    			job.sa_periods = job.sa_periods + model.sa_period
+
+
+
 ############################
 ##     SCENARIO HAZARD    ##
 ############################
 
 
 class ScenarioHazardForm(forms.ModelForm):
+	fragility_model = forms.ModelChoiceField(queryset=Fragility_Model.objects.all().order_by('-date_created'), required=False)
+	structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
+	non_structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
+	contents_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
+	business_int_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
+	occupants_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
+	
+	def clean(self):
+		form_data = self.cleaned_data
+
+		if 'region' in form_data and 'rupture_model' in form_data: 
+			region = form_data['region']
+			rupture_model = form_data['rupture_model']
+
+			cursor = connection.cursor()
+			if rupture_model.rupture_type == 'POINT':
+				cursor.execute('SELECT ST_DWithin(ST_GeomFromText(%s, 4326)::geography, ST_GeomFromText(%s, 4326)::geography, %s)', [region.wkt, rupture_model.location.wkt, float(form_data['max_distance'])*1000])
+			else:
+				cursor.execute('SELECT ST_DWithin(ST_GeomFromText(%s, 4326)::geography, ST_GeomFromText(%s, 4326)::geography, %s)', [region.wkt, rupture_model.rupture_geom.wkt, float(form_data['max_distance'])*1000])
+
+			check = cursor.fetchone()[0]
+
+			if not check:
+				self._errors["max_distance"] = "The distance between the region selected and the rupture is greater than the specified."
+				del form_data['max_distance']
+
+		return form_data
+
+
 	class Meta:
 		model = Scenario_Hazard
 		exclude = ['user', 'date_created', 'status', 'oq_id', 'ini_file']
@@ -58,6 +108,14 @@ def index_scenario_hazard(request):
 	form = ScenarioHazardForm()
 	form.fields["site_model"].queryset = Site_Model.objects.filter(site_model_contributor__contributor=request.user).order_by('-date_created')
 	form.fields["rupture_model"].queryset = Rupture_Model.objects.filter(user=request.user)
+
+	form.fields["fragility_model"].queryset = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
+	form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+	form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+	form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+	form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+	form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+	
 	return render(request, 'jobs/index_scenario_hazard.html', {'jobs': jobs, 'form': form})
 
 @login_required
@@ -66,10 +124,42 @@ def add_scenario_hazard(request):
 		form = ScenarioHazardForm(request.POST)
 		form.fields["site_model"].queryset = Site_Model.objects.filter(site_model_contributor__contributor=request.user).order_by('-date_created')
 		form.fields["rupture_model"].queryset = Rupture_Model.objects.filter(user=request.user)
+		
+		form.fields["fragility_model"].queryset = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
+		form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+		form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+		form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+		form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+		form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+	
 		if form.is_valid():
 			job = form.save(commit=False)
 			job.date_created = timezone.now()
 			job.user = request.user
+
+			if form.cleaned_data["fragility_model"] != None:
+				fragility_taxonomies = Taxonomy_Fragility_Model.objects.filter(model = form.cleaned_data['fragility_model'])
+				periods = []
+				for tax in fragility_taxonomies:
+					if tax.imt == 'PGA':
+						if not job.pga:
+							job.pga = True
+					if tax.imt == 'SA':
+						if tax.sa_period not in periods:
+							periods.append(tax.sa_period)
+				job.sa_periods = periods
+
+			if form.cleaned_data["structural_vulberability"] != None:
+				get_imt_from_vul(form.cleaned_data["structural_vulberability"], job)
+			if form.cleaned_data["non_structural_vulberability"] != None:
+				get_imt_from_vul(form.cleaned_data["non_structural_vulberability"], job)
+			if form.cleaned_data["contents_vulberability"] != None:
+				get_imt_from_vul(form.cleaned_data["contents_vulberability"], job)
+			if form.cleaned_data["business_int_vulberability"] != None:
+				get_imt_from_vul(form.cleaned_data["business_int_vulberability"], job)
+			if form.cleaned_data["occupants_vulberability"] != None:
+				get_imt_from_vul(form.cleaned_data["occupants_vulberability"], job)
+
 			job.save()
 			return redirect('results_scenario_hazard', job.id)
 		else:
@@ -88,15 +178,10 @@ def results_scenario_hazard(request, job_id):
 def start_scenario_hazard(request, job_id):
 	job = get_object_or_404(Scenario_Hazard ,pk=job_id, user=request.user)
 	try:
-		#queing to priseOQ
-		#conn = redis.Redis('priseOQ.fe.up.pt', 6379)
-		#q = Queue('risco', connection=conn)
-		#job_queue = q.enqueue('start.start', job.id, 'scenario_hazard', DATABASE, timeout=3600)
-		job.status = 'STARTED'
-		job.save()
+		queue_job(job, 'scenario_hazard')
 		return redirect('results_scenario_hazard', job.id)
 	except:
-		return redirect('results_scenario_hazard', job.id)
+		return render(request, 'jobs/results_scenario_hazard.html', {'job': job, 'connection_error': True})
 		
 
 @login_required
@@ -107,24 +192,26 @@ def results_scenario_hazard_ajax(request, job_id):
 	d = []
     
 	if job.pga:
-	    cursor.execute("select ST_AsGeoJSON(cell), avg(gmvs), world_fishnet.id  \
-						from world_fishnet, jobs_scenario_hazard_results \
-						where jobs_scenario_hazard_results.job_id = %s \
-						and jobs_scenario_hazard_results.cell_id = world_fishnet.id \
-						and jobs_scenario_hazard_results.imt = 'PGA' \
-						group by world_fishnet.id", [job_id])
-	    cells = cursor.fetchall()
-	    features = list(dict(type='Feature', id=cell[2], properties=dict(color=colors.hazard_picker(cell[1]), a="{0:.4f}".format(cell[1])),
+
+		cursor.execute("SELECT ST_AsGeoJSON(cell), gmvs_mean, world_fishnet.id \
+						FROM world_fishnet, jobs_scenario_hazard_results_by_cell \
+						WHERE jobs_scenario_hazard_results_by_cell.job_id = %s \
+						AND jobs_scenario_hazard_results_by_cell.cell_id = world_fishnet.id \
+						AND jobs_scenario_hazard_results_by_cell.imt = 'PGA'", [job_id])
+	
+		cells = cursor.fetchall()
+		features = list(dict(type='Feature', id=cell[2], properties=dict(color=colors.hazard_picker(cell[1]), a="{0:.4f}".format(cell[1])),
 					geometry=json.loads(cell[0])) for cell in cells)
-	    d.append({'type': 'FeatureCollection', 'features': features, 'name': 'PGA'})
+
+		d.append({'type': 'FeatureCollection', 'features': features, 'name': 'PGA'})
 
 	for e in job.sa_periods:
-		cursor.execute("select ST_AsGeoJSON(cell), avg(gmvs), world_fishnet.id  \
-						from world_fishnet, jobs_scenario_hazard_results \
-						where jobs_scenario_hazard_results.job_id = %s \
-						and jobs_scenario_hazard_results.cell_id = world_fishnet.id \
-						and jobs_scenario_hazard_results.sa_period = %s \
-						group by world_fishnet.id", [job_id, e])
+
+		cursor.execute("SELECT ST_AsGeoJSON(cell), gmvs_mean, world_fishnet.id \
+						FROM world_fishnet, jobs_scenario_hazard_results_by_cell \
+						WHERE jobs_scenario_hazard_results_by_cell.job_id = %s \
+						AND jobs_scenario_hazard_results_by_cell.cell_id = world_fishnet.id \
+						AND jobs_scenario_hazard_results_by_cell.sa_period = %s", [job_id, e])
 		cells = cursor.fetchall()
 		features = list(dict(type='Feature', id=cell[2], properties=dict(color=colors.hazard_picker(cell[1]), a="{0:.4f}".format(cell[1])),
 					geometry=json.loads(cell[0])) for cell in cells)
@@ -149,7 +236,70 @@ def results_scenario_hazard_ajax(request, job_id):
 ############################
 
 
+def check_imts(hazard, struct):
+	for e in struct:
+		if e not in hazard:
+			return False
+	return True
+
+
+
+
 class ScenarioDamageForm(forms.ModelForm):
+
+	def clean(self):
+	    form_data = self.cleaned_data
+
+	    if 'fragility_model' in form_data and 'hazard_job' in form_data and 'exposure_model' in form_data and 'region'in form_data and 'max_hazard_dist' in form_data: 
+		    fragility_taxonomies = Taxonomy_Fragility_Model.objects.filter(model = form_data['fragility_model'])
+		    frag_imts = []
+		    
+		    for tax in fragility_taxonomies:
+		    	if tax.imt == 'SA':
+		    		imt = 'SA('+str(tax.sa_period)+')'
+		    		if imt not in frag_imts:
+		    			frag_imts.append(imt)
+		    	else:
+		    		if tax.imt not in frag_imts:
+		    			frag_imts.append(tax.imt)
+
+		    hazard = form_data['hazard_job']
+		    haz_imts = []
+
+		    if hazard.pga:
+		    	haz_imts.append('PGA')
+		    for period in hazard.sa_periods:
+		    	haz_imts.append('SA('+str(period)+')')
+
+		    if check_imts(haz_imts, frag_imts) == False:
+		        self.add_error(None, '<p>Missing hazard IMTs.</p><p> Fragility Model IMTs: </p> <ul><li>'+'</li><li>'.join(frag_imts)+' </li></ul> <p> Available Hazard IMTs: </p> <ul><li>'+'</li><li>'.join(haz_imts)+'</li></ul>')
+
+		    region = form_data['region']
+		    exposure_model = form_data['exposure_model']
+
+		    cursor = connection.cursor()
+		    #cursor.execute('SELECT ST_DWithin(region::geography, ST_GeomFromText(%s, 4326)::geography, %s) FROM jobs_scenario_hazard WHERE id = %s', [region.wkt, float(form_data['max_hazard_dist'])*1000, hazard.id])
+		    cursor.execute('SELECT ST_DWithin(jobs_scenario_hazard.region::geography, point.location::geography, %s) \
+		    				FROM jobs_scenario_hazard, (SELECT DISTINCT location \
+		    								FROM eng_models_asset \
+		    								WHERE model_id = %s\
+		    								AND ST_Within(location, ST_GeomFromText(%s, 4326))) AS point \
+		    				WHERE jobs_scenario_hazard.id = %s \
+		    				ORDER BY ST_Distance(point.location::geography, jobs_scenario_hazard.region::geography) DESC\
+		    				LIMIT 1', [float(form_data['max_hazard_dist'])*1000, exposure_model.id, region.wkt, hazard.id])
+		    
+		    try:
+		    	check = cursor.fetchone()[0]
+		    except:
+		    	self.add_error(None, 'There is no assets on the region you selected')
+		    	check = False
+
+		    if not check:
+		    	self._errors["max_hazard_dist"] = "The distance between the hazard and the risk is greater than the specified."
+		    	del form_data['max_hazard_dist']
+
+	    return form_data
+
 	class Meta:
 		model = Scenario_Damage
 		exclude = ['user', 'date_created', 'status', 'oq_id', 'ini_file']
@@ -162,7 +312,7 @@ class ScenarioDamageForm(forms.ModelForm):
 def index_scenario_damage(request):
 	jobs = Scenario_Damage.objects.filter(user=request.user).order_by('-date_created')
 	form = ScenarioDamageForm()
-	form.fields["hazard_job"].queryset = Scenario_Hazard.objects.filter(user=request.user)
+	form.fields["hazard_job"].queryset = Scenario_Hazard.objects.filter(user=request.user, status='FINISHED')
 	form.fields["fragility_model"].queryset = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
 	form.fields["exposure_model"].queryset = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
 	return render(request, 'jobs/index_scenario_damage.html', {'jobs': jobs, 'form': form})
@@ -171,9 +321,10 @@ def index_scenario_damage(request):
 def add_scenario_damage(request):
 	if request.method == 'POST':
 		form = ScenarioDamageForm(request.POST)
-		form.fields["hazard_job"].queryset = Scenario_Hazard.objects.filter(user=request.user)
+		form.fields["hazard_job"].queryset = Scenario_Hazard.objects.filter(user=request.user, status='FINISHED')
 		form.fields["fragility_model"].queryset = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
 		form.fields["exposure_model"].queryset = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
+		
 		if form.is_valid():
 			job = form.save(commit=False)
 			job.date_created = timezone.now()
@@ -196,15 +347,10 @@ def results_scenario_damage(request, job_id):
 def start_scenario_damage(request, job_id):
 	job = get_object_or_404(Scenario_Damage ,pk=job_id, user=request.user)
 	try:
-		#queing to priseOQ
-		#conn = redis.Redis('priseOQ.fe.up.pt', 6379)
-		#q = Queue('risco', connection=conn)
-		#job_queue = q.enqueue('start.start', job.id, 'scenario_damage', DATABASE, timeout=3600)
-		job.status = 'STARTED'
-		job.save()
+		queue_job(job, 'scenario_damage')
 		return redirect('results_scenario_damage', job.id)
 	except:
-		return redirect('results_scenario_damage', job.id)
+		return render(request, 'jobs/results_scenario_damage.html', {'job': job, 'connection_error': True})
 
 @login_required
 def geojson_tiles(request, job_id, z, x, y):
@@ -240,6 +386,336 @@ def geojson_tiles(request, job_id, z, x, y):
 
 	geom_dict["features"] = [feature for feature in geom_dict["features"] if 'limit_states' in feature['properties']]
 	return HttpResponse(json.dumps(geom_dict), content_type="application/json")
+
+
+
+##########################
+##     SCENARIO RISK    ##
+##########################
+
+
+class ScenarioRiskForm(forms.ModelForm):
+	structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
+	non_structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
+	contents_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
+	business_int_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
+	occupants_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
+	
+	class Meta:
+		model = Scenario_Risk
+		exclude = ['user', 'date_created', 'vulnerability_models', 'status', 'oq_id', 'ini_file']
+		widgets = {
+					'description': forms.Textarea(attrs={'rows':5}),
+           			'region': forms.HiddenInput(),
+					}
+
+@login_required	
+def index_scenario_risk(request):
+	jobs = Scenario_Risk.objects.filter(user=request.user).order_by('-date_created')
+	form = ScenarioRiskForm()
+	form.fields["hazard_job"].queryset = Scenario_Hazard.objects.filter(user=request.user, status='FINISHED')
+	form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+	form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+	form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+	form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+	form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+	form.fields["exposure_model"].queryset = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
+	return render(request, 'jobs/index_scenario_risk.html', {'jobs': jobs, 'form': form})
+
+@login_required
+def add_scenario_risk(request):
+	if request.method == 'POST':
+		form = ScenarioRiskForm(request.POST)
+		form.fields["hazard_job"].queryset = Scenario_Hazard.objects.filter(user=request.user, status='FINISHED')
+		form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+		form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+		form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+		form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+		form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+		form.fields["exposure_model"].queryset = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
+		if form.is_valid():
+			job = form.save(commit=False)
+			job.date_created = timezone.now()
+			job.user = request.user
+			job.save()
+
+			if form.cleaned_data["structural_vulberability"] != None:
+				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["structural_vulberability"])
+			if form.cleaned_data["non_structural_vulberability"] != None:
+				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["non_structural_vulberability"])
+			if form.cleaned_data["contents_vulberability"] != None:
+				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["contents_vulberability"])
+			if form.cleaned_data["business_int_vulberability"] != None:
+				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["business_int_vulberability"])
+			if form.cleaned_data["occupants_vulberability"] != None:
+				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["occupants_vulberability"])
+
+			return redirect('results_scenario_risk', job.id)
+		else:
+			jobs = Scenario_Risk.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'jobs/index_scenario_risk.html', {'jobs': jobs, 'form': form})
+	else:
+		form = ScenarioRiskForm()
+		return render(request, 'jobs/index_scenario_risk.html', {'form': form})
+
+@login_required
+def results_scenario_risk(request, job_id):
+	job = get_object_or_404(Scenario_Risk ,pk=job_id)
+	vulnerability_types = Scenario_Risk_Vulnerability_Model.objects.filter(job = job)
+	results = []
+	for vulnerability in vulnerability_types:
+		#total = Scenario_Risk_Results.objects.filter(job_vul = vulnerability).annotate(Sum('mean'))
+		cursor = connection.cursor()
+		cursor.execute('SELECT sum(mean) FROM jobs_scenario_risk_results WHERE job_vul_id = %s', [vulnerability.id])
+		total = cursor.fetchone()[0]
+		results.append({'type': vulnerability.vulnerability_model.type, 'total': total})
+
+	return render(request, 'jobs/results_scenario_risk.html', {'job': job, 'results': results})
+
+
+@login_required
+def results_scenario_risk_per_region(request, job_id):
+	job = get_object_or_404(Scenario_Risk ,pk=job_id)
+	vulnerability_types = Scenario_Risk_Vulnerability_Model.objects.filter(job = job)
+	
+	results = []	
+	cursor = connection.cursor()
+
+	if request.GET.get('country') != 'undefined':
+		country_id = request.GET.get('country')
+		for vulnerability in vulnerability_types:
+			cursor.execute('SELECT sum(jobs_scenario_risk_results.mean) \
+							FROM eng_models_asset, jobs_scenario_risk_results, world_country \
+							WHERE jobs_scenario_risk_results.job_vul_id = %s \
+							AND world_country.id = %s \
+							AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+							AND ST_Within(eng_models_asset.location, world_country.geom)', [vulnerability.id, country_id])
+			data = cursor.fetchone()
+			region = json.loads(Country.objects.get(id = country_id).geom.json)
+			results.append({'type': vulnerability.vulnerability_model.type, 'total': data[0]})
+
+
+	elif request.GET.get('adm1') != 'undefined':
+		adm1_id = request.GET.get('adm1')
+		for vulnerability in vulnerability_types:
+			cursor.execute('SELECT sum(jobs_scenario_risk_results.mean) \
+							FROM eng_models_asset, jobs_scenario_risk_results, world_adm_1 \
+							WHERE jobs_scenario_risk_results.job_vul_id = %s \
+							AND world_adm_1.id = %s \
+							AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+							AND ST_Within(eng_models_asset.location, world_adm_1.geom)', [vulnerability.id, adm1_id])
+			data = cursor.fetchone()
+			region = json.loads(Adm_1.objects.get(id = adm1_id).geom.json)
+			results.append({'type': vulnerability.vulnerability_model.type, 'total': data[0]})
+	else:
+		for vulnerability in vulnerability_types:
+			cursor.execute('SELECT sum(mean) \
+							FROM jobs_scenario_risk_results \
+							WHERE job_vul_id = %s', [vulnerability.id])
+			data = cursor.fetchone()
+			#region = json.loads(vulnerability.job.region.json)
+			region = None
+			results.append({'type': vulnerability.vulnerability_model.type, 'total': data[0]})
+
+	return HttpResponse(json.dumps({'results': results, 'region': region}), content_type="application/json")
+
+
+
+@login_required
+def start_scenario_risk(request, job_id):
+	job = get_object_or_404(Scenario_Risk ,pk=job_id, user=request.user)
+	try:
+		queue_job(job, 'scenario_risk')
+		return redirect('results_scenario_risk', job.id)
+	except:
+		return render(request, 'jobs/results_scenario_risk.html', {'job': job, 'connection_error': True})
+
+
+
+
+########################
+##     PSHA HAZARD    ##
+########################
+
+
+class PSHAHazardForm(forms.ModelForm):
+	structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
+	non_structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
+	contents_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
+	business_int_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
+	occupants_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
+
+	gmpe_logic_tree = forms.ModelChoiceField(queryset = Logic_Tree.objects.filter(type='gmpe'), required=False)
+	source_logic_tree = forms.ModelChoiceField(queryset = Logic_Tree.objects.filter(type='source'), required=False)
+
+	class Meta:
+		model = Classical_PSHA_Hazard
+		exclude = ['user', 'date_created', 'vulnerability_models', 'logic_trees', 'imt_l', 'status', 'oq_id', 'ini_file']
+		widgets = {
+					'description': forms.Textarea(attrs={'rows':5}),
+					'sa_periods': forms.TextInput(attrs={'placeholder': 'Ex: 0.20, 0.5, 0.9, 1.3 ...'}),
+           			'region': forms.HiddenInput(),
+					}
+
+@login_required	
+def index_psha_hazard(request):
+	jobs = Classical_PSHA_Hazard.objects.filter(user=request.user).order_by('-date_created')
+	form = PSHAHazardForm()
+	form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+	form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+	form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+	form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+	form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+	
+	form.fields["gmpe_logic_tree"].queryset = Logic_Tree.objects.filter(user=request.user).filter(type='gmpe').order_by('-date_created')
+	form.fields["source_logic_tree"].queryset = Logic_Tree.objects.filter(user=request.user).filter(type='source').order_by('-date_created')
+	return render(request, 'jobs/index_psha_hazard.html', {'jobs': jobs, 'form': form})
+
+@login_required
+def add_psha_hazard(request):
+	if request.method == 'POST':
+		form = PSHAHazardForm(request.POST)
+		form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+		form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+		form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+		form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+		form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+		
+		form.fields["gmpe_logic_tree"].queryset = Logic_Tree.objects.filter(user=request.user).filter(type='gmpe').order_by('-date_created')
+		form.fields["source_logic_tree"].queryset = Logic_Tree.objects.filter(user=request.user).filter(type='source').order_by('-date_created')
+
+		if form.is_valid():
+			job = form.save(commit=False)
+			job.date_created = timezone.now()
+			job.user = request.user
+			job.save()
+
+			#if form.cleaned_data["structural_vulberability"] != None:
+			#	job.vulnerability_models.add(form.cleaned_data["structural_vulberability"])
+			#if form.cleaned_data["non_structural_vulberability"] != None:
+			#	job.vulnerability_models.add(form.cleaned_data["non_structural_vulberability"])
+			#if form.cleaned_data["contents_vulberability"] != None:
+			#	job.vulnerability_models.add(form.cleaned_data["contents_vulberability"])
+			#if form.cleaned_data["occupants_vulberability"] != None:
+			#	job.vulnerability_models.add(form.cleaned_data["occupants_vulberability"])
+
+			if form.cleaned_data["gmpe_logic_tree"] != None:
+				job.logic_trees.add(form.cleaned_data["gmpe_logic_tree"])
+			if form.cleaned_data["source_logic_tree"] != None:
+				job.logic_trees.add(form.cleaned_data["source_logic_tree"])
+
+			return redirect('results_psha_hazard', job.id)
+		else:
+			jobs = Classical_PSHA_Hazard.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'jobs/index_psha_hazard.html', {'jobs': jobs, 'form': form})
+	else:
+		form = PSHAHazardForm()
+		return render(request, 'jobs/index_psha_hazard.html', {'form': form})
+
+@login_required
+def results_psha_hazard(request, job_id):
+	job = get_object_or_404(Classical_PSHA_Hazard ,pk=job_id, user=request.user)
+	return render(request, 'jobs/results_psha_hazard.html', {'job': job})
+
+@login_required
+def start_psha_hazard(request, job_id):
+	job = get_object_or_404(Classical_PSHA_Hazard ,pk=job_id, user=request.user)
+	try:
+		queue_job(job, 'psha_hazard')
+		return redirect('results_psha_hazard', job.id)
+	except:
+		return render(request, 'jobs/results_psha_hazard.html', {'job': job, 'connection_error': True})
+
+
+
+
+
+
+########################
+##     PSHA RISK    ##
+########################
+
+
+class PSHARiskForm(forms.ModelForm):
+	structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
+	non_structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
+	contents_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
+	business_int_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
+	occupants_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
+
+	class Meta:
+		model = Classical_PSHA_Risk
+		exclude = ['user', 'date_created', 'vulnerability_models', 'status', 'oq_id', 'ini_file']
+		widgets = {
+					'description': forms.Textarea(attrs={'rows':5}),
+           			'region': forms.HiddenInput(),
+					}
+
+@login_required	
+def index_psha_risk(request):
+	jobs = Classical_PSHA_Risk.objects.filter(user=request.user).order_by('-date_created')
+	form = PSHARiskForm()
+
+	form.fields['hazard'].queryset = Classical_PSHA_Hazard.objects.filter(user=request.user, status='FINISHED').order_by('-date_created')
+
+	form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+	form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+	form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+	form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+	form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+	
+	return render(request, 'jobs/index_psha_risk.html', {'jobs': jobs, 'form': form})
+
+@login_required
+def add_psha_risk(request):
+	if request.method == 'POST':
+		form = PSHARiskForm(request.POST)
+		form.fields['hazard'].queryset = Classical_PSHA_Hazard.objects.filter(user=request.user, status='FINISHED').order_by('-date_created')
+		form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+		form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+		form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+		form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+		form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+
+		if form.is_valid():
+			job = form.save(commit=False)
+			job.date_created = timezone.now()
+			job.user = request.user
+			job.save()
+
+			if form.cleaned_data["structural_vulberability"] != None:
+				job.vulnerability_models.add(form.cleaned_data["structural_vulberability"])
+			if form.cleaned_data["non_structural_vulberability"] != None:
+				job.vulnerability_models.add(form.cleaned_data["non_structural_vulberability"])
+			if form.cleaned_data["contents_vulberability"] != None:
+				job.vulnerability_models.add(form.cleaned_data["contents_vulberability"])
+			if form.cleaned_data["business_int_vulberability"] != None:
+				job.vulnerability_models.add(form.cleaned_data["business_int_vulberability"])
+			if form.cleaned_data["occupants_vulberability"] != None:
+				job.vulnerability_models.add(form.cleaned_data["occupants_vulberability"])
+
+			return redirect('results_psha_risk', job.id)
+		else:
+			jobs = Classical_PSHA_Risk.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'jobs/index_psha_risk.html', {'jobs': jobs, 'form': form})
+	else:
+		form = PSHARiskForm()
+		return render(request, 'jobs/index_psha_risk.html', {'form': form})
+
+@login_required
+def results_psha_risk(request, job_id):
+	job = get_object_or_404(Classical_PSHA_Risk ,pk=job_id, user=request.user)
+	return render(request, 'jobs/results_psha_risk.html', {'job': job})
+
+@login_required
+def start_psha_risk(request, job_id):
+	job = get_object_or_404(Classical_PSHA_Risk ,pk=job_id, user=request.user)
+	try:
+		queue_job(job, 'psha_risk')
+		return redirect('results_psha_risk', job.id)
+	except:
+		return render(request, 'jobs/results_psha_risk.html', {'job': job, 'connection_error': True})
+
 
 
 

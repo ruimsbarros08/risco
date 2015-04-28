@@ -6,6 +6,20 @@ $( document ).ready(function() {
     var map = new L.Map('map');
     map.setView(new L.LatLng(40, -8),5);
     osm.addTo(map);
+
+
+    //add standard controls
+    //L.control.coordinates().addTo(map);
+    //add configured controls
+    L.control.coordinates({
+        position:"bottomleft",
+        decimals:2,
+        decimalSeperator:",",
+        labelTemplateLat:"Latitude: {y}",
+        labelTemplateLng:"Longitude: {x}"
+    }).addTo(map);
+
+
     L.control.layers(baseMaps).addTo(map);
 
     var getContentPopup = function(feature) {

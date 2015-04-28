@@ -31,6 +31,32 @@ function wktToLatLng(wkt) {
 }
 
 
+function get_world(){
+    $.ajax('/countries')
+    .done(function(data){
+        for (var i = 0; i<data.length; i++){
+            $("#country").append('<option value='+data[i][0]+'>'+data[i][1]+'</option>');
+        }
+    });
+    
+    $("#level1").remoteChained({
+        parents : "#country",
+        url : "/level1"
+    });
+
+    $("#level2").remoteChained({
+        parents : "#level1",
+        url : "/level2"
+    });
+
+    $("#level3").remoteChained({
+        parents : "#level2",
+        url : "/level3"
+    });
+
+}
+
+
 
 //Maps base layers
 var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -52,4 +78,7 @@ $( document ).ready(function() {
     $('form select').addClass('form-control');
     $('form textarea').addClass('form-control');
 });
+
+
+
 

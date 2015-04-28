@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% load humanize %}
+
+{% block content %}
+
+<div class="container">
+
+	<div class="row">
+		<div class="col-md-6">
+			<ul class="breadcrumb">
+			  	<li> <a href="{% url 'jobs_home' %}">Jobs</a></li>
+			  	<li class="active">Classical PSHA Hazard</li>
+			</ul>
+		</div>
+	</div>
+
+
+	<div class="row">
+		<div class="col-md-12">
+			<h2>Classical PSHA Hazard</h2><br>
+			<div id='map' class="vertical-map"></div><br>
+		</div>
+	</div>
+
+	{% if queue_error %}
+	<br>
+	<div class="row">
+		<div class="col-md-8 col-md-offset-2">
+			<div class="alert alert-dismissible alert-danger">
+			  	Error: Your job could not be able to be calculated in our servers
+			</div>
+		</div>
+	</div>
+	{% endif %}
+
+	<div class="row">
+		<div class="col-md-8">
+			<form class="form-horizontal" action="{% url 'add_psha_hazard' %}" method="post" enctype="multipart/form-data">
+				<fieldset>
+					<legend>Insert new job</legend>
+					{% csrf_token %}
+					{% include 'form.html' %}
+			    </fieldset>
+			</form>
+		</div>
+
+		<div class="col-md-4">
+
+			{% if jobs %}
+			<div class="row">
+				<!--
+				<div class="col-md-12">
+					{% include 'pagination.html' %}
+				</div>
+				<div class="col-md-12">
+					{% include 'pagination.html' %}
+				</div>
+				-->
+
+				{% for job in jobs %}
+				<div class="col-md-12">
+					<div class="well">
+						<div class="row">
+
+							<div class="col-md-4">
+								<h4><a href="{% url 'results_psha_hazard' job.id %}">{{ job.name }}</a></h4>
+							</div>
+							<div class="col-md-4">
+								<a href="#"><div class="btn btn-primary btn-sm">Download XML</div></a>
+							</div>
+							<div class="col-md-4">
+								{{ job.date_created|naturalday }}
+							</div>
+						</div>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+
+
+			{% else %}
+				<br>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="alert alert-dismissable alert-info">
+						<button type="button" class="close" data-dismiss="alert">×</button>
+					    	<p>No jobs are available. Please add the first</p>
+					    </div>
+					</div>
+				</div>
+			{% endif %}
+
+			<!--
+			{% if jobs %}
+				<table class="table table-striped table-hover ">
+				<caption>Jobs</caption>
+					<thead>
+					    <tr>
+						    <th>Name</th>
+						    <th></th>
+					    </tr>
+					</thead>
+					<tbody>
+				    	{% for job in jobs %}
+				    	<tr>
+						    <td> {{ job.name }} </td>
+						    <td> <a href="{% url 'results_scenario_hazard' job.id %}"> <button class="btn btn-sm btn-success"> Results </button> </a></td>
+				    
+					    </tr>
+				    	{% endfor %}
+					</tbody>
+				</table>
+
+			{% else %}
+				<div class="alert alert-dismissable alert-info">
+				<button type="button" class="close" data-dismiss="alert">×</button>
+			    	<p>No jobs. Please add the first.</p>
+			    </div>
+			{% endif %}
+			-->
+
+
+		</div>
+
+	</div>
+
+</div>
+
+{% load staticfiles %}
+<script type="text/javascript" src="{% static 'jobs/js/psha_hazard.js' %}"></script>
+
+{% endblock %}

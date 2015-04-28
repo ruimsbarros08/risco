@@ -1,6 +1,26 @@
 {% extends "base.html" %}
 
+{% load humanize %}
+
 {% block content %}
+
+<div id='imt-select' class="modal fade">
+	<div class="modal-dialog">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		        <h4 class="modal-title">Choose the Intensity Measure Types</h4>
+		    </div>
+	      	<div class="modal-body">
+	        	
+	      	</div>
+	      	<div class="modal-footer">
+	        	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	        	<button type="button" class="btn btn-primary">Save changes</button>
+	      	</div>
+	    </div>
+	</div>
+</div>
 
 <div class="container">
 
@@ -21,16 +41,6 @@
 		</div>
 	</div>
 
-	{% if queue_error %}
-	<br>
-	<div class="row">
-		<div class="col-md-8 col-md-offset-2">
-			<div class="alert alert-dismissible alert-danger">
-			  	Error: Your job could not be able to be calculated in our servers
-			</div>
-		</div>
-	</div>
-	{% endif %}
 
 	<div class="row">
 		<div class="col-md-8">
@@ -42,6 +52,7 @@
 			    </fieldset>
 			</form>
 		</div>
+
 
 		<div class="col-md-4">
 
@@ -68,7 +79,7 @@
 								<a href="#"><div class="btn btn-primary btn-sm">Download XML</div></a>
 							</div>
 							<div class="col-md-4">
-								{{ job.date_created|date:"M d, Y" }}
+								{{ job.date_created|naturalday }}
 							</div>
 						</div>
 					</div>

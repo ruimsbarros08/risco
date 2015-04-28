@@ -1,17 +1,25 @@
 {% for field in form %}
-	{% if field.errors %}
-	<div class="form-group has-error">
-	{% else %}
-	<div class="form-group">
-	{% endif %}
-      	<label for="{{ field.name }}" class="col-lg-2 control-label">{{ field.label }}</label>
-      	<div class="col-lg-10">
-        	{{ field }}
-        	{% if field.errors %}
-        	<span class="help-block">{{ field.errors }}</span>
-        	{% endif %}
-      	</div>
+    {% if field.errors %}
+    <div class="form-group has-error">
+    {% else %}
+    <div class="form-group">
+    {% endif %}
+        <label for="{{ field.name }}" class="col-lg-2 control-label">{{ field.label }}</label>
+        <div class="col-lg-10">
+            {{ field }}
+            {% if field.errors %}
+                <span class="help-block">{{ field.errors }}</span>
+            {% endif %}
+        </div>
     </div>
+    {% endfor %}
+    
+{% for error in form.non_field_errors %}
+<div class="form-group has-error">
+    <div class="col-lg-10 col-lg-offset-2">
+        <span class="help-block">{{ error|safe }}</span>
+    </div>
+</div>
 {% endfor %}
 
 <div class="form-group">

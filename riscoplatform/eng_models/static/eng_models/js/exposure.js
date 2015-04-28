@@ -6,9 +6,11 @@ $( document ).ready(function() {
     $('label[for="location"]').hide();
 
     var map = new L.Map('map');
-    map.setView(new L.LatLng(40, -8),5);
+    map.setView(new L.LatLng(0, 0),2);
     osm.addTo(map);
-    var control = L.control.layers(baseMaps).addTo(map);
+    //var control = L.control.layers(baseMaps).addTo(map);
+    var control = L.control.layers();
+    control.addTo(map);
 
     // Initialize the FeatureGroup to store editable layers
     var drawnItems = new L.FeatureGroup();
@@ -58,6 +60,7 @@ $( document ).ready(function() {
     var url = document.URL.split('/');
     var model_id = url[url.length -2];
 
+    /*
     var marker;
     var showOnMap = function(index){
         var asset = assets[0][index]; 
@@ -92,85 +95,107 @@ $( document ).ready(function() {
                         <li><b>Occupation (transit): </b>"+  asset.fields.oc_transit + "</li> \
                     </ul>").openPopup(); 
     }
+    */
 
-    
+    var selected_marker;    
     $( "#assets_table tbody" ).on( "click", "tr", function() {
         var index = parseInt($( this ).attr('asset_id'));
-        showOnMap(index);
+
+        if (selected_marker == undefined){
+            selected_marker = markerList[index];
+            selected_marker.addTo(map);
+        }
+        else {
+            map.removeLayer(selected_marker);
+            selected_marker = markerList[index];
+            selected_marker.addTo(map);
+        }
+
+
     });
 
+    //var page = 1;
+    var country = undefined;
+    var adm1 = undefined;
+    var assets;
+    var heat;
 
-    var page = 1;
-    var assets = []
-    var load_assets = function(page) {
-        $.ajax('/models/exposure/'+model_id+'/assets?page='+page )
+
+    var markers = L.markerClusterGroup();
+    var markerList = [];
+
+
+    var load_assets = function(country, adm1) {
+        $.ajax('/models/exposure/'+model_id+'/assets?'+'country='+country+'&adm1='+adm1 )
         .done(function(data) {
-            if (page == 1){assets = [];}
-            for(var i=0; i<data.length; i++){
-                $('#assets_table tbody').append("<tr asset_id="+assets.length+i+"> \
-                    <td><a href='#'>"+  data[i].fields.name + "</a></td> \
-                    <td><a href='#'>"+  data[i].fields.taxonomy + "</a></td> \
-                    <td>"+  data[i].fields.n_buildings + "</td> \
-                    <td>"+  data[i].fields.area + "</td> \
-                    <td>"+  data[i].fields.struct_cost + "</td> \
-                    </tr>");
-            };
-            assets.push(data);
-            page += 1;
+            //if (page == 1){assets = [];}
+            assets = data.assets;
+            append_data(page, assets)
+            for(var i=0; i<data.assets.length; i++){
+
+                var marker = L.marker(L.latLng(data.assets[i][0], data.assets[i][1]));
+                marker.bindPopup(data.assets[i][3]);
+                markerList.push(marker);
+
+                };
+
+            markers.addLayers(markerList);
+            map.addLayer(markers);
+            control.addBaseLayer(markers, 'Assets');
+
+            heat = L.heatLayer(data.assets, {radius: 10});
+            control.addBaseLayer(heat, 'Heatmap');
+
+            map.fitBounds(data.assets);
+
+
         });
     };
 
-    var heat;
-    var load_heat_layer = function() {
 
-        $.ajax('/models/exposure/'+model_id+'/heat_assets' )
-        .done(function(data) {
-            heat = L.heatLayer(data, {radius: 10}).addTo(map);
-            control.addOverlay(heat, 'Assets heatmap');
-            map.fitBounds(data);
-        });
-    }
+    get_world();
+    load_assets(country, adm1);
 
-    var load_countries = function() {
-        $.ajax('/countries')
-        .done(function(data){
-            for (var i = 0; i<data.length; i++){
-                $("#country").append('<option value='+data[i][0]+'>'+data[i][1]+'</option>');
+    $('#country').on('change', function(){
+        page = 0;
+        country = $(this).val();
+        load_assets(country, adm1);
+
+    });
+
+    $('#level1').on('change', function(){
+        page = 0;
+        adm1 = $(this).val();
+        load_assets(country, adm1);
+
+    });
+
+
+    var page = 0;
+    var append_data = function(page, assets){
+        for (var i=page*50; i<page*50+50; i++){
+            if (i<assets.length){
+                $('#assets_table tbody').append("<tr asset_id="+i+"> \
+                    <td id='location'><img src='/static/img/marker.png' alt='marker' height='20px;' width='20px;'></td> \
+                    <td>"+  assets[i][3] + "</td> \
+                    <td>"+  assets[i][4] + "</td> \
+                    <td>"+  assets[i][5] + "</td> \
+                    <td>"+  assets[i][6] + "</td> \
+                    </tr>");
             }
-        });
+        }
     }
 
-    $("#level1").remoteChained({
-        parents : "#country",
-        url : "/level1"
+    $('#assets_table_container').bind('scroll',function (e){
+        var elem = $(e.currentTarget);
+        if (elem[0].scrollHeight * 0.90 < elem.outerHeight() + elem.scrollTop()) {
+            page += 1;
+            append_data(page, assets);
+
+        }
+
     });
 
-    $("#level2").remoteChained({
-        parents : "#level1",
-        url : "/level2"
-    });
-
-    $("#level3").remoteChained({
-        parents : "#level2",
-        url : "/level3"
-    });
-
-    load_assets(page);
-    load_heat_layer();
-    load_countries();
-
-
-    $('#assets_table_container').infinitescroll({
-        behavior: 'local',
-        binder: $('#assets_table_container'), // scroll on this element rather than on the window
-        dataType: 'json',
-        appendCallback: false
-    }, function(json, opts){
-        console.log('hey');
-        // Get current page
-        var page = opts.state.currPage;
-        // Do something with JSON data, create DOM elements, etc ..
-    });
 
 
 

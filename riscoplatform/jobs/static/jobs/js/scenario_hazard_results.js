@@ -77,6 +77,8 @@ $( document ).ready(function() {
 
     control.addOverlay(ruptureLayer, 'Rupture')
 
+    map.fitBounds([geoJsonTileLayer.getBounds() ,ruptureLayer.getBounds()]);
+
     })
     .fail(function() {
         alert( "ERROR: The results are not in the database" );

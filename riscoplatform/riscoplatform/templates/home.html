@@ -22,6 +22,45 @@
 	    map.setView(new L.LatLng(40, -8),3);
 	    osm.addTo(map);
 		L.control.layers(baseMaps).addTo(map);
+
+
+	    var style = {
+	        //"color": "#00D",
+	        "weight": 0.1,
+	        "opacity": 0.3,
+	        "fillOpacity": 0.4
+	    };
+	    var hoverStyle = {
+	        "fillOpacity": 0.6
+	    };
+		
+		var geoJsonURL = 'http://localhost:8080/world/{z}/{x}/{y}.json';
+    	var geoJsonTileLayer = new L.TileLayer.GeoJSON(geoJsonURL, {
+            clipTiles: true,
+            unique: function (feature) {
+                return feature.id; 
+            }
+        }, {
+            style: style,
+            onEachFeature: function (feature, layer) {
+                layer.setStyle({'color': feature.properties.color})
+                layer.on('mouseover', function () {
+                    layer.setStyle(hoverStyle);
+                    //infoBox.update(layer.feature.properties);
+                });
+                layer.on('mouseout', function () {
+                    layer.setStyle(style);
+                    //infoBox.update();
+                });
+                layer.on('click', function () {
+                    updateChart(feature.properties.limit_states)
+                });
+            }
+        }
+    ).addTo(map);
+	
+
+
 	});
 })($)
 </script>
