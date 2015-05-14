@@ -7,9 +7,10 @@ $( document ).ready(function() {
     $( "label[for='region']" ).hide( "fast");
 
     var map = new L.Map('map');
-    map.setView(new L.LatLng(40, -8),5);
-    osm.addTo(map);
-    L.control.layers(baseMaps).addTo(map);
+    map.setView(new L.LatLng(0, 0),2);
+    bw.addTo(map);
+
+    var control = L.control.layers(baseLayers).addTo(map);
 
     // Initialize the FeatureGroup to store editable layers
     var drawnItems = new L.FeatureGroup();

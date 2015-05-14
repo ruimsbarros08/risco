@@ -24,9 +24,9 @@
 
 	<div class="row">
 		<div class="col-md-9">
+			<div><button id='adm_back' class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>Back</button></div><br>
 			<div id='map' class="vertical-map"></div><br>
 		</div>
-
 		<div class="col-md-3">
 
 			{% if job.status == 'CREATED' %}
@@ -118,20 +118,9 @@
 
 				<ul id='vulnerability-selector' class="nav nav-tabs">
 
-			
 			  	{% for model in job.scenario_risk_vulnerability_model_set.all %}
 
-					{% for vulnerability in results %}
-
-					{% if model.vulnerability_model.type == vulnerability.type %}
-
-
 					<li class=""><a href="#{{ model.vulnerability_model.type }}" data-toggle="tab" aria-expanded="true">{{ model.vulnerability_model.type }}</a></li>
-
-
-					{% endif %}
-
-					{% endfor %}
 
 			  	{% endfor %}
 
@@ -141,24 +130,24 @@
 				  
 			  	{% for model in job.scenario_risk_vulnerability_model_set.all %}
 
-					{% for vulnerability in results %}
-
-					{% if model.vulnerability_model.type == vulnerability.type %}
-
 					<div class="tab-pane fade in" id="{{ model.vulnerability_model.type }}">
 
 						<h4>Model: <a href="{% url 'detail_vulnerability' model.vulnerability_model.id %}">{{ model.vulnerability_model }}</a></h4>
 
-					    <p>Total: {{ vulnerability.total|intword }} </p>
+						<div id='{{ model.vulnerability_model.type }}_total' class="well well-sm"></div>
+						
+						{% if job.insured_losses %}
+						<div id="{{ model.vulnerability_model.type }}_insured">
+						</div>
+						{% endif %}
+						
+						<div id="{{ model.vulnerability_model.type }}_region">
+						</div>
+						
+						<div id="{{ model.vulnerability_model.type }}_taxonomy">
+						</div>
 
-					    <p>Per region:</p>
-					    <div id='{{ model.vulnerability_model.type }}_region_name'></div>
-					    <div id='{{ model.vulnerability_model.type }}_region_total'></div>
 					</div>
-
-					{% endif %}
-
-					{% endfor %}
 
 			  	{% endfor %}
 
@@ -167,31 +156,32 @@
 		</div>
 
 		<div class="col-md-3">
-			<form class="form-horizontal">
+			<form class="form-vertical">
 				<fieldset>
 					<legend>Select by Region</legend>
 
 					<div class="form-group">
-						<label for="country" class="col-lg-2 control-label">Country</label>
-						<div class="col-lg-10">
+						<label for="country" class="control-label">Country</label>
+						<div class="">
 							<select id='country' name='country' class="form-control">
-								<option value="">--</option>
+								<option value="">All</option>
 							</select>
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="level1" class="col-lg-2 control-label">Level 1</label>
-						<div class="col-lg-10">
+						<label for="level1" class="control-label">Level 1</label>
+						<div class="">
 							<select id='level1' name='level1' class="form-control">
-								<option value="">--</option>
+								<option value="">All</option>
 							</select>
 						</div>
 					</div>
+					<!--
 					<div class="form-group">
 						<label for="level2" class="col-lg-2 control-label">Level 2</label>
 						<div class="col-lg-10">
 							<select id='level2' name='level2' class="form-control">
-								<option value="">--</option>
+								<option value=""></option>
 							</select>
 						</div>
 					</div>
@@ -199,13 +189,27 @@
 						<label for="level3" class="col-lg-2 control-label">Level 3</label>
 						<div class="col-lg-10">
 							<select id='level3' name='level3' class="form-control">
-								<option value="">--</option>
+								<option value=""></option>
 							</select>
+						</div>
+					</div>-->
+
+				</fieldset>
+			</form>
+			<br>
+			<form class="form-vertical">
+				<fieldset>
+
+					<div class="form-group">
+						<label for="taxonomy" class="control-label">Taxonomy</label>
+						<div class="">
+							<select id='taxonomy' name='taxonomy' class="form-control"></select>
 						</div>
 					</div>
 
 				</fieldset>
 			</form>
+
 		</div>
 
 	</div>

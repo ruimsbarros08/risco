@@ -228,7 +228,9 @@ class Scenario_Risk_Results(models.Model):
     job_vul                     = models.ForeignKey(Scenario_Risk_Vulnerability_Model)
     asset                       = models.ForeignKey(Asset)
     mean                        = models.FloatField()
-    stddev                      = models.FloatField()   
+    stddev                      = models.FloatField()
+    insured_mean                = models.FloatField(null=True)
+    insured_stddev              = models.FloatField(null=True)   
 
 
 

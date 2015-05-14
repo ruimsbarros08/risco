@@ -12,7 +12,7 @@ from django.db import connection
 from django.contrib.gis.measure import Distance, D
 from django.db.models import Sum
 
-#from django.core import serializers
+from django.core import serializers
 from django.contrib.auth.models import User
 import redis
 from rq import Queue
@@ -229,6 +229,54 @@ def results_scenario_hazard_ajax(request, job_id):
 	return HttpResponse(json.dumps({'hazard':d, 'rupture': data}), content_type="application/json")
 
 
+def get_geojson(features_list):
+	features = list(dict(type='Feature',
+						id=cell[0],
+						properties=dict(id=cell[0]),
+									geometry=json.loads(cell[1])) for cell in features_list)
+
+	return {'type': 'FeatureCollection', 'features': features}
+
+
+@login_required
+def results_scenario_hazard_ajax_test(request, job_id):
+	job = Scenario_Hazard.objects.get(pk=job_id, user=request.user)
+
+	cursor = connection.cursor()
+	d = []
+
+	if job.pga:
+
+		cursor.execute("SELECT world_fishnet.id, ST_AsGeoJSON(cell), gmvs_mean \
+						FROM world_fishnet, jobs_scenario_hazard_results_by_cell \
+						WHERE jobs_scenario_hazard_results_by_cell.job_id = %s \
+						AND jobs_scenario_hazard_results_by_cell.cell_id = world_fishnet.id \
+						AND jobs_scenario_hazard_results_by_cell.imt = 'PGA'", [job_id])
+		cells = cursor.fetchall()
+
+		data = list( {'id': cell[0], 'value': float("{0:.4f}".format(cell[2])) } for cell in cells)
+		d.append({'name': 'PGA', 'values': data})
+
+		geo_json = get_geojson(cells)
+
+	for e in job.sa_periods:
+
+		cursor.execute("SELECT world_fishnet.id, ST_AsGeoJSON(cell), gmvs_mean \
+						FROM world_fishnet, jobs_scenario_hazard_results_by_cell \
+						WHERE jobs_scenario_hazard_results_by_cell.job_id = %s \
+						AND jobs_scenario_hazard_results_by_cell.cell_id = world_fishnet.id \
+						AND jobs_scenario_hazard_results_by_cell.sa_period = %s", [job_id, e])
+		cells = cursor.fetchall()
+
+		data = list( {'id': cell[0], 'value': float("{0:.4f}".format(cell[2])) } for cell in cells)
+		d.append({'name': 'Sa('+str(e)+')', 'values': data})
+
+		if not geo_json:
+			geo_json = get_geojson(cells) 
+
+	return HttpResponse(json.dumps({ 'hazard': d, 'geojson': geo_json }), content_type="application/json")
+
+
 
 
 ############################
@@ -401,6 +449,12 @@ class ScenarioRiskForm(forms.ModelForm):
 	business_int_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
 	occupants_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
 	
+	def clean(self):
+		form_data = self.cleaned_data
+		if 'occupants_vulberability' in form_data and form_data['insured_losses']:
+			self.add_error(None, 'You cannot calculate insured losses with an occupants vulberability model')
+		return form_data
+
 	class Meta:
 		model = Scenario_Risk
 		exclude = ['user', 'date_created', 'vulnerability_models', 'status', 'oq_id', 'ini_file']
@@ -461,63 +515,135 @@ def add_scenario_risk(request):
 @login_required
 def results_scenario_risk(request, job_id):
 	job = get_object_or_404(Scenario_Risk ,pk=job_id)
-	vulnerability_types = Scenario_Risk_Vulnerability_Model.objects.filter(job = job)
-	results = []
-	for vulnerability in vulnerability_types:
-		#total = Scenario_Risk_Results.objects.filter(job_vul = vulnerability).annotate(Sum('mean'))
-		cursor = connection.cursor()
-		cursor.execute('SELECT sum(mean) FROM jobs_scenario_risk_results WHERE job_vul_id = %s', [vulnerability.id])
-		total = cursor.fetchone()[0]
-		results.append({'type': vulnerability.vulnerability_model.type, 'total': total})
+	#taxonomies = Building_Taxonomy.objects.filter(source=job.exposure_model.taxonomy_source)
+	return render(request, 'jobs/results_scenario_risk.html', {'job': job})
 
-	return render(request, 'jobs/results_scenario_risk.html', {'job': job, 'results': results})
+
+def get_geojson_countries(features_list):
+	features = list(dict(type='Feature',
+						id=cell[0],
+						properties=dict(id=cell[0],
+										name=cell[2]),
+						geometry=json.loads(cell[1])) for cell in features_list)
+
+	return {'type': 'FeatureCollection', 'features': features}
 
 
 @login_required
-def results_scenario_risk_per_region(request, job_id):
-	job = get_object_or_404(Scenario_Risk ,pk=job_id)
+def results_scenario_risk_ajax(request, job_id):
+	job = get_object_or_404(Scenario_Risk ,pk=job_id, user=request.user)
 	vulnerability_types = Scenario_Risk_Vulnerability_Model.objects.filter(job = job)
-	
-	results = []	
+
 	cursor = connection.cursor()
+	d = []
 
-	if request.GET.get('country') != 'undefined':
-		country_id = request.GET.get('country')
-		for vulnerability in vulnerability_types:
-			cursor.execute('SELECT sum(jobs_scenario_risk_results.mean) \
-							FROM eng_models_asset, jobs_scenario_risk_results, world_country \
-							WHERE jobs_scenario_risk_results.job_vul_id = %s \
-							AND world_country.id = %s \
-							AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
-							AND ST_Within(eng_models_asset.location, world_country.geom)', [vulnerability.id, country_id])
-			data = cursor.fetchone()
-			region = json.loads(Country.objects.get(id = country_id).geom.json)
-			results.append({'type': vulnerability.vulnerability_model.type, 'total': data[0]})
+	for vulnerability in vulnerability_types:
+		
+		if request.GET.get('country') != 'undefined':
+			country_id = request.GET.get('country')
 
+			if request.GET.get('taxonomy') != 'undefined':
+				taxonomy_id = request.GET.get('taxonomy')
+				cursor.execute('SELECT world_adm_1.id, ST_AsGeoJSON(world_adm_1.geom) , world_adm_1.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean) \
+								FROM eng_models_asset, jobs_scenario_risk_results, world_adm_1 \
+								WHERE jobs_scenario_risk_results.job_vul_id = %s \
+								AND eng_models_asset.taxonomy_id = %s \
+								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = %s \
+								GROUP BY world_adm_1.id', [vulnerability.id, taxonomy_id ,country_id])
+				info_per_region = cursor.fetchall()
+				info_per_taxonomy = None
+			else:
+				cursor.execute('SELECT world_adm_1.id, ST_AsGeoJSON(world_adm_1.geom) , world_adm_1.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean) \
+								FROM eng_models_asset, jobs_scenario_risk_results, world_adm_1 \
+								WHERE jobs_scenario_risk_results.job_vul_id = %s \
+								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = %s \
+								GROUP BY world_adm_1.id', [vulnerability.id, country_id])
+				info_per_region = cursor.fetchall()
 
-	elif request.GET.get('adm1') != 'undefined':
-		adm1_id = request.GET.get('adm1')
-		for vulnerability in vulnerability_types:
-			cursor.execute('SELECT sum(jobs_scenario_risk_results.mean) \
-							FROM eng_models_asset, jobs_scenario_risk_results, world_adm_1 \
-							WHERE jobs_scenario_risk_results.job_vul_id = %s \
-							AND world_adm_1.id = %s \
-							AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
-							AND ST_Within(eng_models_asset.location, world_adm_1.geom)', [vulnerability.id, adm1_id])
-			data = cursor.fetchone()
-			region = json.loads(Adm_1.objects.get(id = adm1_id).geom.json)
-			results.append({'type': vulnerability.vulnerability_model.type, 'total': data[0]})
-	else:
-		for vulnerability in vulnerability_types:
-			cursor.execute('SELECT sum(mean) \
-							FROM jobs_scenario_risk_results \
-							WHERE job_vul_id = %s', [vulnerability.id])
-			data = cursor.fetchone()
-			#region = json.loads(vulnerability.job.region.json)
-			region = None
-			results.append({'type': vulnerability.vulnerability_model.type, 'total': data[0]})
+				cursor.execute('SELECT eng_models_building_taxonomy.id ,eng_models_building_taxonomy.name ,sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean) \
+								FROM eng_models_building_taxonomy ,eng_models_asset, \
+								jobs_scenario_risk_results, world_adm_1 \
+								WHERE jobs_scenario_risk_results.job_vul_id = %s \
+								AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = %s \
+								GROUP BY eng_models_building_taxonomy.id', [vulnerability.id, country_id])
+				info_per_taxonomy = cursor.fetchall()
+		
+		else:
+			if request.GET.get('taxonomy') != 'undefined':
+				taxonomy_id = request.GET.get('taxonomy')
+				cursor.execute('SELECT world_country.id, ST_AsGeoJSON(world_country.geom_simp) , world_country.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean) \
+								FROM eng_models_asset, jobs_scenario_risk_results, world_country, world_adm_1 \
+								WHERE jobs_scenario_risk_results.job_vul_id = %s \
+								AND eng_models_asset.taxonomy_id = %s \
+								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = world_country.id \
+								GROUP BY world_country.id', [vulnerability.id, taxonomy_id])
+				info_per_region = cursor.fetchall()
+				info_per_taxonomy = None
+			else:
+				cursor.execute('SELECT world_country.id, ST_AsGeoJSON(world_country.geom_simp) , world_country.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean) \
+								FROM eng_models_asset, jobs_scenario_risk_results, world_country, world_adm_1 \
+								WHERE jobs_scenario_risk_results.job_vul_id = %s \
+								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = world_country.id \
+								GROUP BY world_country.id', [vulnerability.id])
+				info_per_region = cursor.fetchall()
 
-	return HttpResponse(json.dumps({'results': results, 'region': region}), content_type="application/json")
+				cursor.execute('SELECT eng_models_building_taxonomy.id ,eng_models_building_taxonomy.name ,sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean) \
+								FROM eng_models_building_taxonomy ,eng_models_asset, \
+								jobs_scenario_risk_results \
+								WHERE jobs_scenario_risk_results.job_vul_id = %s \
+								AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+								GROUP BY eng_models_building_taxonomy.id', [vulnerability.id])
+				info_per_taxonomy = cursor.fetchall()
+
+		total = sum(e[3] for e in info_per_region)
+		if job.insured_losses:
+			total_insured = sum(e[4] for e in info_per_region)
+		else:
+			total_insured = None
+
+		scale = len(str(total).split('.')[0])-1
+		total_scale = round(total, -scale)
+
+		if 'geo_json' not in locals():
+			geo_json = get_geojson_countries(info_per_region)
+
+		data_per_region = list( {'id': region[0], 'place': region[2], 'value': region[3], 'insured_value': region[4] } for region in info_per_region)
+	
+		if info_per_taxonomy:
+			data_per_taxonomy = list( {'id': taxonomy[0], 'name': taxonomy[1], 'value': taxonomy[2], 'insured_value': taxonomy[3]} for taxonomy in info_per_taxonomy)
+		else:
+			data_per_taxonomy = None
+
+		d.append({'name': vulnerability.vulnerability_model.type,
+				'values': data_per_region,
+				'values_per_taxonomy': data_per_taxonomy,
+				'total': total,
+				'total_insured': total_insured,
+				'total_scale': total_scale,
+				'currency': job.exposure_model.currency})
+	
+	job_json = serializers.serialize("json", [job])
+	job_json = json.loads(job_json)
+
+	exp_json = serializers.serialize("json", [job.exposure_model])
+	exp_json = json.loads(exp_json)
+
+	return HttpResponse(json.dumps({'job': job_json,
+									'exposure_model': exp_json,
+									'losses': d,
+									'geojson': geo_json }), content_type="application/json")
 
 
 
@@ -706,6 +832,7 @@ def add_psha_risk(request):
 def results_psha_risk(request, job_id):
 	job = get_object_or_404(Classical_PSHA_Risk ,pk=job_id, user=request.user)
 	return render(request, 'jobs/results_psha_risk.html', {'job': job})
+
 
 @login_required
 def start_psha_risk(request, job_id):

@@ -79,7 +79,8 @@ SERVER priseoq OPTIONS (schema_name 'hzrdi', table_name 'hazard_site');
 CREATE FOREIGN TABLE foreign_loss_map (
 	id integer,
 	output_id integer,
-	loss_type character varying
+	loss_type character varying,
+	insured boolean
 )
 SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'loss_map');
 

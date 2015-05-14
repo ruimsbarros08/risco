@@ -20,10 +20,22 @@ class Country(models.Model):
     id_0 = models.IntegerField()
     iso = models.CharField(max_length=3)
     geom = models.MultiPolygonField()
+    geom_simp = models.MultiPolygonField(null=True)
     objects = models.GeoManager()
 
     def __unicode__(self):
         return self.name
+
+
+class Country_Simp(models.Model):
+    name = models.CharField(max_length=75)
+    iso = models.CharField(max_length=3)
+    geom = models.MultiPolygonField()
+    objects = models.GeoManager()
+
+    def __unicode__(self):
+        return self.name
+
 
 class Adm_1(models.Model):
     country = models.ForeignKey(Country, null=True)
@@ -31,6 +43,7 @@ class Adm_1(models.Model):
     id_1 = models.IntegerField(null=True)
     type = models.CharField(max_length=50, null=True)
     geom = models.MultiPolygonField()
+    geom_simp = models.MultiPolygonField(null=True)
     objects = models.GeoManager()
 
     def __unicode__(self):
@@ -42,6 +55,7 @@ class Adm_2(models.Model):
     id_2 = models.IntegerField(null=True)
     type = models.CharField(max_length=50, null=True)
     geom = models.MultiPolygonField()
+    geom_simp = models.MultiPolygonField(null=True)
     objects = models.GeoManager()
 
     def __unicode__(self):

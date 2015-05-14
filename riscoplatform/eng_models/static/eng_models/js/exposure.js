@@ -60,42 +60,169 @@ $( document ).ready(function() {
     var url = document.URL.split('/');
     var model_id = url[url.length -2];
 
-    /*
-    var marker;
-    var showOnMap = function(index){
-        var asset = assets[0][index]; 
-        var location = asset.fields.location;
-        var latlng = wktToLatLng(location)
-        if (marker == undefined){
-            marker = L.marker(latlng).addTo(map);
-        }
-        else {
-            marker.setLatLng(latlng);
-        }
-        marker.bindPopup("<h3>"+  asset.fields.name + "</h3> \
-                    <ul> \
-                        <li><b>Taxonomy: </b>"+  asset.fields.taxonomy + "</li> \
-                        <li><b>Buildings: </b>"+  asset.fields.n_buildings + "</li> \
-                        <li><b>Area: </b>"+  asset.fields.area + "</li> \
-                        <li><b>Structural cost: </b>"+  asset.fields.struct_cost + "</li> \
-                        <li><b>Structural deductible value: </b>"+  asset.fields.struct_deductible + "</li> \
-                        <li><b>Structural insurance limit: </b>"+  asset.fields.struct_insurance_limit + "</li> \
-                        <li><b>Structural retrofitting cost: </b>"+  asset.fields.retrofitting_cost + "</li> \
-                        <li><b>Non-structural cost: </b>"+  asset.fields.non_struct_cost + "</li> \
-                        <li><b>Non-structural deductible value: </b>"+  asset.fields.non_struct_deductible + "</li> \
-                        <li><b>Non-structural insurance limit: </b>"+  asset.fields.non_struct_insurance_limit + "</li> \
-                        <li><b>Contents cost: </b>"+  asset.fields.contents_cost + "</li> \
-                        <li><b>Contents deductible: </b>"+  asset.fields.contents_deductible + "</li> \
-                        <li><b>Contents insurance limit: </b>"+  asset.fields.contents_insurance_limit + "</li> \
-                        <li><b>Business interruption cost: </b>"+  asset.fields.business_int_cost + "</li> \
-                        <li><b>Business interruption deductible: </b>"+  asset.fields.business_int_deductible + "</li> \
-                        <li><b>Business interruption insurance limit: </b>"+  asset.fields.business_int_insurance_limit + "</li> \
-                        <li><b>Occupation (day): </b>"+  asset.fields.oc_day + "</li> \
-                        <li><b>Occupation (night): </b>"+  asset.fields.oc_night + "</li> \
-                        <li><b>Occupation (transit): </b>"+  asset.fields.oc_transit + "</li> \
-                    </ul>").openPopup(); 
+
+    var asset_categories = [];
+    var cost_asset_series = [];
+
+    var show_asset_details = function(index){
+
+        asset_categories = [];
+        cost_asset_series = [];
+        //deductible_asset_series = [];
+        //insurance_limit_asset_series = [];
+        var a = assets[index];
+
+        $('#asset_info').empty();
+
+        $('#asset_info').append("<table id='asset_details' class='table table-striped table-hover'> \
+                        <caption>"+a[3]+"</caption> \
+                            <thead> \
+                                <tr> \
+                                  <th>Type</th> \
+                                  <th>Cost</th> \
+                                  <th>Deductible</th> \
+                                  <th>Insurance Limit</th> \
+                                  <th>Retrofitted <span class='glyphicon glyphicon-wrench' aria-hidden='true'></span></th> \
+                                </tr> \
+                            </thead> \
+                            <tbody> \
+                            </tbody> \
+                        </table>");
+    
+
+            if (a[7] != null){
+                asset_categories.push('Structural');
+                cost_asset_series.push(a[7]);
+
+                //if (a[8] != null){
+                //    deductible_asset_series.push(a[7]*a[8]);
+                //}
+
+                $('#asset_details tbody').append("<tr> \
+                    <td>Structural</td> \
+                    <td>"+a[7]+"</td> \
+                    <td>"+a[8]*100+"%</td> \
+                    <td>"+a[9]*100+"%</td> \
+                    <td>"+a[10]+"</td> \
+                    </tr>");
+            }
+
+            if (a[11] != null){
+                asset_categories.push('Nonstructural');
+                cost_asset_series.push(a[11]);
+                $('#asset_details tbody').append("<tr> \
+                    <td>Nonstructural</td> \
+                    <td>"+a[11]+"</td> \
+                    <td>"+a[12]*100+"%</td> \
+                    <td>"+a[13]*100+"%</td> \
+                    <td></td> \
+                    </tr>");
+            }
+
+            if (a[14] != null){
+                asset_categories.push('Contents');
+                cost_asset_series.push(a[14]);
+                $('#asset_details tbody').append("<tr> \
+                    <td>Contents</td> \
+                    <td>"+a[14]+"</td> \
+                    <td>"+a[15]*100+"%</td> \
+                    <td>"+a[16]*100+"%</td> \
+                    <td></td> \
+                    </tr>");
+            }
+
+            if (a[17] != null){
+                asset_categories.push('Business Interruption');
+                cost_asset_series.push(a[17]);
+                $('#asset_details tbody').append("<tr> \
+                    <td>Business Interruption</td> \
+                    <td>"+a[17]+"</td> \
+                    <td>"+a[18]*100+"%</td> \
+                    <td>"+a[19]*100+"%</td> \
+                    <td></td> \
+                    </tr>");
+            }
+
+
+        $('#asset_info').append('<div id="asset_chart"></div>')
+
+        show_asset_chart();
+
+        if (a[20] != null || a[21] != null || a[22] != null ){
+
+
+        $('#asset_info').append("<table id='occupancies_table' class='table table-striped table-hover'> \
+                        <caption>Occupancies</caption> \
+                            <thead> \
+                                <tr> \
+                                  <th>Period <span class='glyphicon glyphicon-time' aria-hidden='true'></span></th> \
+                                  <th>Occupancy <span class='glyphicon glyphicon-user' aria-hidden='true'></span></th> \
+                                </tr> \
+                            </thead> \
+                            <tbody> \
+                            </tbody> \
+                        </table>");
+
+                if (a[20] != null){
+                    $('#occupancies_table tbody').append("<tr> \
+                        <td>Day</td> \
+                        <td>"+a[20]+"</td> \
+                        </tr>");
+                }
+                if (a[21] != null){
+                    $('#occupancies_table tbody').append("<tr> \
+                        <td>Night</td> \
+                        <td>"+a[21]+"</td> \
+                        </tr>");
+                }
+                if (a[22] != null){
+                    $('#occupancies_table tbody').append("<tr> \
+                        <td>Day</td> \
+                        <td>"+a[22]+"</td> \
+                        </tr>");
+                }
+
+            }
+
     }
-    */
+
+
+    var show_asset_chart = function(){
+
+        return new Highcharts.Chart({
+            chart: {
+                type: 'bar',
+                renderTo: 'asset_chart',
+            },
+            title: {
+                text: 'Asset costs'
+            },
+            xAxis: {
+                categories: asset_categories
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Costs'
+                }
+            },
+            legend: {
+                reversed: true
+            },
+            plotOptions: {
+                series: {
+                    stacking: 'normal'
+                }
+            },
+            series: [{
+                name: 'Cost',
+                data: cost_asset_series
+            }]
+        });
+
+    }
+
+
 
     var selected_marker;    
     $( "#assets_table tbody" ).on( "click", "tr", function() {
@@ -111,6 +238,7 @@ $( document ).ready(function() {
             selected_marker.addTo(map);
         }
 
+        show_asset_details(index);
 
     });
 
@@ -121,7 +249,8 @@ $( document ).ready(function() {
     var heat;
 
 
-    var markers = L.markerClusterGroup();
+    //var markers = L.markerClusterGroup();
+    var markers = undefined;
     var markerList = [];
 
 
@@ -129,8 +258,22 @@ $( document ).ready(function() {
         $.ajax('/models/exposure/'+model_id+'/assets?'+'country='+country+'&adm1='+adm1 )
         .done(function(data) {
             //if (page == 1){assets = [];}
+            control.removeFrom(map)
+            control = new L.control.layers();
+            control.addTo(map);
+
+            if (markers != undefined) {
+                map.removeLayer(markers);
+                map.removeLayer(heat);
+            }
+
+            markerList = [];
+            markers = new L.markerClusterGroup();
+
+            //markers = L.markerClusterGroup();
+            //markerList = [];
             assets = data.assets;
-            append_data(page, assets)
+            append_data(page, assets);
             for(var i=0; i<data.assets.length; i++){
 
                 var marker = L.marker(L.latLng(data.assets[i][0], data.assets[i][1]));
@@ -143,11 +286,10 @@ $( document ).ready(function() {
             map.addLayer(markers);
             control.addBaseLayer(markers, 'Assets');
 
-            heat = L.heatLayer(data.assets, {radius: 10});
+            heat = new L.heatLayer(data.assets, {radius: 10});
             control.addBaseLayer(heat, 'Heatmap');
 
             map.fitBounds(data.assets);
-
 
         });
     };
@@ -173,16 +315,24 @@ $( document ).ready(function() {
 
     var page = 0;
     var append_data = function(page, assets){
-        for (var i=page*50; i<page*50+50; i++){
-            if (i<assets.length){
-                $('#assets_table tbody').append("<tr asset_id="+i+"> \
-                    <td id='location'><img src='/static/img/marker.png' alt='marker' height='20px;' width='20px;'></td> \
-                    <td>"+  assets[i][3] + "</td> \
-                    <td>"+  assets[i][4] + "</td> \
-                    <td>"+  assets[i][5] + "</td> \
-                    <td>"+  assets[i][6] + "</td> \
-                    </tr>");
+        $('#assets_table tbody').empty();
+
+        if (assets.length>0){
+            for (var i=page*50; i<page*50+50; i++){
+                if (i<assets.length){
+                    $('#assets_table tbody').append("<tr asset_id="+i+"> \
+                        <td id='location'><img src='/static/img/marker.png' alt='marker' height='20px;' width='20px;'></td> \
+                        <td>"+  assets[i][3] + "</td> \
+                        <td>"+  assets[i][4] + "</td> \
+                        <td>"+  assets[i][5] + "</td> \
+                        <td>"+  assets[i][6] + "</td> \
+                        </tr>");
+                }
             }
+        }
+        else {
+            $('#assets_table tbody').append('<p>No assets for this region</p>');
+
         }
     }
 
@@ -191,9 +341,7 @@ $( document ).ready(function() {
         if (elem[0].scrollHeight * 0.90 < elem.outerHeight() + elem.scrollTop()) {
             page += 1;
             append_data(page, assets);
-
         }
-
     });
 
 

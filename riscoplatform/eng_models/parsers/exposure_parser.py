@@ -1,5 +1,6 @@
 from xml.dom.minidom import parse
 from eng_models.models import Asset, Building_Taxonomy
+from world.models import *
 from django.contrib.gis.geos import Point
 from django.utils import timezone
 
@@ -32,10 +33,9 @@ def start(object):
 		area_type = None
 		area_unit = None
 
-	deductible = conversions[0].getElementsByTagName('deductible')[0]
 
-	deductible_abs 					= 'true'
-	insuranceLimit_abs 				= 'true'
+	#deductible_abs 					= 'absolute'
+	#insuranceLimit_abs 				= 'absolute'
 	structural_cost_type 			= None
 	structural_cost_unit 			= None
 	non_structural_cost_type 		= None
@@ -45,14 +45,31 @@ def start(object):
 	contents_cost_type 				= None
 	contents_cost_unit 				= None
 
+	try:
+		deductible = conversions[0].getElementsByTagName('deductible')[0]
+		if deductible.getAttribute('isAbsolute') == 'false':
+			deductible_abs = 'relative'
+		else:
+			deductible_abs = 'absolute'
+	except:
+			deductible_abs = 'absolute'
 
-	if deductible != []:
-		deductible_abs = deductible.getAttribute('isAbsolute')
+	try:
+		insuranceLimit = conversions[0].getElementsByTagName('insuranceLimit')[0]
+		if insuranceLimit.getAttribute('isAbsolute') == 'false':
+			insuranceLimit_abs = 'relative'
+		else:
+			insuranceLimit_abs = 'absolute'
+	except:
+			insuranceLimit_abs = 'absolute'
 
-	insuranceLimit = conversions[0].getElementsByTagName('insuranceLimit')[0]
+	#if deductible != []:
+	#	deductible_abs = deductible.getAttribute('isAbsolute')
 
-	if insuranceLimit != []:
-		insuranceLimit_abs = deductible.getAttribute('isAbsolute')
+	#insuranceLimit = conversions[0].getElementsByTagName('insuranceLimit')[0]
+
+	#if insuranceLimit != []:
+	#	insuranceLimit_abs = deductible.getAttribute('isAbsolute')
 
 	costTypes = conversions[0].getElementsByTagName('costTypes')[0].getElementsByTagName('costType')
 	for cost in costTypes:
@@ -81,6 +98,9 @@ def start(object):
 	object.contents_cost_currency = contents_cost_unit
 	object.business_int_cost_type = business_interruption_cost_type
 	object.business_int_cost_currency = business_interruption_cost_unit
+
+	object.aggregation = structural_cost_type
+	object.currency = structural_cost_unit
 	#object.date_created = timezone.now()
 	object.save()
 
@@ -131,6 +151,8 @@ def start(object):
 		location = asset.getElementsByTagName('location')[0]
 		lon = location.getAttribute('lon')
 		lat = location.getAttribute('lat')
+
+		loc = Point(float(lon), float(lat))
 
 		
 		costs = asset.getElementsByTagName('costs')[0].getElementsByTagName('cost')
@@ -184,6 +206,7 @@ def start(object):
 		new_asset = Asset(name = asset_name,
 							taxonomy = taxonomy,
 							parish = None,
+							adm_1 = Adm_1.objects.get(geom__intersects=loc),
 							n_buildings = number,
 							area = area,
 							struct_cost = structural_value,
@@ -199,7 +222,7 @@ def start(object):
 							business_int_cost = business_interruption_value,
 							business_int_deductible = business_interruption_deductible_percentage,
 							business_int_insurance_limit = business_interruption_insuranceLimit_value,
-							location = Point(float(lon), float(lat)),
+							location = loc,
 							model = object,
 							oc_day = oc_day,
 							oc_night = oc_night,

@@ -72,62 +72,16 @@
 					<div id="map" class="vertical-map"></div><br>
 				</div>
 			</div>
+
 			<div class="row">
 				<div class="col-md-12">
-					<form class="form-horizontal" action="{% url 'add_asset' model.id %}" method="post" enctype="multipart/form-data">
-						<fieldset>
-							<legend>Insert new asset</legend>
-							{% csrf_token %}
-
-							{% for field in form %}
-
-							{% if field.name == 'struct_deductible' or field.name == 'struct_insurance_limit' or field.name == 'retrofitting_cost' or field.name == 'non_struct_deductible' or  field.name == 'non_struct_insurance_limit' or field.name == 'contents_deductible' or field.name == 'contents_insurance_limit' or field.name == 'business_int_deductible' or field.name == 'business_int_insurance_limit' %}
-
-								{% if model.deductible == 'relative' %}
-									{% if field.errors %}
-									<div class="form-group has-error">
-									{% else %}
-									<div class="form-group">
-									{% endif %}
-								      	<label for="{{ field.name }}" class="col-lg-2 control-label">{{ field.label }}</label>
-								      	<div class="col-lg-10">
-								        	{{ field }}
-								        	{% if field.errors %}
-								        	<span class="help-block">{{ field.errors }}</span>
-								        	{% endif %}
-								      	</div>
-								    </div>
-								{% endif %}
-							
-							{% else %}
-
-								{% if field.errors %}
-								<div class="form-group has-error">
-								{% else %}
-								<div class="form-group">
-								{% endif %}
-							      	<label for="{{ field.name }}" class="col-lg-2 control-label">{{ field.label }}</label>
-							      	<div class="col-lg-10">
-							        	{{ field }}
-							        	{% if field.errors %}
-							        	<span class="help-block">{{ field.errors }}</span>
-							        	{% endif %}
-							      	</div>
-							    </div>
-
-							{% endif %}
-
-							{% endfor %}
-
-							<div class="form-group">
-							    <div class="col-lg-5 col-lg-offset-2">
-							        <input class="btn btn-primary" type="submit" value="Add" />
-							    </div>
-							</div>
-					    </fieldset>
-					</form>
+					<div id="asset_info">
+						<p>Select an asset on the list</p>
+					</div><br>
 				</div>
 			</div>
+
+
 		</div>
 		<div class="col-md-4">
 
@@ -150,6 +104,7 @@
 								<select id='level1' name='level1' class="form-control"></select>
 							</div>
 						</div>
+						<!--
 						<div class="form-group">
 							<label for="level2" class="col-lg-2 control-label">Level 2</label>
 							<div class="col-lg-10">
@@ -162,6 +117,7 @@
 								<select id='level3' name='level3' class="form-control"></select>
 							</div>
 						</div>
+						-->
 
 					</fieldset>
 				</form>

@@ -101,41 +101,57 @@ def ajax_assets(request, model_id):
 	
 	cursor = connection.cursor()
 
-	if request.GET.get('country') != 'undefined':
-		
-		country_id = request.GET.get('country')
-		#country = Country.objects.get(pk=country_id)
-		#asset_list = Asset.objects.filter(model=model, location__intersects=country.geom)[page:page+49]
-
-		cursor.execute('select st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
-						eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
-						eng_models_asset.n_buildings, eng_models_asset.area \
-						from eng_models_asset, world_country, eng_models_building_taxonomy \
-						where eng_models_asset.model_id = %s \
-						and eng_models_building_taxonomy.id = eng_models_asset.taxonomy_id \
-						and ST_Intersects(eng_models_asset.location, world_country.geom)\
-						and world_country.id = %s \
-						order by id asc', [model.id, country_id])
-
-	elif request.GET.get('adm1') != 'undefined':
+	if request.GET.get('adm1') != 'undefined':
 		adm1_id = request.GET.get('adm1')
 		#adm1 = Adm_1.objects.get(pk=adm1_id)
 		#asset_list = Asset.objects.filter(model=model, location__intersects=adm1.geom)[page:page+49]
 
 		cursor.execute('select st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
 						eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
-						eng_models_asset.n_buildings, eng_models_asset.area \
+						eng_models_asset.n_buildings, eng_models_asset.area, \
+						eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
+						eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
+						eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
+						eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
+						eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
 						from eng_models_asset, world_adm_1, eng_models_building_taxonomy \
 						where eng_models_asset.model_id = %s \
 						and eng_models_building_taxonomy.id = eng_models_asset.taxonomy_id \
-						and ST_Intersects(eng_models_asset.location, world_adm_1.geom)\
+						and eng_models_asset.adm_1_id = world_adm_1.id \
 						and world_adm_1.id = %s \
 						order by id asc', [model.id, adm1_id])
+
+	elif request.GET.get('country') != 'undefined':
+		country_id = request.GET.get('country')
+		#country = Country.objects.get(pk=country_id)
+		#asset_list = Asset.objects.filter(model=model, location__intersects=country.geom)[page:page+49]
+
+		cursor.execute('select st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+						eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+						eng_models_asset.n_buildings, eng_models_asset.area, \
+						eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
+						eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
+						eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
+						eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
+						eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
+						from eng_models_asset, world_country, world_adm_1, eng_models_building_taxonomy \
+						where eng_models_asset.model_id = %s \
+						and eng_models_building_taxonomy.id = eng_models_asset.taxonomy_id \
+						and eng_models_asset.adm_1_id = world_adm_1.id \
+						and world_adm_1.country_id = world_country.id \
+						and world_country.id = %s \
+						order by id asc', [model.id, country_id])
+
 	else:
 		#asset_list = Asset.objects.filter(model=model)[page:page+49]
 		cursor.execute('select st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
 						eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
-						eng_models_asset.n_buildings, eng_models_asset.area \
+						eng_models_asset.n_buildings, eng_models_asset.area, \
+						eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
+						eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
+						eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
+						eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
+						eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
 						from eng_models_asset, eng_models_building_taxonomy \
 						where eng_models_asset.model_id = %s \
 						and eng_models_building_taxonomy.id = eng_models_asset.taxonomy_id \
@@ -143,9 +159,11 @@ def ajax_assets(request, model_id):
 
 	#assets = serializers.serialize("json", asset_list)
 	#assets = json.loads(assets)
-	
+
+	data = cursor.fetchall()
+
 	#return HttpResponse(json.dumps({'assets': assets, 'heatmap': cursor.fetchall()}), content_type="application/json")
-	return HttpResponse(json.dumps({'assets': cursor.fetchall() }), content_type="application/json")
+	return HttpResponse(json.dumps({'assets': data }), content_type="application/json")
 
 
 #@login_required

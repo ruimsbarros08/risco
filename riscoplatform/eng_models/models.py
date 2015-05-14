@@ -13,7 +13,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
-from world.models import World, Fishnet
+from world.models import *
 from django.core.files import File
 from django.template.loader import render_to_string
 from djorm_pgarray.fields import FloatArrayField, TextArrayField
@@ -82,10 +82,12 @@ class Exposure_Model(models.Model):
     AGGREGATED = 'aggregated'
     PER_UNIT = 'per_unit'
     PER_AREA = 'per_area'
+    PER_ASSET = 'per_asset'
     AGG_CHOICES = (
         (AGGREGATED, 'Aggregated'),
         (PER_UNIT, 'Per unit'),
         (PER_AREA, 'Per area'),
+        (PER_ASSET, 'Per asset'),
     )
 
     AGGREGATED = 'aggregated'
@@ -176,6 +178,7 @@ class Asset(models.Model):
     model                       = models.ForeignKey(Exposure_Model)
     taxonomy                    = models.ForeignKey(Building_Taxonomy)
     parish                      = models.ForeignKey(World, null=True)
+    adm_1                       = models.ForeignKey(Adm_1, null=True)
     location                    = models.PointField(null=True, srid=4326)
     name                        = models.CharField(max_length=10)
     n_buildings                 = models.IntegerField(null=True)
