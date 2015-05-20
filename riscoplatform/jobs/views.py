@@ -65,11 +65,11 @@ def get_imt_from_vul(model, job):
 
 class ScenarioHazardForm(forms.ModelForm):
 	fragility_model = forms.ModelChoiceField(queryset=Fragility_Model.objects.all().order_by('-date_created'), required=False)
-	structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
-	non_structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
-	contents_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
-	business_int_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
-	occupants_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
+	structural_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
+	non_structural_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
+	contents_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
+	business_int_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
+	occupants_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
 	
 	def clean(self):
 		form_data = self.cleaned_data
@@ -110,11 +110,11 @@ def index_scenario_hazard(request):
 	form.fields["rupture_model"].queryset = Rupture_Model.objects.filter(user=request.user)
 
 	form.fields["fragility_model"].queryset = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
-	form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
-	form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
-	form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
-	form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
-	form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+	form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+	form.fields["non_structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+	form.fields["contents_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+	form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+	form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
 	
 	return render(request, 'jobs/index_scenario_hazard.html', {'jobs': jobs, 'form': form})
 
@@ -126,11 +126,11 @@ def add_scenario_hazard(request):
 		form.fields["rupture_model"].queryset = Rupture_Model.objects.filter(user=request.user)
 		
 		form.fields["fragility_model"].queryset = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
-		form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
-		form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
-		form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
-		form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
-		form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+		form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+		form.fields["non_structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+		form.fields["contents_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+		form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+		form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
 	
 		if form.is_valid():
 			job = form.save(commit=False)
@@ -149,16 +149,16 @@ def add_scenario_hazard(request):
 							periods.append(tax.sa_period)
 				job.sa_periods = periods
 
-			if form.cleaned_data["structural_vulberability"] != None:
-				get_imt_from_vul(form.cleaned_data["structural_vulberability"], job)
-			if form.cleaned_data["non_structural_vulberability"] != None:
-				get_imt_from_vul(form.cleaned_data["non_structural_vulberability"], job)
-			if form.cleaned_data["contents_vulberability"] != None:
-				get_imt_from_vul(form.cleaned_data["contents_vulberability"], job)
-			if form.cleaned_data["business_int_vulberability"] != None:
-				get_imt_from_vul(form.cleaned_data["business_int_vulberability"], job)
-			if form.cleaned_data["occupants_vulberability"] != None:
-				get_imt_from_vul(form.cleaned_data["occupants_vulberability"], job)
+			if form.cleaned_data["structural_vulnerability"] != None:
+				get_imt_from_vul(form.cleaned_data["structural_vulnerability"], job)
+			if form.cleaned_data["non_structural_vulnerability"] != None:
+				get_imt_from_vul(form.cleaned_data["non_structural_vulnerability"], job)
+			if form.cleaned_data["contents_vulnerability"] != None:
+				get_imt_from_vul(form.cleaned_data["contents_vulnerability"], job)
+			if form.cleaned_data["business_int_vulnerability"] != None:
+				get_imt_from_vul(form.cleaned_data["business_int_vulnerability"], job)
+			if form.cleaned_data["occupants_vulnerability"] != None:
+				get_imt_from_vul(form.cleaned_data["occupants_vulnerability"], job)
 
 			job.save()
 			return redirect('results_scenario_hazard', job.id)
@@ -182,51 +182,6 @@ def start_scenario_hazard(request, job_id):
 		return redirect('results_scenario_hazard', job.id)
 	except:
 		return render(request, 'jobs/results_scenario_hazard.html', {'job': job, 'connection_error': True})
-		
-
-@login_required
-def results_scenario_hazard_ajax(request, job_id):
-	job = Scenario_Hazard.objects.get(pk=job_id, user=request.user)
-
-	cursor = connection.cursor()
-	d = []
-    
-	if job.pga:
-
-		cursor.execute("SELECT ST_AsGeoJSON(cell), gmvs_mean, world_fishnet.id \
-						FROM world_fishnet, jobs_scenario_hazard_results_by_cell \
-						WHERE jobs_scenario_hazard_results_by_cell.job_id = %s \
-						AND jobs_scenario_hazard_results_by_cell.cell_id = world_fishnet.id \
-						AND jobs_scenario_hazard_results_by_cell.imt = 'PGA'", [job_id])
-	
-		cells = cursor.fetchall()
-		features = list(dict(type='Feature', id=cell[2], properties=dict(color=colors.hazard_picker(cell[1]), a="{0:.4f}".format(cell[1])),
-					geometry=json.loads(cell[0])) for cell in cells)
-
-		d.append({'type': 'FeatureCollection', 'features': features, 'name': 'PGA'})
-
-	for e in job.sa_periods:
-
-		cursor.execute("SELECT ST_AsGeoJSON(cell), gmvs_mean, world_fishnet.id \
-						FROM world_fishnet, jobs_scenario_hazard_results_by_cell \
-						WHERE jobs_scenario_hazard_results_by_cell.job_id = %s \
-						AND jobs_scenario_hazard_results_by_cell.cell_id = world_fishnet.id \
-						AND jobs_scenario_hazard_results_by_cell.sa_period = %s", [job_id, e])
-		cells = cursor.fetchall()
-		features = list(dict(type='Feature', id=cell[2], properties=dict(color=colors.hazard_picker(cell[1]), a="{0:.4f}".format(cell[1])),
-					geometry=json.loads(cell[0])) for cell in cells)
-		d.append({'type': 'FeatureCollection', 'features': features, 'name': 'Sa('+str(e)+')'})
-
-	source = Rupture_Model.objects.get(pk=job.rupture_model.id)
-	if job.rupture_model.rupture_type == 'POINT':
-		rupture = dict(type='Feature', id=source.id, properties=dict( name = source.name ),
-					geometry = json.loads(source.location.json) )
-	else:
-		rupture = dict(type='Feature', id=source.id, properties=dict( name = source.name ),
-					geometry = json.loads(source.rupture_geom.json) )
-	data = {'type': 'FeatureCollection', 'features': [rupture] }
-
-	return HttpResponse(json.dumps({'hazard':d, 'rupture': data}), content_type="application/json")
 
 
 def get_geojson(features_list):
@@ -239,9 +194,12 @@ def get_geojson(features_list):
 
 
 @login_required
-def results_scenario_hazard_ajax_test(request, job_id):
+def results_scenario_hazard_ajax(request, job_id):
 	job = Scenario_Hazard.objects.get(pk=job_id, user=request.user)
-
+	
+	job_json = serializers.serialize("json", [job])
+	job_json = json.loads(job_json)
+	
 	cursor = connection.cursor()
 	d = []
 
@@ -271,10 +229,30 @@ def results_scenario_hazard_ajax_test(request, job_id):
 		data = list( {'id': cell[0], 'value': float("{0:.4f}".format(cell[2])) } for cell in cells)
 		d.append({'name': 'Sa('+str(e)+')', 'values': data})
 
-		if not geo_json:
-			geo_json = get_geojson(cells) 
+		if 'geo_json' not in locals():
+			geo_json = get_geojson(cells)
 
-	return HttpResponse(json.dumps({ 'hazard': d, 'geojson': geo_json }), content_type="application/json")
+	
+	source = Rupture_Model.objects.get(pk=job.rupture_model.id)
+	source_json = serializers.serialize("json", [source])
+	source_json = json.loads(source_json)
+
+	epicenter = {'type': 'FeatureCollection', 'features': [dict(type='Feature', id=source.id, properties=dict(), geometry = json.loads(source.location.json) )] } 
+
+	if job.rupture_model.rupture_type == 'POINT':
+		rupture = None
+	else:		
+		rupture = {'type': 'FeatureCollection', 'features': [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
+					geometry = json.loads(source.rupture_geom.json) )] } 
+	
+	return HttpResponse(json.dumps({ 'hazard': d,
+									'geojson': geo_json,
+									'job': job_json,
+									'rupture': {'epicenter': epicenter,
+												'rupture': rupture,
+												'info': source_json}
+									}), content_type="application/json")
+
 
 
 
@@ -284,13 +262,22 @@ def results_scenario_hazard_ajax_test(request, job_id):
 ############################
 
 
+def get_geojson_countries(features_list):
+	features = list(dict(type='Feature',
+						id=cell[0],
+						properties=dict(id=cell[0],
+										name=cell[2]),
+						geometry=json.loads(cell[1])) for cell in features_list)
+
+	return {'type': 'FeatureCollection', 'features': features}
+
+
+
 def check_imts(hazard, struct):
 	for e in struct:
 		if e not in hazard:
 			return False
 	return True
-
-
 
 
 class ScenarioDamageForm(forms.ModelForm):
@@ -401,39 +388,135 @@ def start_scenario_damage(request, job_id):
 		return render(request, 'jobs/results_scenario_damage.html', {'job': job, 'connection_error': True})
 
 @login_required
-def geojson_tiles(request, job_id, z, x, y):
-	geometries = requests.get(TILESTACHE_HOST+'world/'+str(z)+'/'+str(x)+'/'+str(y)+'.json')
-	geom_dict = json.loads(geometries.text)
+def results_scenario_damage_ajax(request, job_id):
+	job = get_object_or_404(Scenario_Damage ,pk=job_id, user=request.user)
 
 	cursor = connection.cursor()
+	cursor.execute("SELECT limit_state, sum(mean), sum(stddev) \
+					FROM jobs_scenario_damage_results \
+					WHERE job_id = %s \
+					GROUP BY limit_state", [job_id])
 
-	for g in geom_dict["features"]:
+	data_per_state = list( {'name': state[0], 'value': state[1], 'stddev': state[2]} for state in cursor.fetchall())
 
-		cursor.execute("select limit_state, sum(mean), sum(stddev), name_3 \
-						from world_world, jobs_scenario_damage_results, eng_models_asset \
-						where jobs_scenario_damage_results.asset_id = eng_models_asset.id \
-						and jobs_scenario_damage_results.job_id = %s \
-						and st_intersects(eng_models_asset.location, world_world.geom) \
-						and world_world.id = %s \
-						group by jobs_scenario_damage_results.limit_state, world_world.name_3", [job_id, g['id']])
-		data = [dict(limit_state = e[0],
-					mean = e[1],
-					stddev = e[2],
-					name = e[3]) for e in cursor.fetchall()]
+	d = []
+	d.append({'name': 'overall',
+			'values': data_per_state})
 
 
-		if data != []:
-			g['properties']['limit_states'] = data
+	for state in job.fragility_model.limit_states:
 
-			for e in data:
-				if e['limit_state'] == 'complete':
-					color = colors.damage_picker(e['mean'], int(z))
+		if request.GET.get('country') != 'undefined':
+			country_id = request.GET.get('country')
 
-			g['properties']['color'] = color
+			if request.GET.get('taxonomy') != 'undefined':
+				taxonomy_id = request.GET.get('taxonomy')
+				cursor.execute('SELECT world_adm_1.id, ST_AsGeoJSON(world_adm_1.geom) , world_adm_1.name, \
+								sum(jobs_scenario_damage_results.mean), sum(jobs_scenario_damage_results.stddev) \
+								FROM eng_models_asset, jobs_scenario_damage_results, world_adm_1 \
+								WHERE jobs_scenario_damage_results.job_id = %s \
+								AND jobs_scenario_damage_results.limit_state = %s \
+								AND eng_models_asset.taxonomy_id = %s \
+								AND eng_models_asset.id = jobs_scenario_damage_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = %s \
+								GROUP BY world_adm_1.id', [job.id, state, taxonomy_id ,country_id])
+				info_per_region = cursor.fetchall()
+				info_per_taxonomy = None
+			else:
+				cursor.execute('SELECT world_adm_1.id, ST_AsGeoJSON(world_adm_1.geom) , world_adm_1.name, \
+								sum(jobs_scenario_damage_results.mean), sum(jobs_scenario_damage_results.stddev)  \
+								FROM eng_models_asset, jobs_scenario_damage_results, world_adm_1 \
+								WHERE jobs_scenario_damage_results.job_id = %s \
+								AND jobs_scenario_damage_results.limit_state = %s \
+								AND eng_models_asset.id = jobs_scenario_damage_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = %s \
+								GROUP BY world_adm_1.id', [job.id, state, country_id])
+				info_per_region = cursor.fetchall()
+
+				cursor.execute('SELECT eng_models_building_taxonomy.id ,eng_models_building_taxonomy.name, \
+								sum(jobs_scenario_damage_results.mean), sum(jobs_scenario_damage_results.stddev) \
+								FROM eng_models_building_taxonomy ,eng_models_asset, \
+								jobs_scenario_damage_results, world_adm_1 \
+								WHERE jobs_scenario_damage_results.job_id = %s \
+								AND jobs_scenario_damage_results.limit_state = %s \
+								AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+								AND eng_models_asset.id = jobs_scenario_damage_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = %s \
+								GROUP BY eng_models_building_taxonomy.id', [job.id, state, country_id])
+				info_per_taxonomy = cursor.fetchall()
+		
+		else:
+			if request.GET.get('taxonomy') != 'undefined':
+				taxonomy_id = request.GET.get('taxonomy')
+				cursor.execute('SELECT world_country.id, ST_AsGeoJSON(world_country.geom_simp) , world_country.name, \
+								sum(jobs_scenario_damage_results.mean), sum(jobs_scenario_damage_results.stddev) \
+								FROM eng_models_asset, jobs_scenario_damage_results, world_country, world_adm_1 \
+								WHERE jobs_scenario_damage_results.job_id = %s \
+								AND jobs_scenario_damage_results.limit_state = %s \
+								AND eng_models_asset.taxonomy_id = %s \
+								AND eng_models_asset.id = jobs_scenario_damage_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = world_country.id \
+								GROUP BY world_country.id', [job.id, state, taxonomy_id])
+				info_per_region = cursor.fetchall()
+				info_per_taxonomy = None
+			else:
+				cursor.execute('SELECT world_country.id, ST_AsGeoJSON(world_country.geom_simp) , world_country.name, \
+								sum(jobs_scenario_damage_results.mean), sum(jobs_scenario_damage_results.stddev) \
+								FROM eng_models_asset, jobs_scenario_damage_results, world_country, world_adm_1 \
+								WHERE jobs_scenario_damage_results.job_id = %s \
+								AND jobs_scenario_damage_results.limit_state = %s \
+								AND eng_models_asset.id = jobs_scenario_damage_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = world_country.id \
+								GROUP BY world_country.id', [job.id, state])
+				info_per_region = cursor.fetchall()
+
+				cursor.execute('SELECT eng_models_building_taxonomy.id ,eng_models_building_taxonomy.name, \
+								sum(jobs_scenario_damage_results.mean), sum(jobs_scenario_damage_results.stddev) \
+								FROM eng_models_building_taxonomy ,eng_models_asset, \
+								jobs_scenario_damage_results \
+								WHERE jobs_scenario_damage_results.job_id = %s \
+								AND jobs_scenario_damage_results.limit_state = %s \
+								AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+								AND eng_models_asset.id = jobs_scenario_damage_results.asset_id \
+								GROUP BY eng_models_building_taxonomy.id', [job.id, state])
+				info_per_taxonomy = cursor.fetchall()
+
+		total = sum(e[3] for e in info_per_region)
+		stddev = sum(e[4] for e in info_per_region)
+
+		scale = len(str(total).split('.')[0])-1
+		total_scale = round(total, -scale)
+
+		if 'geo_json' not in locals():
+			geo_json = get_geojson_countries(info_per_region)
+
+		data_per_region = list( {'id': region[0], 'name': region[2], 'value': region[3], 'stddev': region[4] } for region in info_per_region)
+	
+		if info_per_taxonomy:
+			data_per_taxonomy = list( {'id': taxonomy[0], 'name': taxonomy[1], 'value': taxonomy[2], 'stddev': taxonomy[3] } for taxonomy in info_per_taxonomy)
+		else:
+			data_per_taxonomy = None
 
 
-	geom_dict["features"] = [feature for feature in geom_dict["features"] if 'limit_states' in feature['properties']]
-	return HttpResponse(json.dumps(geom_dict), content_type="application/json")
+		d.append({'name': state,
+				'values': data_per_region,
+				'values_per_taxonomy': data_per_taxonomy,
+				'total': total,
+				'stddev': stddev,
+				'total_scale': total_scale})
+
+	job_json = serializers.serialize("json", [job])
+	job_json = json.loads(job_json)
+
+	return HttpResponse(json.dumps({'job': job_json,
+									'losses': d,
+									'geojson': geo_json }), content_type="application/json")
+
 
 
 
@@ -443,16 +526,16 @@ def geojson_tiles(request, job_id, z, x, y):
 
 
 class ScenarioRiskForm(forms.ModelForm):
-	structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
-	non_structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
-	contents_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
-	business_int_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
-	occupants_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
+	structural_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
+	non_structural_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
+	contents_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
+	business_int_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
+	occupants_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
 	
 	def clean(self):
 		form_data = self.cleaned_data
-		if 'occupants_vulberability' in form_data and form_data['insured_losses']:
-			self.add_error(None, 'You cannot calculate insured losses with an occupants vulberability model')
+		if 'occupants_vulnerability' in form_data and form_data['insured_losses']:
+			self.add_error(None, 'You cannot calculate insured losses with an occupants vulnerability model')
 		return form_data
 
 	class Meta:
@@ -468,11 +551,11 @@ def index_scenario_risk(request):
 	jobs = Scenario_Risk.objects.filter(user=request.user).order_by('-date_created')
 	form = ScenarioRiskForm()
 	form.fields["hazard_job"].queryset = Scenario_Hazard.objects.filter(user=request.user, status='FINISHED')
-	form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
-	form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
-	form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
-	form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
-	form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+	form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+	form.fields["non_structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+	form.fields["contents_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+	form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+	form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
 	form.fields["exposure_model"].queryset = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
 	return render(request, 'jobs/index_scenario_risk.html', {'jobs': jobs, 'form': form})
 
@@ -481,11 +564,11 @@ def add_scenario_risk(request):
 	if request.method == 'POST':
 		form = ScenarioRiskForm(request.POST)
 		form.fields["hazard_job"].queryset = Scenario_Hazard.objects.filter(user=request.user, status='FINISHED')
-		form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
-		form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
-		form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
-		form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
-		form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+		form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+		form.fields["non_structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+		form.fields["contents_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+		form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+		form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
 		form.fields["exposure_model"].queryset = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
 		if form.is_valid():
 			job = form.save(commit=False)
@@ -493,16 +576,16 @@ def add_scenario_risk(request):
 			job.user = request.user
 			job.save()
 
-			if form.cleaned_data["structural_vulberability"] != None:
-				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["structural_vulberability"])
-			if form.cleaned_data["non_structural_vulberability"] != None:
-				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["non_structural_vulberability"])
-			if form.cleaned_data["contents_vulberability"] != None:
-				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["contents_vulberability"])
-			if form.cleaned_data["business_int_vulberability"] != None:
-				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["business_int_vulberability"])
-			if form.cleaned_data["occupants_vulberability"] != None:
-				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["occupants_vulberability"])
+			if form.cleaned_data["structural_vulnerability"] != None:
+				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["structural_vulnerability"])
+			if form.cleaned_data["non_structural_vulnerability"] != None:
+				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["non_structural_vulnerability"])
+			if form.cleaned_data["contents_vulnerability"] != None:
+				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["contents_vulnerability"])
+			if form.cleaned_data["business_int_vulnerability"] != None:
+				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["business_int_vulnerability"])
+			if form.cleaned_data["occupants_vulnerability"] != None:
+				Scenario_Risk_Vulnerability_Model.objects.create(job=job, vulnerability_model=form.cleaned_data["occupants_vulnerability"])
 
 			return redirect('results_scenario_risk', job.id)
 		else:
@@ -515,18 +598,17 @@ def add_scenario_risk(request):
 @login_required
 def results_scenario_risk(request, job_id):
 	job = get_object_or_404(Scenario_Risk ,pk=job_id)
-	#taxonomies = Building_Taxonomy.objects.filter(source=job.exposure_model.taxonomy_source)
-	return render(request, 'jobs/results_scenario_risk.html', {'job': job})
-
-
-def get_geojson_countries(features_list):
-	features = list(dict(type='Feature',
-						id=cell[0],
-						properties=dict(id=cell[0],
-										name=cell[2]),
-						geometry=json.loads(cell[1])) for cell in features_list)
-
-	return {'type': 'FeatureCollection', 'features': features}
+	vulnerability_types = Scenario_Risk_Vulnerability_Model.objects.filter(job = job)
+	economic_loss_types = []
+	total = False
+	for vulnerability in vulnerability_types:
+		if vulnerability.vulnerability_model.type != 'occupants_vulnerability':
+			economic_loss_types.append(vulnerability.vulnerability_model.type)
+		if len(economic_loss_types) > 1:
+			total = True
+			break
+		
+	return render(request, 'jobs/results_scenario_risk.html', {'job': job, 'total': total})
 
 
 @login_required
@@ -537,6 +619,8 @@ def results_scenario_risk_ajax(request, job_id):
 	cursor = connection.cursor()
 	d = []
 
+	economic_loss_types = []
+
 	for vulnerability in vulnerability_types:
 		
 		if request.GET.get('country') != 'undefined':
@@ -544,7 +628,8 @@ def results_scenario_risk_ajax(request, job_id):
 
 			if request.GET.get('taxonomy') != 'undefined':
 				taxonomy_id = request.GET.get('taxonomy')
-				cursor.execute('SELECT world_adm_1.id, ST_AsGeoJSON(world_adm_1.geom) , world_adm_1.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean) \
+				cursor.execute('SELECT world_adm_1.id, ST_AsGeoJSON(world_adm_1.geom) , world_adm_1.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean), \
+								sum(jobs_scenario_risk_results.stddev) ,sum(jobs_scenario_risk_results.insured_stddev) \
 								FROM eng_models_asset, jobs_scenario_risk_results, world_adm_1 \
 								WHERE jobs_scenario_risk_results.job_vul_id = %s \
 								AND eng_models_asset.taxonomy_id = %s \
@@ -555,7 +640,8 @@ def results_scenario_risk_ajax(request, job_id):
 				info_per_region = cursor.fetchall()
 				info_per_taxonomy = None
 			else:
-				cursor.execute('SELECT world_adm_1.id, ST_AsGeoJSON(world_adm_1.geom) , world_adm_1.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean) \
+				cursor.execute('SELECT world_adm_1.id, ST_AsGeoJSON(world_adm_1.geom) , world_adm_1.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean), \
+								sum(jobs_scenario_risk_results.stddev) ,sum(jobs_scenario_risk_results.insured_stddev) \
 								FROM eng_models_asset, jobs_scenario_risk_results, world_adm_1 \
 								WHERE jobs_scenario_risk_results.job_vul_id = %s \
 								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
@@ -564,7 +650,8 @@ def results_scenario_risk_ajax(request, job_id):
 								GROUP BY world_adm_1.id', [vulnerability.id, country_id])
 				info_per_region = cursor.fetchall()
 
-				cursor.execute('SELECT eng_models_building_taxonomy.id ,eng_models_building_taxonomy.name ,sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean) \
+				cursor.execute('SELECT eng_models_building_taxonomy.id ,eng_models_building_taxonomy.name ,sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean), \
+								sum(jobs_scenario_risk_results.stddev) ,sum(jobs_scenario_risk_results.insured_stddev) \
 								FROM eng_models_building_taxonomy ,eng_models_asset, \
 								jobs_scenario_risk_results, world_adm_1 \
 								WHERE jobs_scenario_risk_results.job_vul_id = %s \
@@ -578,7 +665,8 @@ def results_scenario_risk_ajax(request, job_id):
 		else:
 			if request.GET.get('taxonomy') != 'undefined':
 				taxonomy_id = request.GET.get('taxonomy')
-				cursor.execute('SELECT world_country.id, ST_AsGeoJSON(world_country.geom_simp) , world_country.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean) \
+				cursor.execute('SELECT world_country.id, ST_AsGeoJSON(world_country.geom_simp) , world_country.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean), \
+								sum(jobs_scenario_risk_results.stddev) ,sum(jobs_scenario_risk_results.insured_stddev) \
 								FROM eng_models_asset, jobs_scenario_risk_results, world_country, world_adm_1 \
 								WHERE jobs_scenario_risk_results.job_vul_id = %s \
 								AND eng_models_asset.taxonomy_id = %s \
@@ -589,7 +677,8 @@ def results_scenario_risk_ajax(request, job_id):
 				info_per_region = cursor.fetchall()
 				info_per_taxonomy = None
 			else:
-				cursor.execute('SELECT world_country.id, ST_AsGeoJSON(world_country.geom_simp) , world_country.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean) \
+				cursor.execute('SELECT world_country.id, ST_AsGeoJSON(world_country.geom_simp) , world_country.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean), \
+								sum(jobs_scenario_risk_results.stddev) ,sum(jobs_scenario_risk_results.insured_stddev) \
 								FROM eng_models_asset, jobs_scenario_risk_results, world_country, world_adm_1 \
 								WHERE jobs_scenario_risk_results.job_vul_id = %s \
 								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
@@ -598,7 +687,8 @@ def results_scenario_risk_ajax(request, job_id):
 								GROUP BY world_country.id', [vulnerability.id])
 				info_per_region = cursor.fetchall()
 
-				cursor.execute('SELECT eng_models_building_taxonomy.id ,eng_models_building_taxonomy.name ,sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean) \
+				cursor.execute('SELECT eng_models_building_taxonomy.id ,eng_models_building_taxonomy.name ,sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean), \
+								sum(jobs_scenario_risk_results.stddev) ,sum(jobs_scenario_risk_results.insured_stddev) \
 								FROM eng_models_building_taxonomy ,eng_models_asset, \
 								jobs_scenario_risk_results \
 								WHERE jobs_scenario_risk_results.job_vul_id = %s \
@@ -608,10 +698,17 @@ def results_scenario_risk_ajax(request, job_id):
 				info_per_taxonomy = cursor.fetchall()
 
 		total = sum(e[3] for e in info_per_region)
+		stddev = sum(e[5] for e in info_per_region)
 		if job.insured_losses:
 			total_insured = sum(e[4] for e in info_per_region)
+			stddev_insured = sum(e[6] for e in info_per_region)
+			total_not_insured = total - total_insured
+			stddev_not_insured = stddev - stddev_insured
 		else:
 			total_insured = None
+			stddev_insured = None
+			total_not_insured = None
+			stddev_not_insured = None
 
 		scale = len(str(total).split('.')[0])-1
 		total_scale = round(total, -scale)
@@ -619,20 +716,142 @@ def results_scenario_risk_ajax(request, job_id):
 		if 'geo_json' not in locals():
 			geo_json = get_geojson_countries(info_per_region)
 
-		data_per_region = list( {'id': region[0], 'place': region[2], 'value': region[3], 'insured_value': region[4] } for region in info_per_region)
+		data_per_region = list( {'id': region[0], 'name': region[2], 'value': region[3], 'insured_value': region[4], 'stddev': region[5], 'insured_stddev': region[6] } for region in info_per_region)
 	
 		if info_per_taxonomy:
-			data_per_taxonomy = list( {'id': taxonomy[0], 'name': taxonomy[1], 'value': taxonomy[2], 'insured_value': taxonomy[3]} for taxonomy in info_per_taxonomy)
+			data_per_taxonomy = list( {'id': taxonomy[0], 'name': taxonomy[1], 'value': taxonomy[2], 'insured_value': taxonomy[3], 'stddev': taxonomy[4], 'insured_stddev': taxonomy[5]} for taxonomy in info_per_taxonomy)
 		else:
 			data_per_taxonomy = None
+
+		if vulnerability.vulnerability_model.type != 'occupants_vulnerability':
+			economic_loss_types.append(vulnerability.vulnerability_model.type)
 
 		d.append({'name': vulnerability.vulnerability_model.type,
 				'values': data_per_region,
 				'values_per_taxonomy': data_per_taxonomy,
 				'total': total,
+				'stddev': stddev,
 				'total_insured': total_insured,
-				'total_scale': total_scale,
-				'currency': job.exposure_model.currency})
+				'stddev_insured': stddev_insured,
+				'total_not_insured': total_not_insured,
+				'stddev_not_insured': stddev_not_insured,
+				'total_scale': total_scale})
+
+	if len(economic_loss_types) > 1:
+
+		if request.GET.get('country') != 'undefined':
+			country_id = request.GET.get('country')
+
+			if request.GET.get('taxonomy') != 'undefined':
+				taxonomy_id = request.GET.get('taxonomy')
+				cursor.execute('SELECT world_adm_1.id, ST_AsGeoJSON(world_adm_1.geom) , world_adm_1.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean), \
+								sum(jobs_scenario_risk_results.stddev) ,sum(jobs_scenario_risk_results.insured_stddev) \
+								FROM eng_models_asset, jobs_scenario_risk_results, jobs_scenario_risk_vulnerability_model, world_adm_1 \
+								WHERE jobs_scenario_risk_results.job_vul_id = jobs_scenario_risk_vulnerability_model.id \
+								AND jobs_scenario_risk_vulnerability_model.job_id = %s \
+								AND eng_models_asset.taxonomy_id = %s \
+								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = %s \
+								GROUP BY world_adm_1.id', [job.id, taxonomy_id ,country_id])
+				info_per_region = cursor.fetchall()
+				info_per_taxonomy = None
+			else:
+				cursor.execute('SELECT world_adm_1.id, ST_AsGeoJSON(world_adm_1.geom) , world_adm_1.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean), \
+								sum(jobs_scenario_risk_results.stddev) ,sum(jobs_scenario_risk_results.insured_stddev) \
+								FROM eng_models_asset, jobs_scenario_risk_results, jobs_scenario_risk_vulnerability_model, world_adm_1 \
+								WHERE jobs_scenario_risk_results.job_vul_id = jobs_scenario_risk_vulnerability_model.id \
+								AND jobs_scenario_risk_vulnerability_model.job_id = %s \
+								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = %s \
+								GROUP BY world_adm_1.id', [job.id, country_id])
+				info_per_region = cursor.fetchall()
+
+				cursor.execute('SELECT eng_models_building_taxonomy.id ,eng_models_building_taxonomy.name ,sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean), \
+								sum(jobs_scenario_risk_results.stddev) ,sum(jobs_scenario_risk_results.insured_stddev) \
+								FROM eng_models_building_taxonomy ,eng_models_asset, \
+								jobs_scenario_risk_results, jobs_scenario_risk_vulnerability_model, world_adm_1 \
+								WHERE jobs_scenario_risk_results.job_vul_id = jobs_scenario_risk_vulnerability_model.id \
+								AND jobs_scenario_risk_vulnerability_model.job_id = %s \
+								AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = %s \
+								GROUP BY eng_models_building_taxonomy.id', [job.id, country_id])
+				info_per_taxonomy = cursor.fetchall()
+		
+		else:
+			if request.GET.get('taxonomy') != 'undefined':
+				taxonomy_id = request.GET.get('taxonomy')
+				cursor.execute('SELECT world_country.id, ST_AsGeoJSON(world_country.geom_simp) , world_country.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean), \
+								sum(jobs_scenario_risk_results.stddev) ,sum(jobs_scenario_risk_results.insured_stddev) \
+								FROM eng_models_asset, jobs_scenario_risk_results, jobs_scenario_risk_vulnerability_model, world_country, world_adm_1 \
+								WHERE jobs_scenario_risk_results.job_vul_id = jobs_scenario_risk_vulnerability_model.id \
+								AND jobs_scenario_risk_vulnerability_model.job_id = %s \
+								AND eng_models_asset.taxonomy_id = %s \
+								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = world_country.id \
+								GROUP BY world_country.id', [job.id, taxonomy_id])
+				info_per_region = cursor.fetchall()
+				info_per_taxonomy = None
+			else:
+				cursor.execute('SELECT world_country.id, ST_AsGeoJSON(world_country.geom_simp) , world_country.name, sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean), \
+								sum(jobs_scenario_risk_results.stddev) ,sum(jobs_scenario_risk_results.insured_stddev) \
+								FROM eng_models_asset, jobs_scenario_risk_results, jobs_scenario_risk_vulnerability_model, world_country, world_adm_1 \
+								WHERE jobs_scenario_risk_results.job_vul_id = jobs_scenario_risk_vulnerability_model.id \
+								AND jobs_scenario_risk_vulnerability_model.job_id = %s \
+								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+								AND eng_models_asset.adm_1_id = world_adm_1.id \
+								AND world_adm_1.country_id = world_country.id \
+								GROUP BY world_country.id', [job.id])
+				info_per_region = cursor.fetchall()
+
+				cursor.execute('SELECT eng_models_building_taxonomy.id ,eng_models_building_taxonomy.name ,sum(jobs_scenario_risk_results.mean), sum(jobs_scenario_risk_results.insured_mean), \
+								sum(jobs_scenario_risk_results.stddev) ,sum(jobs_scenario_risk_results.insured_stddev) \
+								FROM eng_models_building_taxonomy ,eng_models_asset, \
+								jobs_scenario_risk_results, jobs_scenario_risk_vulnerability_model \
+								WHERE jobs_scenario_risk_results.job_vul_id = jobs_scenario_risk_vulnerability_model.id \
+								AND jobs_scenario_risk_vulnerability_model.job_id = %s \
+								AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+								AND eng_models_asset.id = jobs_scenario_risk_results.asset_id \
+								GROUP BY eng_models_building_taxonomy.id', [job.id])
+				info_per_taxonomy = cursor.fetchall()
+
+		total = sum(e[3] for e in info_per_region)
+		stddev = sum(e[5] for e in info_per_region)
+		if job.insured_losses:
+			total_insured = sum(e[4] for e in info_per_region)
+			stddev_insured = sum(e[6] for e in info_per_region)
+			total_not_insured = total - total_insured
+			stddev_not_insured = stddev - stddev_insured
+		else:
+			total_insured = None
+			stddev_insured = None
+			total_not_insured = None
+			stddev_not_insured = None
+
+		scale = len(str(total).split('.')[0])-1
+		total_scale = round(total, -scale)
+
+		data_per_region = list( {'id': region[0], 'name': region[2], 'value': region[3], 'insured_value': region[4], 'stddev': region[5], 'insured_stddev': region[6] } for region in info_per_region)
+	
+		if info_per_taxonomy:
+			data_per_taxonomy = list( {'id': taxonomy[0], 'name': taxonomy[1], 'value': taxonomy[2], 'insured_value': taxonomy[3], 'stddev': taxonomy[4], 'insured_stddev': taxonomy[5]} for taxonomy in info_per_taxonomy)
+		else:
+			data_per_taxonomy = None
+
+		d.append({'name': 'total',
+				'values': data_per_region,
+				'values_per_taxonomy': data_per_taxonomy,
+				'total': total,
+				'stddev': stddev,
+				'total_insured': total_insured,
+				'stddev_insured': stddev_insured,
+				'total_not_insured': total_not_insured,
+				'stddev_not_insured': stddev_not_insured,
+				'total_scale': total_scale})
 	
 	job_json = serializers.serialize("json", [job])
 	job_json = json.loads(job_json)
@@ -665,11 +884,11 @@ def start_scenario_risk(request, job_id):
 
 
 class PSHAHazardForm(forms.ModelForm):
-	structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
-	non_structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
-	contents_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
-	business_int_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
-	occupants_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
+	structural_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
+	non_structural_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
+	contents_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
+	business_int_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
+	occupants_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
 
 	gmpe_logic_tree = forms.ModelChoiceField(queryset = Logic_Tree.objects.filter(type='gmpe'), required=False)
 	source_logic_tree = forms.ModelChoiceField(queryset = Logic_Tree.objects.filter(type='source'), required=False)
@@ -679,7 +898,8 @@ class PSHAHazardForm(forms.ModelForm):
 		exclude = ['user', 'date_created', 'vulnerability_models', 'logic_trees', 'imt_l', 'status', 'oq_id', 'ini_file']
 		widgets = {
 					'description': forms.Textarea(attrs={'rows':5}),
-					'sa_periods': forms.TextInput(attrs={'placeholder': 'Ex: 0.20, 0.5, 0.9, 1.3 ...'}),
+					'quantile_hazard_curves': forms.TextInput(attrs={'placeholder': 'Ex: 0.05, 0.5, 0.95'}),
+					'poes': forms.TextInput(attrs={'placeholder': 'Ex: 0.2, 0.5, 0.9 ...'}),
            			'region': forms.HiddenInput(),
 					}
 
@@ -687,11 +907,11 @@ class PSHAHazardForm(forms.ModelForm):
 def index_psha_hazard(request):
 	jobs = Classical_PSHA_Hazard.objects.filter(user=request.user).order_by('-date_created')
 	form = PSHAHazardForm()
-	form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
-	form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
-	form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
-	form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
-	form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+	form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+	form.fields["non_structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+	form.fields["contents_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+	form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+	form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
 	
 	form.fields["gmpe_logic_tree"].queryset = Logic_Tree.objects.filter(user=request.user).filter(type='gmpe').order_by('-date_created')
 	form.fields["source_logic_tree"].queryset = Logic_Tree.objects.filter(user=request.user).filter(type='source').order_by('-date_created')
@@ -701,11 +921,11 @@ def index_psha_hazard(request):
 def add_psha_hazard(request):
 	if request.method == 'POST':
 		form = PSHAHazardForm(request.POST)
-		form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
-		form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
-		form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
-		form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
-		form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+		form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+		form.fields["non_structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+		form.fields["contents_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+		form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+		form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
 		
 		form.fields["gmpe_logic_tree"].queryset = Logic_Tree.objects.filter(user=request.user).filter(type='gmpe').order_by('-date_created')
 		form.fields["source_logic_tree"].queryset = Logic_Tree.objects.filter(user=request.user).filter(type='source').order_by('-date_created')
@@ -716,14 +936,14 @@ def add_psha_hazard(request):
 			job.user = request.user
 			job.save()
 
-			#if form.cleaned_data["structural_vulberability"] != None:
-			#	job.vulnerability_models.add(form.cleaned_data["structural_vulberability"])
-			#if form.cleaned_data["non_structural_vulberability"] != None:
-			#	job.vulnerability_models.add(form.cleaned_data["non_structural_vulberability"])
-			#if form.cleaned_data["contents_vulberability"] != None:
-			#	job.vulnerability_models.add(form.cleaned_data["contents_vulberability"])
-			#if form.cleaned_data["occupants_vulberability"] != None:
-			#	job.vulnerability_models.add(form.cleaned_data["occupants_vulberability"])
+			#if form.cleaned_data["structural_vulnerability"] != None:
+			#	job.vulnerability_models.add(form.cleaned_data["structural_vulnerability"])
+			#if form.cleaned_data["non_structural_vulnerability"] != None:
+			#	job.vulnerability_models.add(form.cleaned_data["non_structural_vulnerability"])
+			#if form.cleaned_data["contents_vulnerability"] != None:
+			#	job.vulnerability_models.add(form.cleaned_data["contents_vulnerability"])
+			#if form.cleaned_data["occupants_vulnerability"] != None:
+			#	job.vulnerability_models.add(form.cleaned_data["occupants_vulnerability"])
 
 			if form.cleaned_data["gmpe_logic_tree"] != None:
 				job.logic_trees.add(form.cleaned_data["gmpe_logic_tree"])
@@ -763,11 +983,11 @@ def start_psha_hazard(request, job_id):
 
 
 class PSHARiskForm(forms.ModelForm):
-	structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
-	non_structural_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
-	contents_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
-	business_int_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
-	occupants_vulberability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
+	structural_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
+	non_structural_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
+	contents_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
+	business_int_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
+	occupants_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
 
 	class Meta:
 		model = Classical_PSHA_Risk
@@ -784,11 +1004,11 @@ def index_psha_risk(request):
 
 	form.fields['hazard'].queryset = Classical_PSHA_Hazard.objects.filter(user=request.user, status='FINISHED').order_by('-date_created')
 
-	form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
-	form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
-	form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
-	form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
-	form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+	form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+	form.fields["non_structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+	form.fields["contents_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+	form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+	form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
 	
 	return render(request, 'jobs/index_psha_risk.html', {'jobs': jobs, 'form': form})
 
@@ -797,11 +1017,11 @@ def add_psha_risk(request):
 	if request.method == 'POST':
 		form = PSHARiskForm(request.POST)
 		form.fields['hazard'].queryset = Classical_PSHA_Hazard.objects.filter(user=request.user, status='FINISHED').order_by('-date_created')
-		form.fields["structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
-		form.fields["non_structural_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
-		form.fields["contents_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
-		form.fields["business_int_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
-		form.fields["occupants_vulberability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+		form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+		form.fields["non_structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+		form.fields["contents_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+		form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+		form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
 
 		if form.is_valid():
 			job = form.save(commit=False)
@@ -809,16 +1029,16 @@ def add_psha_risk(request):
 			job.user = request.user
 			job.save()
 
-			if form.cleaned_data["structural_vulberability"] != None:
-				job.vulnerability_models.add(form.cleaned_data["structural_vulberability"])
-			if form.cleaned_data["non_structural_vulberability"] != None:
-				job.vulnerability_models.add(form.cleaned_data["non_structural_vulberability"])
-			if form.cleaned_data["contents_vulberability"] != None:
-				job.vulnerability_models.add(form.cleaned_data["contents_vulberability"])
-			if form.cleaned_data["business_int_vulberability"] != None:
-				job.vulnerability_models.add(form.cleaned_data["business_int_vulberability"])
-			if form.cleaned_data["occupants_vulberability"] != None:
-				job.vulnerability_models.add(form.cleaned_data["occupants_vulberability"])
+			if form.cleaned_data["structural_vulnerability"] != None:
+				job.vulnerability_models.add(form.cleaned_data["structural_vulnerability"])
+			if form.cleaned_data["non_structural_vulnerability"] != None:
+				job.vulnerability_models.add(form.cleaned_data["non_structural_vulnerability"])
+			if form.cleaned_data["contents_vulnerability"] != None:
+				job.vulnerability_models.add(form.cleaned_data["contents_vulnerability"])
+			if form.cleaned_data["business_int_vulnerability"] != None:
+				job.vulnerability_models.add(form.cleaned_data["business_int_vulnerability"])
+			if form.cleaned_data["occupants_vulnerability"] != None:
+				job.vulnerability_models.add(form.cleaned_data["occupants_vulnerability"])
 
 			return redirect('results_psha_risk', job.id)
 		else:

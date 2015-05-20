@@ -33,7 +33,6 @@ INSTALLED_APPS = (
     'django.contrib.gis',
     'django.contrib.humanize',
     'debug_toolbar',
-    'djgeojson',
     'avatar',
     'world',
     'eng_models',
@@ -90,8 +89,5 @@ LOGIN_REDIRECT_URL ='/'
 AVATAR_GRAVATAR_BACKUP = False
 AVATAR_STORAGE_DIR = 'uploads/avatars'
 
-SERIALIZATION_MODULES = {
-    'geojson' : 'djgeojson.serializers'
-}
 
 

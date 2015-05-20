@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block content %}
 
@@ -23,6 +24,7 @@
 
 	<div class="row">
 		<div class="col-md-9">
+			<div><button id='adm_back' class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>Back</button></div><br>
 			<div id='map' class="vertical-map"></div><br>
 		</div>
 
@@ -98,12 +100,92 @@
 
 	</div>
 
+	{% if job.status == 'FINISHED' %}
 	<div class="row">
-		<div class="col-md-12">
-			<br>
-			<div id="chart-container"></div>
+		<div class="col-md-9">
+
+				<ul id='limit-state-selector' class="nav nav-tabs">
+
+					<li class=""><a href="#overall" data-toggle="tab" aria-expanded="true">Overall</a></li>
+				  	{% for state in job.fragility_model.limit_states %}
+					<li class=""><a href="#{{ state }}" data-toggle="tab" aria-expanded="true">{{ state }}</a></li>
+				  	{% endfor %}
+				</ul>
+
+				<div id="myTabContent" class="tab-content">
+					<div class="tab-pane fade in" id="overall">
+						<div class="row">
+							<div id="overall_chart_panel" class="col-md-4"></div>
+						</div>
+					</div>
+
+				  	{% for state in job.fragility_model.limit_states %}
+					<div class="tab-pane fade in" id="{{ state }}">
+						<div class="row">
+							<div id="{{ state }}_region" class="col-md-4"></div>
+							<div id="{{ state }}_taxonomy" class="col-md-4"></div>
+						</div>
+					</div>
+			  		{% endfor %}
+			  	</div>
+			
 		</div>
+
+		<div class="col-md-3">
+			<form class="form-vertical">
+				<fieldset>
+					<legend>Select by Region</legend>
+
+					<div class="form-group">
+						<label for="country" class="control-label">Country</label>
+						<div class="">
+							<select id='country' name='country' class="form-control"></select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="level1" class="control-label">Level 1</label>
+						<div class="">
+							<select id='level1' name='level1' class="form-control"></select>
+						</div>
+					</div>
+					<!--
+					<div class="form-group">
+						<label for="level2" class="col-lg-2 control-label">Level 2</label>
+						<div class="col-lg-10">
+							<select id='level2' name='level2' class="form-control">
+								<option value=""></option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="level3" class="col-lg-2 control-label">Level 3</label>
+						<div class="col-lg-10">
+							<select id='level3' name='level3' class="form-control">
+								<option value=""></option>
+							</select>
+						</div>
+					</div>-->
+
+				</fieldset>
+			</form>
+			<br>
+			<form class="form-vertical">
+				<fieldset>
+
+					<div class="form-group">
+						<label for="taxonomy" class="control-label">Taxonomy</label>
+						<div class="">
+							<select id='taxonomy' name='taxonomy' class="form-control"></select>
+						</div>
+					</div>
+
+				</fieldset>
+			</form>
+
+		</div>
+
 	</div>
+	{% endif %}
 
 </div>
 

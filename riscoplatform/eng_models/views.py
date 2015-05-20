@@ -7,9 +7,8 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from parsers import exposure_parser, fragility_parser, source_parser, site_model_parser, logic_tree_parser, vulnerability_parser
+from parsers import *
 from django.core import serializers
-from djgeojson.serializers import Serializer as GeoJSONSerializer
 from django.db import connection
 #from django.db.models import Q
 #from django.db.models import F

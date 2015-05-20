@@ -205,7 +205,7 @@ class Scenario_Risk(models.Model):
     
     master_seed                 = models.IntegerField()
     vul_correlation_coefficient = models.FloatField()
-    insured_losses              = models.BooleanField()
+    insured_losses              = models.BooleanField(default=True)
 
     vulnerability_models        = models.ManyToManyField(Vulnerability_Model, through='Scenario_Risk_Vulnerability_Model')
 
@@ -265,11 +265,14 @@ class Classical_PSHA_Hazard(models.Model):
     logic_trees                 = models.ManyToManyField(Logic_Tree)
     
     investigation_time          = models.IntegerField()
-    pga                         = models.BooleanField(default=True)
-    sa_periods                  = FloatArrayField(null=True)
+    #pga                         = models.BooleanField(default=True)
+    #sa_periods                  = FloatArrayField(null=True)
     imt_l                       = JSONField()
     truncation_level            = models.FloatField()
     max_distance                = models.FloatField(default=200)
+
+    quantile_hazard_curves      = FloatArrayField(null=True)
+    poes                        = FloatArrayField(null=True)
 
     ini_file                    = models.FileField(upload_to='uploads/psha/hazard/', null=True, blank=True)
 

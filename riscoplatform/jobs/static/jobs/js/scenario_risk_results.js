@@ -3,14 +3,24 @@
 (function($) {
 $( document ).ready(function() {
 
+    //TO DO:
+    //
+    // * INSURANCE MAPS
+    // * OTHER CHARTS
+
+
     $( "#vulnerability-selector li:first-child" ).addClass( "active" );
     $( "#myTabContent div:first-child" ).addClass( "tab-pane fade active in" );
     
     //hide-show    
     $( "label[for='region']" ).hide( "fast");
 
-
-    var map = new L.Map('map');
+    var map = new L.Map('map', {
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+            position: 'topleft'
+        }
+    });
     map.setView(new L.LatLng(0, 0),2);
     bw.addTo(map);
 
@@ -33,7 +43,7 @@ $( document ).ready(function() {
     var hazardLayer;
     var hazard_options;
 
-    $.ajax( '/jobs/scenario/hazard/results_ajax_test/'+hazard_job_id )
+    $.ajax( '/jobs/scenario/hazard/results_ajax/'+hazard_job_id )
     .done(function(data) {
 
         cells = data.geojson;
@@ -57,7 +67,6 @@ $( document ).ready(function() {
 //   LOSSES   //
 ////////////////
     
-    var first_time = true;
     var level = 0;
     var country;
     var taxonomy;
@@ -86,7 +95,7 @@ $( document ).ready(function() {
     $('#taxonomy').on('change', function(){
         taxonomy = $(this).val();
         get_data(country, level);
-    }); 
+    });
 
 
     var url = document.URL.split('/');
@@ -103,13 +112,6 @@ $( document ).ready(function() {
     var tax_chart_data = [];
 
     var chart_options = {
-        tooltipTemplate: "<%= label %>: <%= Humanize.intword(value, 'M', 1) %>",
-        //Boolean - Whether we should show a stroke on each segment
-        segmentShowStroke : true,
-        //String - The colour of each segment stroke
-        segmentStrokeColor : "#fff",
-        //Number - The width of each segment stroke
-        segmentStrokeWidth : 2,
         //Number - The percentage of the chart that we cut out of the middle
         percentageInnerCutout : 50, // This is 0 for Pie charts
         //Number - Amount of animation steps
@@ -118,10 +120,6 @@ $( document ).ready(function() {
         animationEasing : "easeOutBounce",
         //Boolean - Whether we animate the rotation of the Doughnut
         animateRotate : true,
-        //Boolean - Whether we animate scaling the Doughnut from the centre
-        animateScale : false,
-        //String - A legend template
-        legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<segments.length; i++){%><li><span style=\"background-color:<%=segments[i].fillColor%>\"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>"
     };
 
 
@@ -150,6 +148,7 @@ $( document ).ready(function() {
             $("#level1").empty();
         }
         else if (level == 1){
+            $("#country").val(country);
             var $elem = $("#level1");
         }
         $elem.empty();
@@ -162,24 +161,38 @@ $( document ).ready(function() {
     var fill_taxonomy_dropdown = function(taxs){
         taxonomies = [];
         $('#taxonomy').append("<option value='undefined'>All</option>");
-        for (var i = 0; i < taxs.length; i++){
-            $('#taxonomy').append('<option value='+taxs[i].id+'>'+taxs[i].name+'</option>');    
-            taxonomies.push[{id: taxs[i].id, name: taxs[i].name}]
+        for (var j = 0; j < taxs.length; j++){
+            $('#taxonomy').append('<option value='+taxs[j].id+'>'+taxs[j].name+'</option>');    
+            taxonomies.push( {id: taxs[j].id, name: taxs[j].name} )
         }
-        return taxonomies;
     }
 
     var clean_charts = function(tab) {
 
-        $('#'+tab+'_insured').html("<h4>Insured data:</h4> \
-                                                    <canvas id='"+tab+"_insured_chart' \
-                                                    width='200' height='200'></canvas>");
-        $('#'+tab+'_region').html("<h4>Losses per region:</h4> \
-                                                    <canvas id='"+tab+"_chart' \
-                                                    width='200' height='200'></canvas>");
-        $('#'+tab+'_taxonomy').html("<h4>Losses per taxonomy:</h4> \
-                                                    <canvas id='"+tab+"_tax_chart' \
-                                                    width='200' height='200'></canvas>");
+        $('#'+tab+'_insured').html('<div class="panel panel-default"> \
+                                      <div class="panel-heading">Insurance data (average):</div> \
+                                      <div class="panel-body"> \
+                                        <canvas id="'+tab+'_insured_chart" \
+                                                    width="200" height="200"></canvas> \
+                                      </div> \
+                                      <div class="panel-footer" id="'+tab+'_insured_chart_legend"><ul></ul> \
+                                    </div>');
+        $('#'+tab+'_region').html('<div class="panel panel-default"> \
+                                      <div class="panel-heading">Average losses per region:</div> \
+                                      <div class="panel-body"> \
+                                        <canvas id="'+tab+'_chart" \
+                                                    width="200" height="200"></canvas> \
+                                      </div> \
+                                      <div class="panel-footer" id="'+tab+'_chart_legend"><ul></ul> \
+                                    </div>');
+        $('#'+tab+'_taxonomy').html('<div class="panel panel-default"> \
+                                      <div class="panel-heading">Average losses per taxonomy:</div> \
+                                      <div class="panel-body"> \
+                                        <canvas id="'+tab+'_tax_chart" \
+                                                    width="200" height="200"></canvas></div> \
+                                        <div class="panel-footer" id="'+tab+'_tax_chart_legend"><ul></ul> \
+                                      </div> \
+                                    </div>');
     }
 
     var enable_back_button = function(){
@@ -203,108 +216,177 @@ $( document ).ready(function() {
         job = data.job[0].fields;
         exposure_model = data.exposure_model[0].fields;
 
-        var $active_tab = $("#myTabContent div.active");
-        
-        for (var i = 0; i<losses_data.length; i++){
+        if (job.status == 'FINISHED'){
 
-            var $tab_elem = $( "#"+losses_data[i].name );
-            $tab_elem.addClass( "tab-pane fade active in" );
-
-            if (taxonomies == undefined){
-                taxonomies = fill_taxonomy_dropdown( losses_data[i].values_per_taxonomy );
-            }
+            var $active_tab = $("#myTabContent div.active");
             
-            clean_charts(losses_data[i].name);
+            for (var i = 0; i<losses_data.length; i++){
 
-            //UNITS
-            if ( losses_data[i].name == 'occupants_vulnerability' ){
-                var units = 'fatalities';
-            }
-            else {
-                var units = losses_data[i].currency;
-            }
+                var $tab_elem = $( "#"+losses_data[i].name );
+                $tab_elem.addClass( "tab-pane fade active in" );
 
-            //MAP DVF OPTIONS
-            losses_options = get_losses_options(regions, losses_data[i].total_scale);
-            losses_options.onEachRecord = function(layer, record){
-                layer.on('click', function () {
-                    var next_level = level+1;
-                    get_data(record.id, next_level);
-                });
-            }
-
-            //INSURED DATA
-            if (job.insured_losses){
-                $('#'+losses_data[i].name+'_total').html( '<b>Total loss:</b> ' + Humanize.intword(losses_data[i].total, 'M', 1) + ' ' + units 
-                                                    +'<br><b>Insured Loss:</b> ' + Humanize.intword(losses_data[i].total_insured, 'M', 1) + ' ' + units
-                                                    +'<br><b>Not insured Loss:</b> ' + Humanize.intword(losses_data[i].total - losses_data[i].total_insured, 'M', 1) + ' ' + units
-                                                    );
-            
-                var ctx_insured = $('#'+losses_data[i].name+'_insured_chart').get(0).getContext("2d");
-
-                insured_chart_data = [{value: losses_data[i].total - losses_data[i].total_insured,
-                                        label: 'Not insured loss',
-                                        color: getRandomColor(),},
-                                    {value: losses_data[i].total_insured,
-                                        label: 'Insured loss',
-                                        color: getRandomColor(),}];
-                var insured_chart = new Chart(ctx_insured).Pie(insured_chart_data, chart_options);
-            }
-
-            else {
-                $('#'+losses_data[i].name+'_total').html( '<b>Total loss:</b> ' + Humanize.intword(losses_data[i].total, 'M', 1) + ' ' + units )
-            }
-            
-
-            //DATA PER REGION
-            var ctx = $('#'+losses_data[i].name+'_chart').get(0).getContext("2d");
-
-            chart_data = [];
-            for (var j = 0; j < losses_data[i].values.length; j++ ){
-                chart_data.push({value: losses_data[i].values[j].value,
-                                label: losses_data[i].values[j].place,
-                                color: getRandomColor(),});
-            }
-
-            var chart = new Chart(ctx).Pie(chart_data, chart_options);
-
-
-            //DATA PER TAXONOMY
-            if ( losses_data[i].values_per_taxonomy ){
-                var ctx_tax = $('#'+losses_data[i].name+'_tax_chart').get(0).getContext("2d");
-                tax_chart_data = [];
-                for (var j = 0; j < losses_data[i].values_per_taxonomy.length; j++ ){
-                    tax_chart_data.push({value: losses_data[i].values_per_taxonomy[j].value,
-                                        label: losses_data[i].values_per_taxonomy[j].name,
-                                        color: getRandomColor(),});
+                if (taxonomies == undefined){
+                    fill_taxonomy_dropdown( losses_data[i].values_per_taxonomy );
                 }
-                var chart_per_taxonomy = new Chart(ctx_tax).Pie(tax_chart_data, chart_options);
+                
+                clean_charts(losses_data[i].name);
+
+                //UNITS
+                if ( losses_data[i].name == 'occupants_vulnerability' ){
+                    var units = 'fatalities';
+                }
+                else {
+                    var units = exposure_model.currency;
+                }
+                chart_options.tooltipTemplate = "<%= label %>: <%= Humanize.intword(value, 'M', 1) %> "+units;
+
+                //MAP DVF OPTIONS
+                losses_options = get_losses_options(regions, losses_data[i].total_scale);
+                losses_options.onEachRecord = function(layer, record){
+                    layer.on('click', function () {
+                        country = record.id;
+                        var next_level = level+1;
+                        get_data(country, next_level);
+                    });
+                }
+
+                //INSURED DATA
+                if (job.insured_losses){
+                    $('#'+losses_data[i].name+'_total').html( '<b>Total loss:</b> ' + Humanize.intword(losses_data[i].total, 'M', 1) +
+                        ' +- ' + Humanize.intword(losses_data[i].stddev, 'M', 1) + ' ' + units);
+                
+                    var ctx_insured = $('#'+losses_data[i].name+'_insured_chart').get(0).getContext("2d");
+                    
+                    var color_not_insured = getRandomColor();
+                    var color_insured = getRandomColor();
+
+                    $('#'+losses_data[i].name+'_insured_chart_legend ul').append('<li class="no-bullets"> <span class="glyphicon glyphicon-stop" style="color:'+color_not_insured+';" aria-hidden="true"></span> <b>Not insured:</b> '+
+                                Humanize.intword(losses_data[i].total_not_insured, 'M', 1)+' +- '+
+                                Humanize.intword(losses_data[i].stddev_not_insured, 'M', 1)+' '+
+                                units+'</li>');
+                    $('#'+losses_data[i].name+'_insured_chart_legend ul').append('<li class="no-bullets"> <span class="glyphicon glyphicon-stop" style="color:'+color_insured+';" aria-hidden="true"></span> <b>Insured:</b> '+
+                                Humanize.intword(losses_data[i].total_insured, 'M', 1)+' +- '+
+                                Humanize.intword(losses_data[i].stddev_insured, 'M', 1)+' '+
+                                units+'</li>');
+
+                    insured_chart_data = [{value: losses_data[i].total_not_insured,
+                                            label: 'Not insured loss',
+                                            color: color_not_insured,
+                                            highlight: "#EBD800"},
+                                        {value: losses_data[i].total_insured,
+                                            label: 'Insured loss',
+                                            color: color_insured,
+                                            highlight: "#EBD800"}];
+                    var insured_chart = new Chart(ctx_insured).Pie(insured_chart_data, chart_options);
+                }
+
+                else {
+                    $('#'+losses_data[i].name+'_total').html( '<b>Total loss:</b> ' + Humanize.intword(losses_data[i].total, 'M', 1) + ' ' + units )
+                }
+                
+
+                //DATA PER REGION
+                var ctx = $('#'+losses_data[i].name+'_chart').get(0).getContext("2d");
+
+                chart_data = [];
+                for (var j = 0; j < losses_data[i].values.length; j++ ){
+                    var color = getRandomColor();
+                    $('#'+losses_data[i].name+'_chart_legend ul').append('<li class="no-bullets"> <span class="glyphicon glyphicon-stop" style="color:'+color+';" aria-hidden="true"></span> <b> '+
+                                losses_data[i].values[j].name+'</b>: '+
+                                Humanize.intword(losses_data[i].values[j].value, 'M', 1)+' +- '+
+                                Humanize.intword(losses_data[i].values[j].stddev, 'M', 1)+' '+
+                                units+'</li>');
+                    chart_data.push({value: losses_data[i].values[j].value,
+                                    label: losses_data[i].values[j].name,
+                                    color: color,
+                                    highlight: "#EBD800",});
+                }
+                var chart = new Chart(ctx).Pie(chart_data, chart_options);
+                $('#'+losses_data[i].name+'_chart').on('click', function(evt){
+                    try {  
+                        var selectedLabel = chart.getSegmentsAtEvent(evt)[0].label;
+                        for (var k = 0; k < regions.features.length; k++){
+                            if (selectedLabel == regions.features[k].properties.name){
+                                country = regions.features[k].id;
+                                $("#country").val(country);
+                                level = level+1;
+                                get_data(country, level);
+                            }
+                        }
+                    }
+                    catch(err){
+                        console.log('Click on a slice')
+                    }
+                });
+
+
+                //DATA PER TAXONOMY
+                if ( losses_data[i].values_per_taxonomy ){
+                    var ctx_tax = $('#'+losses_data[i].name+'_tax_chart').get(0).getContext("2d");
+                    tax_chart_data = [];
+                    for (var j = 0; j < losses_data[i].values_per_taxonomy.length; j++ ){
+                        var color = getRandomColor();
+                        $('#'+losses_data[i].name+'_tax_chart_legend ul').append('<li class="no-bullets"> <span class="glyphicon glyphicon-stop" style="color:'+color+';" aria-hidden="true"></span> <b> '+
+                                    losses_data[i].values_per_taxonomy[j].name+'</b>: '+
+                                    Humanize.intword(losses_data[i].values_per_taxonomy[j].value, 'M', 1)+' +- '+
+                                    Humanize.intword(losses_data[i].values_per_taxonomy[j].stddev, 'M', 1)+' '+
+                                    units+'</li>');
+                        
+                        tax_chart_data.push({value: losses_data[i].values_per_taxonomy[j].value,
+                                            label: losses_data[i].values_per_taxonomy[j].name,
+                                            color: color,
+                                            highlight: "#EBD800"});
+                    }
+                    var chart_per_taxonomy = new Chart(ctx_tax).Pie(tax_chart_data, chart_options);
+                    $('#'+losses_data[i].name+'_tax_chart').on('click', function(evt){
+                        try {
+                            var selectedLabel = chart_per_taxonomy.getSegmentsAtEvent(evt)[0].label;
+                            for (var k = 0; k < taxonomies.length; k++){
+                                if (selectedLabel == taxonomies[k].name){
+                                    taxonomy = taxonomies[k].id;
+                                    $("#taxonomy").val(taxonomy);
+                                    get_data(country, level);
+                                }
+                            }
+                        }
+                        catch(err) {
+                            console.log('Click on a slice');
+                        }
+                    });
+
+                }
+                else {
+                    $('#'+losses_data[i].name+'_taxonomy').empty();
+                }
+
+                $tab_elem.removeClass( "active in" );
+
+                //ADD LAYERS
+                lossesLayer = new L.ChoroplethDataLayer(losses_data[i], losses_options);
+
+                if (i==0){
+                    lossesLayer.addTo(map);
+                }
+
+                lossesGroup.addLayer(lossesLayer);
+                control.addOverlay(lossesLayer ,losses_data[i].name);
+                map.fitBounds(lossesLayer.getBounds());
+
             }
-            else {
-                $('#'+losses_data[i].name+'_taxonomy').empty();
-            }
-
-            $tab_elem.removeClass( "active in" );
-
-            //ADD LAYERS
-            lossesLayer = new L.ChoroplethDataLayer(losses_data[i], losses_options);
-
-            if (i==0){
-                lossesLayer.addTo(map);
-            }
-
-            lossesGroup.addLayer(lossesLayer);
-            control.addOverlay(lossesLayer ,losses_data[i].name);
-            map.fitBounds(lossesLayer.getBounds());
-
+            $active_tab.addClass('active in');
         }
-
-        $active_tab.addClass('active in');
+        else {
+            try {
+                hazardLayer.addTo(map);
+            }
+            catch(err) {
+                console.log('Hazard is not ready yet');
+            }
+        }
 
     }
 
     get_data(country, level);
-
 
 
 });

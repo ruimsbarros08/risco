@@ -113,10 +113,15 @@
 
 	</div>
 
+	{% if job.status == 'FINISHED' %}
 	<div class="row">
 		<div class="col-md-9">
 
 				<ul id='vulnerability-selector' class="nav nav-tabs">
+
+				{% if total %}
+				<li class=""><a href="#total" data-toggle="tab" aria-expanded="true">Total</a></li>
+				{% endif %}
 
 			  	{% for model in job.scenario_risk_vulnerability_model_set.all %}
 
@@ -127,24 +132,53 @@
 				</ul>
 
 				<div id="myTabContent" class="tab-content">
-				  
+
+				{% if total %}
+					<div class="tab-pane fade in" id="total">
+
+						<div class="row">
+							<div class="col-md-6">
+								<div id='total_total' class="well well-sm"></div>
+							</div>
+						</div>
+
+						<div class="row">
+							
+							{% if job.insured_losses %}
+							<div id="total_insured" class="col-md-4"></div>
+							{% endif %}
+							
+							<div id="total_region" class="col-md-4"></div>
+							
+							<div id="total_taxonomy" class="col-md-4"></div>
+
+						</div>
+						
+
+					</div>
+				{% endif %}
+
 			  	{% for model in job.scenario_risk_vulnerability_model_set.all %}
 
 					<div class="tab-pane fade in" id="{{ model.vulnerability_model.type }}">
 
-						<h4>Model: <a href="{% url 'detail_vulnerability' model.vulnerability_model.id %}">{{ model.vulnerability_model }}</a></h4>
-
-						<div id='{{ model.vulnerability_model.type }}_total' class="well well-sm"></div>
-						
-						{% if job.insured_losses %}
-						<div id="{{ model.vulnerability_model.type }}_insured">
-						</div>
-						{% endif %}
-						
-						<div id="{{ model.vulnerability_model.type }}_region">
+						<div class="row">
+							<div class="col-md-12">
+								<h4>Model: <a href="{% url 'detail_vulnerability' model.vulnerability_model.id %}">{{ model.vulnerability_model }}</a></h4>
+							</div>
+							<div class="col-md-6">
+								<div id='{{ model.vulnerability_model.type }}_total' class="well well-sm"></div>
+							</div>
 						</div>
 						
-						<div id="{{ model.vulnerability_model.type }}_taxonomy">
+						<div class="row">
+							{% if job.insured_losses %}
+							<div id="{{ model.vulnerability_model.type }}_insured" class="col-md-4"></div>
+							{% endif %}
+							
+							<div id="{{ model.vulnerability_model.type }}_region" class="col-md-4"></div>
+							
+							<div id="{{ model.vulnerability_model.type }}_taxonomy" class="col-md-4"></div>
 						</div>
 
 					</div>
@@ -163,17 +197,13 @@
 					<div class="form-group">
 						<label for="country" class="control-label">Country</label>
 						<div class="">
-							<select id='country' name='country' class="form-control">
-								<option value="">All</option>
-							</select>
+							<select id='country' name='country' class="form-control"></select>
 						</div>
 					</div>
 					<div class="form-group">
 						<label for="level1" class="control-label">Level 1</label>
 						<div class="">
-							<select id='level1' name='level1' class="form-control">
-								<option value="">All</option>
-							</select>
+							<select id='level1' name='level1' class="form-control"></select>
 						</div>
 					</div>
 					<!--
@@ -213,6 +243,7 @@
 		</div>
 
 	</div>
+	{% endif %}
 
 </div>
 

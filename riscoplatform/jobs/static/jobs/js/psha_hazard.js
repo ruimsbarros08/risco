@@ -39,11 +39,49 @@ $( document ).ready(function() {
     });
 
 
+    $('fieldset').append('<div class="form-group" id="imt-l-selection"> \
+                            <label for="im" class="col-lg-2 control-label"> Intensity Measures </label> \
+                            <div class="col-lg-8"> \
+                                <select id="im" name="im" class="form-control"> \
+                                    <option value="pga">PGA</option> \
+                                    <option value="sa">SA</option> \
+                                    <option value="pgv">PGV</option> \
+                                    <option value="mmi">MMI</option> \
+                                </select> \
+                                <div id=sa_period_wraper> \
+                                    <input id="sa_period" class="form-control" placeholder="Sa period" type="number"> \
+                                </div> \
+                                <div id=il_wraper> \
+                                    <input id="il" class="form-control" placeholder="Intensity levels. Ex: 0.1, 0.2, 0.45..." type="number"> \
+                                </div> \
+                            </div> \
+                            <div class="col-lg-2"> \
+                                <button id="add-imt-btn" class="btn btn-sm btn-primary" type="button">Add IMT</button> \
+                            </div> \
+                        </div>');
 
-    var map = new L.Map('map');
-    map.setView(new L.LatLng(40, -8),5);
-    osm.addTo(map);
-    L.control.layers(baseMaps).addTo(map);
+    $('#sa_period_wraper').hide();
+    $('#im').on('change', function(){
+        var imt = $('#im').val();
+        if ( imt == 'sa' ){
+            $('#sa_period_wraper').show();
+        }
+        else {
+            $('#sa_period_wraper').hide();
+        }
+    });
+
+
+    var map = new L.Map('map', {
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+            position: 'topleft'
+        }
+    });
+    map.setView(new L.LatLng(0, 0),2);
+    bw.addTo(map);
+
+    var control = L.control.layers(baseLayers).addTo(map);
 
     // Initialize the FeatureGroup to store editable layers
     var drawnItems = new L.FeatureGroup();
@@ -105,6 +143,9 @@ $( document ).ready(function() {
             }
         });
     });
+
+
+
 
 
 

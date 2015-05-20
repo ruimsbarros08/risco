@@ -1,4 +1,47 @@
 
+//SPINNER
+
+var spinner_opts = {
+    lines: 11,
+    length: 0,
+    width: 7,
+    radius: 15,
+    rotate: 0,
+    speed: 1.4,
+    trail: 60, 
+    shadow: false,
+    className: 'spinner',
+};
+var spinner = new Spinner(spinner_opts);
+var ajax_cnt = 0;
+
+
+ 
+$(document).ajaxStart(function() {
+
+    var modal = $('#modal').modal({
+        backdrop: 'static',
+        keyboard: false
+    });
+    modal.modal('show');
+    spinner.spin($('#spinner_center')[0]);
+    ajax_cnt++;
+});
+ 
+$(document).ajaxStop(function() {
+    ajax_cnt--;
+    if (ajax_cnt >= 0) {
+        spinner.stop();
+        var modal = $('#modal').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+        modal.modal('hide');
+        ajax_cnt = 0;
+   }
+});
+
+
 
 //functions
 function toWKT(layer) {
@@ -30,7 +73,7 @@ function wktToLatLng(wkt) {
     return [lat, lon]
 }
 
-
+/*
 function get_world(){
     $.ajax('/countries')
     .done(function(data){
@@ -54,6 +97,13 @@ function get_world(){
         url : "/level3"
     });
 }
+*/
+
+
+var epicenterIcon = L.icon({
+        iconUrl: '/static/img/star.png',
+        iconSize: [30, 30],
+    });
 
 
 function get_hazard_options(geojson){

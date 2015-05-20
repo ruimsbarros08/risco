@@ -16,6 +16,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet-draw/dist/leaflet.draw.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet.markercluster/dist/MarkerCluster.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet.markercluster/dist/MarkerCluster.Default.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet.fullscreen/Control.FullScreen.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet-dvf/dist/css/dvf.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css' %}" />
 
@@ -113,6 +114,10 @@
     </div>
 </div>
 
+<div class="modal fade" id="modal" aria-labelledby="gridSystemModalLabel">
+    <div id="spinner_center"></div>
+</div>
+
 <script type="text/javascript" src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/bootstrap/js/transition.js' %}"></script>
@@ -133,7 +138,10 @@
 <script type="text/javascript" src="{% static 'bower_components/leaflet-coordinates/dist/Leaflet.Coordinates-0.1.4.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet.markercluster/dist/leaflet.markercluster.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-dvf/dist/leaflet-dvf.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/leaflet-omnivore/leaflet-omnivore.min.js/' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/leaflet.fullscreen/Control.FullScreen.js' %}"></script>
+
 <script type="text/javascript" src="{% static 'bower_components/jsts/lib/javascript.util.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/jsts/lib/jsts.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/geohash-js/geohash.js' %}"></script>
@@ -141,6 +149,9 @@
 <script type="text/javascript" src="{% static 'bower_components/infinite-scroll/jquery.infinitescroll.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/chained/jquery.chained.remote.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/humanize-plus/public/dist/humanize.min.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'bower_components/spin.js/spin.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/spin.js/jquery.spin.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'js/init.js' %}"></script>
 
