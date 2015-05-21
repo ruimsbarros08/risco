@@ -5,12 +5,16 @@ $( document ).ready(function() {
 
     $('label[for="location"]').hide();
 
-    var map = new L.Map('map');
+    var map = new L.Map('map', {
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+            position: 'topleft'
+        }
+    });
     map.setView(new L.LatLng(0, 0),2);
-    osm.addTo(map);
-    //var control = L.control.layers(baseMaps).addTo(map);
-    var control = L.control.layers();
-    control.addTo(map);
+    bw.addTo(map);
+
+    var control = L.control.layers(baseLayers).addTo(map);
 
     // Initialize the FeatureGroup to store editable layers
     var drawnItems = new L.FeatureGroup();
@@ -257,10 +261,6 @@ $( document ).ready(function() {
     var load_assets = function(country, adm1) {
         $.ajax('/models/exposure/'+model_id+'/assets?'+'country='+country+'&adm1='+adm1 )
         .done(function(data) {
-            //if (page == 1){assets = [];}
-            control.removeFrom(map)
-            control = new L.control.layers();
-            control.addTo(map);
 
             if (markers != undefined) {
                 map.removeLayer(markers);
@@ -284,10 +284,10 @@ $( document ).ready(function() {
 
             markers.addLayers(markerList);
             map.addLayer(markers);
-            control.addBaseLayer(markers, 'Assets');
+            control.addOverlay(markers, 'Assets');
 
             heat = new L.heatLayer(data.assets, {radius: 10});
-            control.addBaseLayer(heat, 'Heatmap');
+            control.addOverlay(heat, 'Heatmap');
 
             map.fitBounds(data.assets);
 
@@ -295,7 +295,7 @@ $( document ).ready(function() {
     };
 
 
-    get_world();
+    //get_world();
     load_assets(country, adm1);
 
     $('#country').on('change', function(){

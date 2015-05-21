@@ -49,6 +49,11 @@
 					<legend>Insert new job</legend>
 					{% csrf_token %}
 					{% include 'form.html' %}
+					<div class="form-group">
+					    <div class="col-lg-5 col-lg-offset-2">
+					        <input class="btn btn-primary" type="submit" value="Create job" />
+					    </div>
+					</div>
 			    </fieldset>
 			</form>
 		</div>
@@ -67,24 +72,39 @@
 				</div>
 				-->
 
-				{% for job in jobs %}
-				<div class="col-md-12">
-					<div class="well">
-						<div class="row">
+				<div id='jobs_list' class="col-md-12" style="height: 500px; overflow: auto;">
 
-							<div class="col-md-4">
-								<h4><a href="{% url 'results_scenario_hazard' job.id %}">{{ job.name }}</a></h4>
-							</div>
-							<div class="col-md-4">
-								<a href="#"><div class="btn btn-primary btn-sm">Download XML</div></a>
-							</div>
-							<div class="col-md-4">
-								{{ job.date_created|naturalday }}
+					{% for job in jobs %}
+					<div class="col-md-12">
+						<div class="well">
+							<div class="row">
+
+								<div class="col-md-4">
+									<h4><a href="{% url 'results_scenario_hazard' job.id %}">{{ job.name }}</a></h4>
+								</div>
+								<div class="col-md-4">
+
+									{% if job.status == 'CREATED' %}
+										<a href="{% url 'results_scenario_hazard' job.id %}"> <button class="btn btn-primary btn-sm" style="width:100%;"> {{ job.get_status_display }} </button></a>
+
+									{% elif job.status == 'STARTED' %}
+										<a href="{% url 'results_scenario_hazard' job.id %}"><button class="btn btn-warning btn-sm" style="width:100%;">{{ job.get_status_display }}</button> </a>
+									{% elif job.status == 'ERROR' %}
+										<a href="{% url 'results_scenario_hazard' job.id %}"> <button class="btn btn-danger btn-sm" style="width:100%;">{{ job.get_status_display }}</button> </a>
+									{% elif job.status == 'FINISHED' %}
+										<a href="{% url 'results_scenario_hazard' job.id %}"> <button class="btn btn-success btn-sm" style="width:100%;">{{ job.get_status_display }}</button> </a>
+									{% endif %}
+
+								</div>
+								<div class="col-md-4">
+									{{ job.date_created|naturalday }}
+								</div>
 							</div>
 						</div>
 					</div>
+					{% endfor %}
+
 				</div>
-				{% endfor %}
 			</div>
 
 

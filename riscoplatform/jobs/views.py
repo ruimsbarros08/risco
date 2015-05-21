@@ -895,12 +895,13 @@ class PSHAHazardForm(forms.ModelForm):
 
 	class Meta:
 		model = Classical_PSHA_Hazard
-		exclude = ['user', 'date_created', 'vulnerability_models', 'logic_trees', 'imt_l', 'status', 'oq_id', 'ini_file']
+		exclude = ['user', 'date_created', 'vulnerability_models', 'logic_trees', 'status', 'oq_id', 'ini_file']
 		widgets = {
 					'description': forms.Textarea(attrs={'rows':5}),
 					'quantile_hazard_curves': forms.TextInput(attrs={'placeholder': 'Ex: 0.05, 0.5, 0.95'}),
 					'poes': forms.TextInput(attrs={'placeholder': 'Ex: 0.2, 0.5, 0.9 ...'}),
            			'region': forms.HiddenInput(),
+           			'imt_l': forms.HiddenInput(),
 					}
 
 @login_required	
@@ -915,18 +916,30 @@ def index_psha_hazard(request):
 	
 	form.fields["gmpe_logic_tree"].queryset = Logic_Tree.objects.filter(user=request.user).filter(type='gmpe').order_by('-date_created')
 	form.fields["source_logic_tree"].queryset = Logic_Tree.objects.filter(user=request.user).filter(type='source').order_by('-date_created')
-	return render(request, 'jobs/index_psha_hazard.html', {'jobs': jobs, 'form': form})
+	
+	categories = {'general': ['name', 'description', 'description', 'grid_spacing',
+							'region', 'investigation_time', 'truncation_level', 'max_distance', 'imt_l'],
+				'rupture': ['rupture_mesh_spacing', 'width_of_mfd_bin', 'area_source_discretization'],
+				'sites': ['sites_type', 'site_model', 'vs30', 'vs30type', 'z1pt0', 'z2pt5'],
+				'logic_trees': ['n_lt_samples', 'gmpe_logic_tree', 'source_logic_tree'],
+				'imts': ['structural_vulnerability', 'non_structural_vulnerability', 'contents_vulnerability',
+						'business_int_vulnerability', 'occupants_vulnerability'],
+				'outputs': ['quantile_hazard_curves', 'poes']}
+
+	return render(request, 'jobs/index_psha_hazard.html', {'jobs': jobs, 'form': form, 'categories': categories})
+
 
 @login_required
 def add_psha_hazard(request):
 	if request.method == 'POST':
 		form = PSHAHazardForm(request.POST)
+		
 		form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
 		form.fields["non_structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
 		form.fields["contents_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
 		form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
 		form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
-		
+	
 		form.fields["gmpe_logic_tree"].queryset = Logic_Tree.objects.filter(user=request.user).filter(type='gmpe').order_by('-date_created')
 		form.fields["source_logic_tree"].queryset = Logic_Tree.objects.filter(user=request.user).filter(type='source').order_by('-date_created')
 

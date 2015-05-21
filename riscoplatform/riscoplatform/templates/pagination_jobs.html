@@ -1,0 +1,15 @@
+<ul class="pager pager-sm">
+  	<li class="previous"><a href="?page=1">← Newer</a></li>
+  	{% if jobs.has_previous %}
+        <li><a href="?page={{ jobs.previous_page_number }}">Previous</a></li>
+    {% endif %}
+    <li>
+    	<span class="current">
+            Page {{ jobs.number }} of {{ jobs.paginator.num_pages }}.
+        </span>
+    </li>
+	{% if jobs.has_next %}
+        <li><a href="?page={{ jobs.next_page_number }}">Next</a></li>
+    {% endif %}
+  	<li class="next"><a href="?page={{ jobs.paginator.num_pages }}">Older →</a></li>
+</ul>

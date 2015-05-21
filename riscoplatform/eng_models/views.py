@@ -858,6 +858,21 @@ def vulnerability_get_taxonomy(request, model_id, taxonomy_id):
 	return HttpResponse(json.dumps({'iml': model.iml, 'function': function.loss_ratio, 'error': error}), content_type="application/json")
 
 
+@login_required
+def get_imt_from_vulnerability(request, model_id):
+	model = get_object_or_404(Vulnerability_Model ,pk=model_id, vulnerability_model_contributor__contributor=request.user)
+	tax_list = Vulnerability_Function.objects.filter(model=model)
+
+	imt_l = {}
+	for tax in tax_list:
+		imt = tax.imt
+		if imt == 'SA':
+			sa_period = tax.sa_period
+			imt = 'SA('+str(sa_period)+')'
+		imt_l[imt] = model.iml
+
+	return HttpResponse(json.dumps(imt_l), content_type="application/json")
+
 
 #######################
 ##     LOGIC TREE    ##

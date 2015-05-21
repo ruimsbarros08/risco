@@ -33,6 +33,7 @@ urlpatterns = patterns('',
     url(r'^vulnerability/(?P<model_id>\d+)/add/$', views.add_vulnerability_function, name='add_vulnerability_function'),
     url(r'^vulnerability/(?P<model_id>\d+)/taxonomy/(?P<taxonomy_id>\d+)/$', views.vulnerability_get_taxonomy, name='vulnerability_get_taxonomy'),
     url(r'^vulnerability/add/$', views.add_vulnerability_model, name='add_vulnerability_model'),
+    url(r'^vulnerability/(?P<model_id>\d+)/imt/$', views.get_imt_from_vulnerability, name='get_imt_from_vulnerability'),
 
     url(r'^consequence/$', views.index_consequence, name='index_consequence'),
     url(r'^consequence/(?P<model_id>\d+)/$', views.detail_consequence, name='detail_consequence'),
