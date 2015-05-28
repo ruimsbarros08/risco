@@ -1,6 +1,6 @@
 
 from xml.dom.minidom import parse
-from eng_models.models import Logic_Tree, Logic_Tree_Level, Logic_Tree_Branch_Set, Logic_Tree_Branch, Source_Model, Source
+from eng_models.models import *
 
 
 def start(object):

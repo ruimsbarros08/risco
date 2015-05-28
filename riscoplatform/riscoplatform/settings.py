@@ -33,6 +33,7 @@ INSTALLED_APPS = (
     'django.contrib.gis',
     'django.contrib.humanize',
     'debug_toolbar',
+    'crispy_forms',
     'avatar',
     'world',
     'eng_models',
@@ -89,5 +90,6 @@ LOGIN_REDIRECT_URL ='/'
 AVATAR_GRAVATAR_BACKUP = False
 AVATAR_STORAGE_DIR = 'uploads/avatars'
 
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 

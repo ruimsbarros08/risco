@@ -3,10 +3,16 @@
 (function($) {
 $( document ).ready(function() {
 
-    var map = new L.Map('map');
-    map.setView(new L.LatLng(40, -8),5);
-    osm.addTo(map);
-    L.control.layers(baseMaps).addTo(map);
+    var map = new L.Map('map', {
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+            position: 'topleft'
+        }
+    });
+    map.setView(new L.LatLng(0, 0),2);
+    bw.addTo(map);
+
+    var control = L.control.layers(baseLayers).addTo(map);
 
 	var info = L.control({position: 'bottomleft'});
     info.onAdd = function (map) {

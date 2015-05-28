@@ -9,58 +9,58 @@ $( document ).ready(function() {
     $('label[for="fault"]').hide();
 
     //hide-show    
-    $( "label[for='bin_width']" ).hide();
-    $( "#id_bin_width" ).hide();
-    $( "label[for='occur_rates']" ).hide();
-    $( "#id_occur_rates" ).hide();
+    $( "label[for='bin_width']" ).attr('disabled', true);
+    $( "#id_bin_width" ).attr('disabled', true);
+    $( "label[for='occur_rates']" ).attr('disabled', true);
+    $( "#id_occur_rates" ).attr('disabled', true);
     $('#id_mag_freq_dist_type').on('change', function() {
         if (this.value == 'TRUNC'){
-            $( "label[for='bin_width']" ).hide( "fast");
-            $( "#id_bin_width" ).hide( "fast");
-            $( "label[for='occur_rates']" ).hide( "fast");
-            $( "#id_occur_rates" ).hide( "fast");
+            $( "label[for='bin_width']" ).attr('disabled', true);
+            $( "#id_bin_width" ).attr('disabled', true);
+            $( "label[for='occur_rates']" ).attr('disabled', true);
+            $( "#id_occur_rates" ).attr('disabled', true);
 
-            $( "label[for='a']" ).show( "fast");
-            $( "#id_a" ).show( "fast");
-            $( "label[for='b']" ).show( "fast");
-            $( "#id_b" ).show( "fast");
-            $( "label[for='max_mag']" ).show( "fast");
-            $( "#id_max_mag" ).show( "fast");
+            $( "label[for='a']" ).attr('disabled', false);
+            $( "#id_a" ).attr('disabled', false);
+            $( "label[for='b']" ).attr('disabled', false);
+            $( "#id_b" ).attr('disabled', false);
+            $( "label[for='max_mag']" ).attr('disabled', false);
+            $( "#id_max_mag" ).attr('disabled', false);
         }
         else {
-            $( "label[for='bin_width']" ).show( "fast");
-            $( "#id_bin_width" ).show( "fast");
-            $( "label[for='occur_rates']" ).show( "fast");
-            $( "#id_occur_rates" ).show( "fast");
+            $( "label[for='bin_width']" ).attr('disabled', false);
+            $( "#id_bin_width" ).attr('disabled', false);
+            $( "label[for='occur_rates']" ).attr('disabled', false);
+            $( "#id_occur_rates" ).attr('disabled', false);
 
-            $( "label[for='a']" ).hide( "fast");
-            $( "#id_a" ).hide( "fast");
-            $( "label[for='b']" ).hide( "fast");
-            $( "#id_b" ).hide( "fast");
-            $( "label[for='max_mag']" ).hide( "fast");
-            $( "#id_max_mag" ).hide( "fast");
+            $( "label[for='a']" ).attr('disabled', true);
+            $( "#id_a" ).attr('disabled', true);
+            $( "label[for='b']" ).attr('disabled', true);
+            $( "#id_b" ).attr('disabled', true);
+            $( "label[for='max_mag']" ).attr('disabled', true);
+            $( "#id_max_mag" ).attr('disabled', true);
 
         }
     });
 
 
     //hide-show    
-    $( "label[for='dip']" ).hide();
-    $( "#id_dip" ).hide();
-    $( "label[for='rake']" ).hide();
-    $( "#id_rake" ).hide();
+    $( "label[for='dip']" ).attr('disabled', true);
+    $( "#id_dip" ).attr('disabled', true);
+    $( "label[for='rake']" ).attr('disabled', true);
+    $( "#id_rake" ).attr('disabled', true);
 
     $('#id_source_type').on('change', function() {
         if (this.value == 'SIMPLE_FAULT'){
-            $( "label[for='nodal_plane_dist']" ).hide( "fast");
-            $( "#id_nodal_plane_dist" ).hide( "fast");
-            $( "label[for='hypo_depth_dist']" ).hide( "fast");
-            $( "#id_hypo_depth_dist" ).hide( "fast");
+            $( "label[for='nodal_plane_dist']" ).attr('disabled', true);
+            $( "#id_nodal_plane_dist" ).attr('disabled', true);
+            $( "label[for='hypo_depth_dist']" ).attr('disabled', true);
+            $( "#id_hypo_depth_dist" ).attr('disabled', true);
 
-            $( "label[for='dip']" ).show( "fast");
-            $( "#id_dip" ).show( "fast");
-            $( "label[for='rake']" ).show( "fast");
-            $( "#id_rake" ).show( "fast");
+            $( "label[for='dip']" ).attr('disabled', false);
+            $( "#id_dip" ).attr('disabled', false);
+            $( "label[for='rake']" ).attr('disabled', false);
+            $( "#id_rake" ).attr('disabled', false);
 
             $('.leaflet-draw-draw-marker').hide();
             $('.leaflet-draw-draw-polyline').show();
@@ -68,15 +68,15 @@ $( document ).ready(function() {
 
         }
         else {
-            $( "label[for='dip']" ).hide( "fast");
-            $( "#id_dip" ).hide( "fast");
-            $( "label[for='rake']" ).hide( "fast");
-            $( "#id_rake" ).hide( "fast");
+            $( "label[for='dip']" ).attr('disabled', false);
+            $( "#id_dip" ).attr('disabled', false);
+            $( "label[for='rake']" ).attr('disabled', false);
+            $( "#id_rake" ).attr('disabled', false);
 
-            $( "label[for='nodal_plane_dist']" ).show( "fast");
-            $( "#id_nodal_plane_dist" ).show( "fast");
-            $( "label[for='hypo_depth_dist']" ).show( "fast");
-            $( "#id_hypo_depth_dist" ).show( "fast");
+            $( "label[for='nodal_plane_dist']" ).attr('disabled', false);
+            $( "#id_nodal_plane_dist" ).attr('disabled', false);
+            $( "label[for='hypo_depth_dist']" ).attr('disabled', false);
+            $( "#id_hypo_depth_dist" ).attr('disabled', false);
 
             if (this.value == 'POINT'){
                 $('.leaflet-draw-draw-marker').show();
@@ -95,10 +95,16 @@ $( document ).ready(function() {
 
 
 
-    var map = new L.Map('map');
-    map.setView(new L.LatLng(40, -8),5);
-    osm.addTo(map);
-    var control = L.control.layers(baseMaps).addTo(map);
+    var map = new L.Map('map', {
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+            position: 'topleft'
+        }
+    });
+    map.setView(new L.LatLng(0, 0),2);
+    bw.addTo(map);
+
+    var control = L.control.layers(baseLayers).addTo(map);
 
     var url = document.URL.split('/');
     var model_id = url[url.length -2];

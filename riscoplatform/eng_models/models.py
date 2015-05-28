@@ -16,9 +16,10 @@ from django.contrib.auth.models import User
 from world.models import *
 from django.core.files import File
 from django.template.loader import render_to_string
-from djorm_pgarray.fields import FloatArrayField, TextArrayField
+from djorm_pgarray.fields import FloatArrayField, TextArrayField, ArrayField
 import numpy as np
 from scipy import stats
+from constants import *
 
 
 #class Eng_Models(models.Model):
@@ -292,18 +293,6 @@ class Source_Model_Contributor(models.Model):
 
 
 class Source(models.Model):
-    ACTIVE = 'Active Shallow Crust'
-    STABLE = 'Stable Shallow Crust'
-    SUBDUCTION = 'Subduction Interface'
-    ACTIVE_INTERSLAB = 'Active Interslab'
-    VOLCANIC = 'Volcanic'
-    TECTONIC_CHOICES = (
-        (ACTIVE, 'Active Shallow Crust'),
-        (STABLE, 'Stable Shallow Crust'),
-        (SUBDUCTION, 'Subduction Interface'),
-        (ACTIVE_INTERSLAB, 'Active Interslab'),
-        (VOLCANIC, 'Volcanic'),
-        )
 
     WC1994 = 'WC1994'
     TA2012 = 'TA2012'
@@ -352,8 +341,10 @@ class Source(models.Model):
     point                       = models.PointField(srid=4326, null=True, blank=True)
     upper_depth                 = models.FloatField(null=True)
     lower_depth                 = models.FloatField(null=True)
-    nodal_plane_dist            = FloatArrayField(null=True, dimension=4, blank=True)
-    hypo_depth_dist             = FloatArrayField(null=True, dimension=2, blank=True)
+    #nodal_plane_dist            = FloatArrayField(null=True, dimension=4, blank=True)
+    nodal_plane_dist            = FloatArrayField(null=True, blank=True)
+    #hypo_depth_dist             = FloatArrayField(null=True, dimension=2, blank=True)
+    hypo_depth_dist             = FloatArrayField(null=True, blank=True)
     #area
     area                        = models.PolygonField(srid=4326, null=True, blank=True)
     #fault
@@ -632,42 +623,42 @@ class Vulnerability_Function(models.Model):
 
 
 
-class Logic_Tree(models.Model):
-    SOURCE = 'source'
-    GMPE = 'gmpe'
-    LOGIC_TREE_TYPE = (
-        (SOURCE, 'Source'),
-        (GMPE, 'GMPE'),
-        )
+class Logic_Tree_SM(models.Model):
+    #SOURCE = 'source'
+    #GMPE = 'gmpe'
+    #LOGIC_TREE_TYPE = (
+    #    (SOURCE, 'Source'),
+    #    (GMPE, 'GMPE'),
+    #    )
 
     #model                       = models.OneToOneField(Eng_Models, primary_key=True) 
     user                        = models.ForeignKey(User)
     date_created                = models.DateTimeField('date created')
     name                        = models.CharField(max_length=200)
     description                 = models.CharField(max_length=200, null=True)
-    type                        = models.CharField(max_length=25, choices=LOGIC_TREE_TYPE, default='source')
+    #type                        = models.CharField(max_length=25, choices=LOGIC_TREE_TYPE, default='source')
     source_models               = models.ManyToManyField(Source_Model, null=True, blank=True)
-    xml                         = models.FileField(upload_to='uploads/logic_tree/', null=True, blank=True)
+    xml                         = models.FileField(upload_to='uploads/logic_tree/source_models/', null=True, blank=True)
 
     def __unicode__(self):
         return self.name
 
 
-class Logic_Tree_Level(models.Model):
-    logic_tree                  = models.ForeignKey(Logic_Tree)
+class Logic_Tree_SM_Level(models.Model):
+    logic_tree                  = models.ForeignKey(Logic_Tree_SM)
     level                       = models.IntegerField()
     xml_id                      = models.CharField(max_length=10, null=True)
 
 
-class Logic_Tree_Branch_Set(models.Model):
-    GMPE_MODEL = 'gmpeModel'
+class Logic_Tree_SM_Branch_Set(models.Model):
+    #GMPE_MODEL = 'gmpeModel'
     SOURCE_MODEL = 'sourceModel'
     MAX_MAG_GR_RELATIVE = 'maxMagGRRelative'
     B_GR_RELATIVE = 'bGRRelative'
     AB_GR_ABSOLUTE = 'abGRAbsolute'
     MAX_MAG_GR_ABSOLUTE = 'maxMagGRAbsolute'
     UNCERTAINTY_TYPE_CHOICES = (
-        (GMPE_MODEL, 'GMPE Model'),
+        #(GMPE_MODEL, 'GMPE Model'),
         (SOURCE_MODEL, 'Source Model'),
         (MAX_MAG_GR_RELATIVE, 'Max Mag GR Relative'),
         (B_GR_RELATIVE, 'b GR Relative'),
@@ -675,60 +666,25 @@ class Logic_Tree_Branch_Set(models.Model):
         (MAX_MAG_GR_ABSOLUTE, 'max Mag GR Absolute'),
         )
 
-    level                       = models.ForeignKey(Logic_Tree_Level)
+    BRANCH = 'branch'
+    SOURCE = 'source'
+    FILTER_CHOICES = (
+        (BRANCH, 'Branch'),
+        (SOURCE, 'Source'),
+        )
+
+    level                       = models.ForeignKey(Logic_Tree_SM_Level)
     uncertainty_type            = models.CharField(max_length=25, choices=UNCERTAINTY_TYPE_CHOICES, null=True)
-    origin                      = models.ForeignKey('Logic_Tree_Branch', null=True)
+    origins                     = models.ManyToManyField('Logic_Tree_SM_Branch', null=True)
+    filter                      = models.CharField(max_length=20, choices=FILTER_CHOICES, null=True)
     sources                     = models.ManyToManyField(Source, null=True)
     xml_id                      = models.CharField(max_length=10, null=True)
 
 
-class Logic_Tree_Branch(models.Model):
-    ABRAHAMSON_AND_SILVA_2008       = 'AbrahamsonSilva2008'
-    AKKAR_AND_BOMMER_2010           = 'AkkarBommer2010'
-    AKKAR_AND_CAGNAN_2010           = 'AkkarCagnan2010'
-    BOORE_AND_ATKINSON_2008         = 'BooreAtkinson2008'
-    CAUZZI_AND_FACCIOLI_2008        = 'CauzziFaccioli2008'
-    CHIOU_AND_YOUNGS_2008           = 'ChiouYoungs2008'
-    FACCIOLI_ET_AL_2010             = 'FaccioliEtAl2010'
-    SADIGH_ET_AL_1997               = 'SadighEtAl1997'
-    ZHAO_ET_AL_2006_ASC             = 'ZhaoEtAl2006Asc'
-    ATKINSON_AND_BOORE_2003_INTER   = 'AtkinsonBoore2003SInter'
-    ATKINSON_AND_BOORE_2003_IN_SLAB = 'AtkinsonBoore2003SSlab'
-    LIN_AND_LEE_2008_INTER          = 'LinLee2008SInter'
-    LIN_AND_LEE_2008_IN_SLAB        = 'LinLee2008SSlab'
-    YOUNGS_ET_AL_1997_INTER         = 'YoungsEtAl1997SInter'
-    YOUNGS_ET_AL_1997_IN_SLAB       = 'YoungsEtAl1997SSlab'
-    ZHAO_ET_AL_2006_INTER           = 'ZhaoEtAl2006SInter'
-    ZHAO_ET_AL_2006_IN_SLAB         = 'ZhaoEtAl2006SSlab'
-    ATKINSON_AND_BOORE_2006         = 'AtkinsonBoore2006'
-    CAMPBELL_2003                   = 'Campbell2003'
-    TORO_ET_AL_2002                 = 'ToroEtAl2002'
+class Logic_Tree_SM_Branch(models.Model):
 
-    GMPE_CHOICES = (
-        (ABRAHAMSON_AND_SILVA_2008          ,'Abrahamson and Silva 2008'),
-        (AKKAR_AND_BOMMER_2010              ,'Akkar and Boomer 2010'),
-        (AKKAR_AND_CAGNAN_2010              ,'Akkar and Cagnan 2010'),
-        (BOORE_AND_ATKINSON_2008            ,'Boore and Atkinson 2008'),
-        (CAUZZI_AND_FACCIOLI_2008           ,'Cauzzi and Faccioli 2008'),
-        (CHIOU_AND_YOUNGS_2008              ,'Chiou and Youngs 2008'),
-        (FACCIOLI_ET_AL_2010                ,'Faccioli et al. 2010'),
-        (SADIGH_ET_AL_1997                  ,'Sadigh et al. 1997'),
-        (ZHAO_ET_AL_2006_ASC                ,'Zhao et al. 2006 (ASC)'),
-        (ATKINSON_AND_BOORE_2003_INTER      ,'Atkinson and Boore 2003 (Inter)'),
-        (ATKINSON_AND_BOORE_2003_IN_SLAB    ,'Atkinson and Boore 2003 (In-slab)'),
-        (LIN_AND_LEE_2008_INTER             ,'Lin and Lee 2008 (Inter)'),
-        (LIN_AND_LEE_2008_IN_SLAB           ,'Lin and Lee 2008 (In-slab)'),
-        (YOUNGS_ET_AL_1997_INTER            ,'Youngs et al. 1997 (Inter)'),
-        (YOUNGS_ET_AL_1997_IN_SLAB          ,'Youngs et al. 1997 (In-slab)'),
-        (ZHAO_ET_AL_2006_INTER              ,'Zhao et al. 2006 (Inter)'),
-        (ZHAO_ET_AL_2006_IN_SLAB            ,'Zhao et al. 2006 (In-slab)'),
-        (ATKINSON_AND_BOORE_2006            ,'Atkinson and Boore 2006'),
-        (CAMPBELL_2003                      ,'Campbell 2003'),
-        (TORO_ET_AL_2002                    ,'Toro et al. 2002'),
-    )
-
-    branch_set                  = models.ForeignKey(Logic_Tree_Branch_Set)
-    gmpe                        = models.CharField(max_length=50, choices=GMPE_CHOICES, null=True)
+    branch_set                  = models.ForeignKey(Logic_Tree_SM_Branch_Set)
+    #gmpe                        = models.CharField(max_length=50, choices=GMPE_CHOICES, null=True)
     source_model                = models.ForeignKey(Source_Model, null=True)
     max_mag_inc                 = models.FloatField(null=True)
     b_inc                       = models.FloatField(null=True)
@@ -736,5 +692,35 @@ class Logic_Tree_Branch(models.Model):
     max_mag                     = models.FloatField(null=True)
     weight                      = models.FloatField()
     xml_id                      = models.CharField(max_length=10, null=True)
+
+
+
+
+
+
+class Logic_Tree_GMPE(models.Model):
+    user                        = models.ForeignKey(User)
+    date_created                = models.DateTimeField('date created')
+    name                        = models.CharField(max_length=200)
+    description                 = models.CharField(max_length=200, null=True)
+    xml                         = models.FileField(upload_to='uploads/logic_tree/gmpe/', null=True, blank=True)
+
+    def __unicode__(self):
+        return self.name
+
+
+class Logic_Tree_GMPE_Level(models.Model):
+    logic_tree                  = models.ForeignKey(Logic_Tree_GMPE)
+    level                       = models.IntegerField()
+    tectonic_region             = models.CharField(max_length=50, choices=TECTONIC_CHOICES, default=ACTIVE)
+    xml_id                      = models.CharField(max_length=10, null=True)
+
+
+class Logic_Tree_GMPE_Branch(models.Model):
+    branch_set                  = models.ForeignKey(Logic_Tree_GMPE_Level)
+    gmpe                        = models.CharField(max_length=50, choices=GMPE_CHOICES, null=True)
+    weight                      = models.FloatField()
+    xml_id                      = models.CharField(max_length=10, null=True)
+
 
 

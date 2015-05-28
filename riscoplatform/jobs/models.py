@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from world.models import World, Fishnet
 from djorm_pgarray.fields import FloatArrayField
 from eng_models.models import *
+from eng_models.constants import *
 from jsonfield import JSONField
 
 # Create your models here.
@@ -33,51 +34,6 @@ STATUS_CHOICES = (
 )
 
 class Scenario_Hazard(models.Model):
-
-    ABRAHAMSON_AND_SILVA_2008       = 'AbrahamsonSilva2008'
-    AKKAR_AND_BOMMER_2010           = 'AkkarBommer2010'
-    AKKAR_AND_CAGNAN_2010           = 'AkkarCagnan2010'
-    BOORE_AND_ATKINSON_2008         = 'BooreAtkinson2008'
-    CAUZZI_AND_FACCIOLI_2008        = 'CauzziFaccioli2008'
-    CHIOU_AND_YOUNGS_2008           = 'ChiouYoungs2008'
-    FACCIOLI_ET_AL_2010             = 'FaccioliEtAl2010'
-    SADIGH_ET_AL_1997               = 'SadighEtAl1997'
-    ZHAO_ET_AL_2006_ASC             = 'ZhaoEtAl2006Asc'
-    ATKINSON_AND_BOORE_2003_INTER   = 'AtkinsonBoore2003SInter'
-    ATKINSON_AND_BOORE_2003_IN_SLAB = 'AtkinsonBoore2003SSlab'
-    LIN_AND_LEE_2008_INTER          = 'LinLee2008SInter'
-    LIN_AND_LEE_2008_IN_SLAB        = 'LinLee2008SSlab'
-    YOUNGS_ET_AL_1997_INTER         = 'YoungsEtAl1997SInter'
-    YOUNGS_ET_AL_1997_IN_SLAB       = 'YoungsEtAl1997SSlab'
-    ZHAO_ET_AL_2006_INTER           = 'ZhaoEtAl2006SInter'
-    ZHAO_ET_AL_2006_IN_SLAB         = 'ZhaoEtAl2006SSlab'
-    ATKINSON_AND_BOORE_2006         = 'AtkinsonBoore2006'
-    CAMPBELL_2003                   = 'Campbell2003'
-    TORO_ET_AL_2002                 = 'ToroEtAl2002'
-
-    GMPE_CHOICES = (
-        (ABRAHAMSON_AND_SILVA_2008          ,'Abrahamson and Silva 2008'),
-        (AKKAR_AND_BOMMER_2010              ,'Akkar and Boomer 2010'),
-        (AKKAR_AND_CAGNAN_2010              ,'Akkar and Cagnan 2010'),
-        (BOORE_AND_ATKINSON_2008            ,'Boore and Atkinson 2008'),
-        (CAUZZI_AND_FACCIOLI_2008           ,'Cauzzi and Faccioli 2008'),
-        (CHIOU_AND_YOUNGS_2008              ,'Chiou and Youngs 2008'),
-        (FACCIOLI_ET_AL_2010                ,'Faccioli et al. 2010'),
-        (SADIGH_ET_AL_1997                  ,'Sadigh et al. 1997'),
-        (ZHAO_ET_AL_2006_ASC                ,'Zhao et al. 2006 (ASC)'),
-        (ATKINSON_AND_BOORE_2003_INTER      ,'Atkinson and Boore 2003 (Inter)'),
-        (ATKINSON_AND_BOORE_2003_IN_SLAB    ,'Atkinson and Boore 2003 (In-slab)'),
-        (LIN_AND_LEE_2008_INTER             ,'Lin and Lee 2008 (Inter)'),
-        (LIN_AND_LEE_2008_IN_SLAB           ,'Lin and Lee 2008 (In-slab)'),
-        (YOUNGS_ET_AL_1997_INTER            ,'Youngs et al. 1997 (Inter)'),
-        (YOUNGS_ET_AL_1997_IN_SLAB          ,'Youngs et al. 1997 (In-slab)'),
-        (ZHAO_ET_AL_2006_INTER              ,'Zhao et al. 2006 (Inter)'),
-        (ZHAO_ET_AL_2006_IN_SLAB            ,'Zhao et al. 2006 (In-slab)'),
-        (ATKINSON_AND_BOORE_2006            ,'Atkinson and Boore 2006'),
-        (CAMPBELL_2003                      ,'Campbell 2003'),
-        (TORO_ET_AL_2002                    ,'Toro et al. 2002'),
-    )
-
 
     user 						= models.ForeignKey(User)
     date_created 				= models.DateTimeField('date created')
@@ -262,7 +218,8 @@ class Classical_PSHA_Hazard(models.Model):
     z1pt0                       = models.FloatField(null=True, blank=True)
     z2pt5                       = models.FloatField(null=True, blank=True)
 
-    logic_trees                 = models.ManyToManyField(Logic_Tree)
+    sm_logic_tree               = models.ForeignKey(Logic_Tree_SM)
+    gmpe_logic_trees            = models.ForeignKey(Logic_Tree_GMPE)
     
     investigation_time          = models.IntegerField()
     #pga                         = models.BooleanField(default=True)
@@ -282,6 +239,38 @@ class Classical_PSHA_Hazard(models.Model):
 
     def __unicode__(self):
         return self.name
+
+
+class Classical_PSHA_Hazard_Curves(models.Model):
+
+    job                         = models.ForeignKey(Classical_PSHA_Hazard)
+    location                    = models.PointField(srid=4326)
+    cell                        = models.ForeignKey(Fishnet, null=True)
+    imt                         = models.CharField(max_length=3)
+    sa_period                   = models.FloatField(null=True)
+    sa_damping                  = models.IntegerField(null=True)
+    weight                      = models.FloatField()
+    statistics                  = models.CharField(max_length=20, null=True)
+    quantile                    = models.FloatField(null=True)
+    sm_lt_path                  = ArrayField(null=True)
+    gsim_lt_path                = ArrayField(null=True)
+    imls                        = FloatArrayField()
+    poes                        = FloatArrayField()
+     
+
+    def __unicode__(self):
+        return self.job.name+' curve'
+
+
+class Classical_PSHA_Hazard_Maps(models.Model):
+
+    location                    = models.ForeignKey(Classical_PSHA_Hazard_Curves)
+    poe                         = models.FloatField()
+    iml                         = models.FloatField()
+     
+
+    def __unicode__(self):
+        return self.job.name+' map'
 
 
 

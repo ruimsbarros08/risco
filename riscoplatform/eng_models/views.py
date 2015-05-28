@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from parsers import *
+from parsers import exposure_parser, site_model_parser, source_parser, fragility_parser, vulnerability_parser, sm_logic_tree_parser
 from django.core import serializers
 from django.db import connection
 #from django.db.models import Q
@@ -156,21 +156,11 @@ def ajax_assets(request, model_id):
 						and eng_models_building_taxonomy.id = eng_models_asset.taxonomy_id \
 						order by eng_models_asset.id asc', [model.id])
 
-	#assets = serializers.serialize("json", asset_list)
-	#assets = json.loads(assets)
 
 	data = cursor.fetchall()
 
-	#return HttpResponse(json.dumps({'assets': assets, 'heatmap': cursor.fetchall()}), content_type="application/json")
 	return HttpResponse(json.dumps({'assets': data }), content_type="application/json")
 
-
-#@login_required
-#def ajax_heat_assets(request, model_id):
-#	model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
-#	cursor = connection.cursor()
-#	cursor.execute('select st_y(location), st_x(location), id from eng_models_asset where model_id = %s', [model.id])
-#	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
 
 
 @login_required
@@ -359,8 +349,6 @@ class SourceForm(forms.ModelForm):
             		'point': forms.HiddenInput(),
             		'area': forms.HiddenInput(),
             		'fault': forms.HiddenInput(),
-            		#'nodal_plane_dist': forms.HiddenInput(),
-            		#'hypo_depth_dist': forms.HiddenInput(),
 					}
 		
 @login_required
@@ -407,9 +395,9 @@ def add_source_model(request):
 			if request.FILES:
 				try:
 					source_parser.start(model)
-				except:
+				except Exception as e:
 					model.delete()
-					return render(request, 'eng_models/index_source.html', {'form': form, 'parse_error': True})
+					return render(request, 'eng_models/index_source.html', {'form': form, 'parse_error': e})
 			return redirect('detail_source', model_id=model.id)
 		else:
 			models = Source_Model.objects.filter(source_model_contributor__contributor=request.user).order_by('-date_created')
@@ -874,134 +862,127 @@ def get_imt_from_vulnerability(request, model_id):
 	return HttpResponse(json.dumps(imt_l), content_type="application/json")
 
 
-#######################
-##     LOGIC TREE    ##
-#######################
+####################################
+##     LOGIC TREE SOURCE MODELS   ##
+####################################
 
-class LogicTreeForm(forms.ModelForm):
+class LogicTreeSMForm(forms.ModelForm):
 	class Meta:
-		model = Logic_Tree
-		exclude = ['user', 'date_created']
-		widgets = {
-			'source_models': forms.CheckboxSelectMultiple()
-		}
+		model = Logic_Tree_SM
+		fields = ['name', 'description', 'xml']
+
 
 @login_required
-def index_logic_tree(request):
-	models = Logic_Tree.objects.filter(user=request.user).order_by('-date_created')
-	form = LogicTreeForm()
-	form.fields["source_models"].queryset = Source_Model.objects.filter(source_model_contributor__contributor=request.user)
+def index_logic_tree_sm(request):
+	models = Logic_Tree_SM.objects.filter(user=request.user).order_by('-date_created')
+	form = LogicTreeSMForm()
 	page = request.GET.get('page')
 
-	return render(request, 'eng_models/index_logic_tree.html', {'models': pagination(models, 10, page), 'form': form})
+	return render(request, 'eng_models/index_logic_tree_sm.html', {'models': pagination(models, 10, page), 'form': form})
 
 @login_required
-def detail_logic_tree(request, model_id):
-	model = get_object_or_404(Logic_Tree ,pk=model_id, user=request.user)
-	return render(request, 'eng_models/detail_logic_tree.html', {'model': model})
+def detail_logic_tree_sm(request, model_id):
+	model = get_object_or_404(Logic_Tree_SM ,pk=model_id, user=request.user)
+	return render(request, 'eng_models/detail_logic_tree_sm.html', {'model': model})
 
 @login_required
-def add_logic_tree(request):
+def add_logic_tree_sm(request):
 	if request.method == 'POST':
-		form = LogicTreeForm(request.POST, request.FILES)
-		form.fields["source_models"].queryset = Source_Model.objects.filter(source_model_contributor__contributor=request.user)
+		form = LogicTreeSMForm(request.POST, request.FILES)
 		if form.is_valid():
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
 			model.user = request.user
 			model.save()
-			if 'source_models' in request.POST:
-				for e in request.POST['source_models']:
-					model.source_models.add(e)
-					model.save()
+
 			if request.FILES:
 				try:
-					logic_tree_parser.start(model)
-				except:
+					sm_logic_tree_parser.start(model)
+				except Exception as e:
 					model.delete()
-					return render(request, 'eng_models/index_logic_tree.html', {'form': form, 'parse_error': True})
-			return redirect('detail_logic_tree', model_id=model.id)
+					return render(request, 'eng_models/index_logic_tree_sm.html', {'form': form, 'parse_error': e})
+			return redirect('detail_logic_tree_sm', model_id=model.id)
 		else:
-			models = Logic_Tree.objects.filter(user=request.user).order_by('-date_created')
-			return render(request, 'eng_models/index_logic_tree.html', {'models': pagination(models, 10, 1), 'form': form})
+			models = Logic_Tree_SM.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'eng_models/index_logic_tree_sm.html', {'models': pagination(models, 10, 1), 'form': form})
 	else:
-		form = LogicTreeForm()
-		form.fields["source_models"].queryset = Source_Model.objects.filter(source_model_contributor__contributor=request.user)
-		return render(request, 'eng_models/index_logic_tree.html', {'form': form})
+		form = LogicTreeSMForm()
+		#form.fields["source_models"].queryset = Source_Model.objects.filter(source_model_contributor__contributor=request.user)
+		return render(request, 'eng_models/index_logic_tree_sm.html', {'form': form})
 
-@login_required
-def download_logic_tree(request, model_id):
-	model = get_object_or_404(Logic_Tree ,pk=model_id, user=request.user)
-	response = HttpResponse(content_type='application/force-download')
-	response['Content-Disposition'] = 'attachment; filename=%s' % model.name+'.xml'
-	response['X-Sendfile'] = model.xml
+#@login_required
+#def download_logic_tree(request, model_id):
+#	model = get_object_or_404(Logic_Tree ,pk=model_id, user=request.user)
+#	response = HttpResponse(content_type='application/force-download')
+#	response['Content-Disposition'] = 'attachment; filename=%s' % model.name+'.xml'
+#	response['X-Sendfile'] = model.xml
 	# It's usually a good idea to set the 'Content-Length' header too.
 	# You can also set any other required headers: Cache-Control, etc.
-	return response
+#	return response
 
 
-def update_logic_tree(dict, parent_branch, branches):
-	for e in dict:
-		if e['pk'] == parent_branch:
-			e['children'] = branches
-			break
-		else:
-			update_logic_tree(e['children'], parent_branch, branches)
+#def update_logic_tree(dict, parent_branch, branches):
+#	for e in dict:
+#		if e['pk'] == parent_branch:
+#			e['children'] = branches
+#			break
+#		else:
+#			update_logic_tree(e['children'], parent_branch, branches)
 
-@login_required
-def logic_tree_ajax(request, model_id):
-	tree = get_object_or_404(Logic_Tree ,pk=model_id, user=request.user)
+#@login_required
+#def logic_tree_ajax(request, model_id):
+#	tree = get_object_or_404(Logic_Tree ,pk=model_id, user=request.user)
 
-	json_tree = [{"name": "Logic tree root",
-				    "parent": "null",
-				    "pk": 0,
-				    "children": []}]
+#	json_tree = [{"name": "Logic tree root",
+#				    "parent": "null",
+#				    "pk": 0,
+#				    "children": []}]
 
-	levels = Logic_Tree_Level.objects.filter(logic_tree = tree)
-	for level in levels:
-		branch_sets = Logic_Tree_Branch_Set.objects.filter(level=level)
-		for branch_set in branch_sets:
-			branches = Logic_Tree_Branch.objects.filter(branch_set=branch_set)
-			branches = json.loads(serializers.serialize("json", branches))
+#	levels = Logic_Tree_Level.objects.filter(logic_tree = tree)
+#	for level in levels:
+#		branch_sets = Logic_Tree_Branch_Set.objects.filter(level=level)
+#		for branch_set in branch_sets:
+#			branches = Logic_Tree_Branch.objects.filter(branch_set=branch_set)
+#			branches = json.loads(serializers.serialize("json", branches))
 
-			for branch in branches:
-				branch['type'] = branch_set.uncertainty_type
-				if branch['type']== 'gmpeModel':
-					branch['name'] = 'GMPE: '+branch['fields']['gmpe']+' weight:'+str(branch['fields']['weight'])
-				if branch['type']== 'sourceModel':
-					branch['name'] = 'Source Model: '+str(branch['fields']['source_model'])+' weight:'+str(branch['fields']['weight'])
-				if branch['type']== 'maxMagGRRelative':
-					branch['name'] = 'Max Mag Rel: '+str(branch['fields']['max_mag_inc'])+' weight:'+str(branch['fields']['weight'])
-				if branch['type']== 'bGRRelative':
-					branch['name'] = 'b Rel: '+str(branch['fields']['b_inc'])+' weight:'+str(branch['fields']['weight'])
-				if branch['type']== 'abGRAbsolute':
-					a = branch['fields']['a_b'].split(', ')[0].split('[')[1]
-					b = branch['fields']['a_b'].split(', ')[1].split(']')[0]
-					branch['name'] = 'a rel: '+a+' b rel: '+b+' weight:'+str(branch['fields']['weight'])
-				if branch['type']== 'maxMagGRAbsolute':
-					branch['name'] = 'Max Mag Abs: '+str(branch['fields']['max_mag'])+' weight:'+str(branch['fields']['weight'])
-				branch['children']=[]
+#			for branch in branches:
+#				branch['type'] = branch_set.uncertainty_type
+#				if branch['type']== 'gmpeModel':
+#					branch['name'] = 'GMPE: '+branch['fields']['gmpe']+' weight:'+str(branch['fields']['weight'])
+#				if branch['type']== 'sourceModel':
+#					branch['name'] = 'Source Model: '+str(branch['fields']['source_model'])+' weight:'+str(branch['fields']['weight'])
+#				if branch['type']== 'maxMagGRRelative':
+#					branch['name'] = 'Max Mag Rel: '+str(branch['fields']['max_mag_inc'])+' weight:'+str(branch['fields']['weight'])
+#				if branch['type']== 'bGRRelative':
+#					branch['name'] = 'b Rel: '+str(branch['fields']['b_inc'])+' weight:'+str(branch['fields']['weight'])
+#				if branch['type']== 'abGRAbsolute':
+#					a = branch['fields']['a_b'].split(', ')[0].split('[')[1]
+#					b = branch['fields']['a_b'].split(', ')[1].split(']')[0]
+#					branch['name'] = 'a rel: '+a+' b rel: '+b+' weight:'+str(branch['fields']['weight'])
+#				if branch['type']== 'maxMagGRAbsolute':
+#					branch['name'] = 'Max Mag Abs: '+str(branch['fields']['max_mag'])+' weight:'+str(branch['fields']['weight'])
+#				branch['children']=[]
+#
+#			if level.level == 1:
+#				parent_branch = 0
+#			else:
+#				parent_branch = branch_set.origin.id
 
-			if level.level == 1:
-				parent_branch = 0
-			else:
-				parent_branch = branch_set.origin.id
+#			update_logic_tree(json_tree, parent_branch, branches)
 
-			update_logic_tree(json_tree, parent_branch, branches)
-
-	source_models = Source_Model.objects.raw('select eng_models_source_model.id \
-					from eng_models_source_model, \
-					eng_models_logic_tree, eng_models_logic_tree_source_models \
-					where eng_models_source_model.id = eng_models_logic_tree_source_models.source_model_id \
-					and eng_models_logic_tree_source_models.logic_tree_id = eng_models_logic_tree.id \
-					and eng_models_logic_tree.id = %s', [tree.id])
+#	source_models = Source_Model.objects.raw('select eng_models_source_model.id \
+#					from eng_models_source_model, \
+#					eng_models_logic_tree, eng_models_logic_tree_source_models \
+#					where eng_models_source_model.id = eng_models_logic_tree_source_models.source_model_id \
+#					and eng_models_logic_tree_source_models.logic_tree_id = eng_models_logic_tree.id \
+#					and eng_models_logic_tree.id = %s', [tree.id])
 	
-	sm=[]
-	for e in source_models:
-		data = get_sources(e.id)
-		sm.append(data)
+#	sm=[]
+#	for e in source_models:
+#		data = get_sources(e.id)
+#		sm.append(data)
 
-	return HttpResponse(json.dumps({'tree':json_tree, 'sources':sm}), content_type="application/json")
+#	return HttpResponse(json.dumps({'tree':json_tree, 'sources':sm}), content_type="application/json")
 
 
 

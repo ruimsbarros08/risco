@@ -3,19 +3,22 @@
 (function($) {
 $( document ).ready(function() {
 
+var map = new L.Map('map', {
+    fullscreenControl: true,
+    fullscreenControlOptions: {
+        position: 'topleft'
+    }
+});
+map.setView(new L.LatLng(0, 0),2);
+bw.addTo(map);
 
-    var map = new L.Map('map');
-    var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
-    var osm = new L.TileLayer(osmUrl, {minZoom: 3, maxZoom: 16, attribution: osmAttrib});
-
-    map.setView(new L.LatLng(40, -8),5);
-    map.addLayer(osm);
+var control = L.control.layers(baseLayers).addTo(map);
 
 
 var url = document.URL.split('/');
 var model_id = url[url.length -2];
 
+/*
 $.ajax('/models/logictree/'+model_id+'/ajax' )
     .done(function(data) {
         var treeData = data.tree;
@@ -213,7 +216,7 @@ function click(d) {
   }
   update(d);
 }
-
+*/
 
 });
 })($); 

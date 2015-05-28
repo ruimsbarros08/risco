@@ -50,10 +50,10 @@ urlpatterns = patterns('',
     url(r'^exposure/(?P<model_id>\d+)/add_asset/$', views.add_asset, name='add_asset'),
     url(r'^exposure/(?P<model_id>\d+)/tiles/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)/$', views.exposure_geojson_tiles, name='exposure_geojson_tiles'),
 
-    url(r'^logictree/$', views.index_logic_tree, name='index_logic_tree'),
-    url(r'^logictree/(?P<model_id>\d+)/$', views.detail_logic_tree, name='detail_logic_tree'),
-    url(r'^logictree/(?P<model_id>\d+)/ajax$', views.logic_tree_ajax, name='logic_tree_ajax'),
-    url(r'^logictree/(?P<model_id>\d+)/download$', views.download_logic_tree, name='download_logic_tree'),
-    url(r'^logictree/add/$', views.add_logic_tree, name='add_logic_tree'),
+    url(r'^logictree_sm/$', views.index_logic_tree_sm, name='index_logic_tree_sm'),
+    url(r'^logictree_sm/(?P<model_id>\d+)/$', views.detail_logic_tree_sm, name='detail_logic_tree_sm'),
+    url(r'^logictree_sm/add/$', views.add_logic_tree_sm, name='add_logic_tree_sm'),
+    #url(r'^logictree/(?P<model_id>\d+)/ajax$', views.logic_tree_ajax, name='logic_tree_ajax'),
+    #url(r'^logictree/(?P<model_id>\d+)/download$', views.download_logic_tree, name='download_logic_tree'),
 
 )

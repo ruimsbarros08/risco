@@ -54,17 +54,17 @@ def start(object):
 				occur_rates = source_tag.getElementsByTagName('incrementalMFD')[0].getElementsByTagName('occurRates')[0].firstChild.nodeValue
 				occur_rates = occur_rates.split(' ')
 
-			nodal_plane_dist = [[], [], [], []]
+			nodal_plane_dist = []
 			for nodal_plane in source_tag.getElementsByTagName('nodalPlane'):
-				nodal_plane_dist[0].append(float(nodal_plane.getAttribute('probability')))
-				nodal_plane_dist[1].append(float(nodal_plane.getAttribute('strike')))
-				nodal_plane_dist[2].append(float(nodal_plane.getAttribute('dip')))
-				nodal_plane_dist[3].append(float(nodal_plane.getAttribute('rake')))
+				nodal_plane_dist.append([float(nodal_plane.getAttribute('probability')),
+										float(nodal_plane.getAttribute('strike')),
+										float(nodal_plane.getAttribute('dip')),
+										float(nodal_plane.getAttribute('rake'))])
 
-			hypo_depth_dist = [[], []]
+			hypo_depth_dist = []
 			for hypo_depth in source_tag.getElementsByTagName('hypoDepth'):
-				hypo_depth_dist[0].append(float(hypo_depth.getAttribute('probability')))
-				hypo_depth_dist[1].append(float(hypo_depth.getAttribute('depth')))
+				hypo_depth_dist.append([float(hypo_depth.getAttribute('probability')),
+										float(hypo_depth.getAttribute('depth'))])
 
 			source = Source(source_type = 'POINT',
 							model = object,
@@ -137,17 +137,17 @@ def start(object):
 				occur_rates = source_tag.getElementsByTagName('incrementalMFD')[0].getElementsByTagName('occurRates')[0].firstChild.nodeValue
 				occur_rates = occur_rates.split(' ')
 
-			nodal_plane_dist = [[], [], [], []]
+			nodal_plane_dist = []
 			for nodal_plane in source_tag.getElementsByTagName('nodalPlane'):
-				nodal_plane_dist[0].append(float(nodal_plane.getAttribute('probability')))
-				nodal_plane_dist[1].append(float(nodal_plane.getAttribute('strike')))
-				nodal_plane_dist[2].append(float(nodal_plane.getAttribute('dip')))
-				nodal_plane_dist[3].append(float(nodal_plane.getAttribute('rake')))
+				nodal_plane_dist.append([float(nodal_plane.getAttribute('probability')),
+										float(nodal_plane.getAttribute('strike')),
+										float(nodal_plane.getAttribute('dip')),
+										float(nodal_plane.getAttribute('rake'))])
 
-			hypo_depth_dist = [[], []]
+			hypo_depth_dist = []
 			for hypo_depth in source_tag.getElementsByTagName('hypoDepth'):
-				hypo_depth_dist[0].append(float(hypo_depth.getAttribute('probability')))
-				hypo_depth_dist[1].append(float(hypo_depth.getAttribute('depth')))
+				hypo_depth_dist.append([float(hypo_depth.getAttribute('probability')),
+										float(hypo_depth.getAttribute('depth'))])
 
 			source = Source(source_type = 'AREA',
 							model = object,
