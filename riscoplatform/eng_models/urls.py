@@ -48,12 +48,15 @@ urlpatterns = patterns('',
     #url(r'^exposure/(?P<model_id>\d+)/heat_assets/$', views.ajax_heat_assets, name='ajax_heat_assets'),
     url(r'^exposure/add/$', views.add_exposure_model, name='add_exposure_model'),
     url(r'^exposure/(?P<model_id>\d+)/add_asset/$', views.add_asset, name='add_asset'),
-    url(r'^exposure/(?P<model_id>\d+)/tiles/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)/$', views.exposure_geojson_tiles, name='exposure_geojson_tiles'),
 
     url(r'^logictree_sm/$', views.index_logic_tree_sm, name='index_logic_tree_sm'),
     url(r'^logictree_sm/(?P<model_id>\d+)/$', views.detail_logic_tree_sm, name='detail_logic_tree_sm'),
     url(r'^logictree_sm/add/$', views.add_logic_tree_sm, name='add_logic_tree_sm'),
     #url(r'^logictree/(?P<model_id>\d+)/ajax$', views.logic_tree_ajax, name='logic_tree_ajax'),
     #url(r'^logictree/(?P<model_id>\d+)/download$', views.download_logic_tree, name='download_logic_tree'),
+
+    url(r'^logictree_gmpe/$', views.index_logic_tree_gmpe, name='index_logic_tree_gmpe'),
+    url(r'^logictree_gmpe/(?P<model_id>\d+)/$', views.detail_logic_tree_gmpe, name='detail_logic_tree_gmpe'),
+    url(r'^logictree_gmpe/add/$', views.add_logic_tree_gmpe, name='add_logic_tree_gmpe'),
 
 )

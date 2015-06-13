@@ -6,12 +6,20 @@ $( document ).ready(function() {
     //hide-show    
     $( "label[for='region']" ).hide( "fast");
 
+    var map = new L.Map('map', {
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+            position: 'topleft'
+        }
+    });
+    map.setView(new L.LatLng(0, 0),2);
+    bw.addTo(map);
 
+    var control = L.control.layers(baseLayers).addTo(map);
 
-    var map = new L.Map('map');
-    map.setView(new L.LatLng(40, -8),5);
-    osm.addTo(map);
-    L.control.layers(baseMaps).addTo(map);
+    var url = document.URL.split('/');
+    var job_id = url[url.length -2];
+
 
     // Initialize the FeatureGroup to store editable layers
     var drawnItems = new L.FeatureGroup();

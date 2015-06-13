@@ -20,6 +20,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet.fullscreen/Control.FullScreen.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet-dvf/dist/css/dvf.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.css' %}" />
 
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}" />
 
@@ -60,7 +61,7 @@
                                     <li><a href="{% url 'index_vulnerability' %}">VULNERABILITY</a></li>
                                     <li class="divider"></li>
                                     <li><a href="{% url 'index_logic_tree_sm' %}">SOURCE MODEL LOGIC TREES</a></li>
-                                    <li><a href="#">GMPE LOGIC TREES</a></li>
+                                    <li><a href="{% url 'index_logic_tree_gmpe' %}">GMPE LOGIC TREES</a></li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -135,6 +136,8 @@
 <script type="text/javascript" src="{% static 'bower_components/chartjs/src/Chart.Line.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/chartjs/src/Chart.PolarArea.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/chartjs/src/Chart.Radar.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/Chart.Scatter.js/Chart.Scatter.min.js' %}"></script>
+
 <script type="text/javascript" src="{% static 'bower_components/leaflet/dist/leaflet.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-draw/dist/leaflet.draw.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-tilelayer-geojson/TileLayer.GeoJSON.js' %}"></script>
@@ -145,6 +148,7 @@
 <script type="text/javascript" src="{% static 'bower_components/leaflet-omnivore/leaflet-omnivore.min.js/' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet.fullscreen/Control.FullScreen.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.min.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'bower_components/jsts/lib/javascript.util.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/jsts/lib/jsts.js' %}"></script>

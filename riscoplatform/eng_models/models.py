@@ -131,32 +131,13 @@ class Exposure_Model(models.Model):
     contents_cost_currency      = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True, blank=True)
     business_int_cost_type      = models.CharField(max_length=20, choices=AGG_CHOICES, null=True, blank=True)
     business_int_cost_currency  = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True, blank=True)
-    deductible                  = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True, default='absolute')
-    insurance_limit             = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True, default='absolute')
+    deductible                  = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True, blank=True)
+    insurance_limit             = models.CharField(max_length=20, choices=INSURANCE_SETTINGS, null=True, blank=True)
     xml                         = models.FileField(upload_to='uploads/exposure/', null=True, blank=True)
     oq_id                       = models.IntegerField(null=True)
 
     aggregation                 = models.CharField(max_length=20, choices=AGG_CHOICES, null=True, blank=True)
     currency                    = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        if self.aggregation:
-            self.struct_cost_type = self.aggregation
-            self.non_struct_cost_type = self.aggregation
-            self.contents_cost_type = self.aggregation
-            self.business_int_cost_type = self.aggregation
-            
-        if self.currency:
-            self.struct_cost_currency = self.currency
-            self.non_struct_cost_currency = self.currency
-            self.contents_cost_currency = self.currency
-            self.business_int_cost_currency = self.currency
-        super(Exposure_Model, self).save(*args, **kwargs)
-
-    class Meta:
-        managed = True
-        db_table = 'eng_models_exposure_model'
-
 
     def __unicode__(self):
         return self.name
@@ -180,6 +161,7 @@ class Asset(models.Model):
     taxonomy                    = models.ForeignKey(Building_Taxonomy)
     parish                      = models.ForeignKey(World, null=True)
     adm_1                       = models.ForeignKey(Adm_1, null=True)
+    adm_2                       = models.ForeignKey(Adm_2, null=True)
     location                    = models.PointField(null=True, srid=4326)
     name                        = models.CharField(max_length=10)
     n_buildings                 = models.IntegerField(null=True)
@@ -328,8 +310,8 @@ class Source(models.Model):
 
     mag_freq_dist_type          = models.CharField(max_length=10, choices=MAG_FREQ_DIST_CHOICES, default=TRUNC)
     #trunc
-    a                           = models.FloatField(null=True, default=-3.5, blank=True)
-    b                           = models.FloatField(null=True, default=-1.0, blank=True)
+    a                           = models.FloatField(null=True, blank=True)
+    b                           = models.FloatField(null=True, blank=True)
     min_mag                     = models.FloatField(null=True)
     max_mag                     = models.FloatField(null=True, blank=True)
     #inc
@@ -717,7 +699,7 @@ class Logic_Tree_GMPE_Level(models.Model):
 
 
 class Logic_Tree_GMPE_Branch(models.Model):
-    branch_set                  = models.ForeignKey(Logic_Tree_GMPE_Level)
+    level                       = models.ForeignKey(Logic_Tree_GMPE_Level)
     gmpe                        = models.CharField(max_length=50, choices=GMPE_CHOICES, null=True)
     weight                      = models.FloatField()
     xml_id                      = models.CharField(max_length=10, null=True)

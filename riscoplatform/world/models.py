@@ -44,6 +44,9 @@ class Adm_1(models.Model):
     type = models.CharField(max_length=50, null=True)
     geom = models.MultiPolygonField()
     geom_simp = models.MultiPolygonField(null=True)
+    new = models.NullBooleanField(default=True, null=True)
+    country_name = models.CharField(max_length=75, null=True)
+    country_iso = models.CharField(max_length=3, null=True)
     objects = models.GeoManager()
 
     def __unicode__(self):
@@ -51,11 +54,14 @@ class Adm_1(models.Model):
 
 class Adm_2(models.Model):
     adm_1 = models.ForeignKey(Adm_1, null=True) 
+    adm_1_name = models.CharField(max_length=75, null=True) 
+    country_iso = models.CharField(max_length=3, null=True) 
     name = models.CharField(max_length=75)
     id_2 = models.IntegerField(null=True)
     type = models.CharField(max_length=50, null=True)
     geom = models.MultiPolygonField()
     geom_simp = models.MultiPolygonField(null=True)
+    repeated = models.NullBooleanField(default=False, null=True)
     objects = models.GeoManager()
 
     def __unicode__(self):

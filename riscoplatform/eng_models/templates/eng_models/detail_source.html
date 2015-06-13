@@ -24,23 +24,142 @@
 	</div>
 
 	<div class="row">
-		<div class="col-md-12">
+		<div class="col-md-6">
 			<div id="map" class="vertical-map"></div><br>
 		</div>
-	</div>
-
-	<div class="row">
 		<div class="col-md-6">
 			<form class="form-horizontal" action="{% url 'add_source' model.id %}" method="post" enctype="multipart/form-data">
 			<fieldset>
 				<legend>Insert new source</legend>
 					{% csrf_token %}
-					{% include 'form.html' %}
+					<ul class="nav nav-tabs">
+					  <li class="active"><a href="#general" data-toggle="tab" aria-expanded="true">General</a></li>
+					  <li class=""><a href="#mag_freq_dist" data-toggle="tab" aria-expanded="true">Magnitude frequency distribution</a></li>
+					  <li class=""><a href="#geometry" data-toggle="tab" aria-expanded="false">Geometry</a></li>
+					</ul>
+					<div id="myTabContent" class="tab-content">
+					  	<div class="tab-pane fade active in" id="general">
+
+					  	{% for field in form %}
+					  		{% if field.name in source_categories.general %}
+
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+
+					  	</div>
+
+					  	<div class="tab-pane fade " id="mag_freq_dist">
+
+					  	{% for field in form %}
+					  		{% if field.name in source_categories.mag_freq_dist %}
+
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+
+					    <div class="form-group">
+					    	<label class="col-lg-2 control-label">Occur Rates</label>
+					    	<div class="col-lg-10" id='occur_rates-tags'></div>
+					    </div>
+
+					  	</div>
+
+					  	<div class="tab-pane fade " id="geometry">
+
+					  	{% for field in form %}
+					  		{% if field.name in source_categories.geometry %}
+
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+
+
+	                        <div class="form-group">
+                        		<div class="col-lg-10 col-lg-offset-2">
+                        			<table class="table" id='nodal_plane_dist_table'>
+                        				<caption>Nodal plane uncertainty distribution</caption>
+                        				<thead>
+	                        				<tr>
+	                        					<th>Probability</th>
+	                        					<th>Strike</th>
+	                        					<th>Dip</th>
+	                        					<th>Rake</th>
+	                        					<th>Actions</th>
+	                        				</tr>
+                        				</thead>
+                        				<thead>
+	                        				<tr>
+	                        					<th>
+	                        						<input id="probability_nodal_plane_dist" class="form-control" type="text">
+	                        					</th>
+	                        					<th>
+	                        						<input id="strike" class="form-control" type="text">
+	                        					</th>
+	                        					<th>
+	                        						<input id="dip" class="form-control" type="text">
+	                        					</th>
+	                        					<th>
+	                        						<input id="rake" class="form-control" type="text">
+	                        					</th>
+	                        					<th>
+	                        						<button id="add-prob" class="btn btn-success btn-sm" type="button"> <span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+	                        					</th>
+	                        				</tr>
+                        				</thead>
+                        				<tbody></tbody>
+
+                        			</table>
+                        		</div>
+	                        </div>
+
+
+	                        <div class="form-group">
+                        		<div class="col-lg-10 col-lg-offset-2">
+                        			<table class="table" id='hypo_depth_dist_table'>
+                        				<caption>Hypo depth distribution</caption>
+                        				<thead>
+	                        				<tr>
+	                        					<th>Probability</th>
+	                        					<th>Depth</th>
+	                        					<th>Actions</th>
+	                        				</tr>
+                        				</thead>
+                        				<thead>
+	                        				<tr>
+	                        					<th>
+	                        						<input id="probability_hypo_depth_dist" class="form-control" type="text">
+	                        					</th>
+	                        					<th>
+	                        						<input id="depth" class="form-control" type="text">
+	                        					</th>
+	                        					<th>
+	                        						<button id="add-prob-hypo-depth" class="btn btn-success btn-sm" type="button"> <span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+	                        					</th>
+	                        				</tr>
+                        				</thead>
+                        				<tbody></tbody>
+
+                        			</table>
+                        		</div>
+	                        </div>
+
+
+
+						</div>
+
+
+					</div>
+				<div class="form-group">
+				    <div class="col-lg-5 col-lg-offset-2">
+				        <input class="btn btn-primary" type="submit" value="Add source" />
+				    </div>
+				</div>
 			</fieldset>
 			</form>
-		</div>
-		<div class="col-md-6">
-			<div id="source_list"></div>
 		</div>
 	</div>
 

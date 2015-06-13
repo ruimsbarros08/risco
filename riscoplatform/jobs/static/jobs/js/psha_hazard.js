@@ -7,8 +7,6 @@ $( document ).ready(function() {
     $( "label[for='region']" ).hide( "fast");
     $( "label[for='imt_l']" ).hide( "fast");
 
-    //$( "label[for='site_model']" ).hide( "fast");
-    //$( "#id_site_model" ).hide( "fast");
     $( "#id_site_model" ).attr('disabled', true);
     
     $('#id_sites_type').on('change', function() {

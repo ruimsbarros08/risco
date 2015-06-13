@@ -18,11 +18,26 @@ DROP FOREIGN TABLE IF EXISTS foreign_hazard_site;
 DROP FOREIGN TABLE IF EXISTS foreign_loss_map;
 DROP FOREIGN TABLE IF EXISTS foreign_loss_map_data;
 
+DROP FOREIGN TABLE IF EXISTS foreign_loss_curve_data;
+DROP FOREIGN TABLE IF EXISTS foreign_loss_curve;
+
 DROP FOREIGN TABLE IF EXISTS foreign_lt_realization;
 DROP FOREIGN TABLE IF EXISTS foreign_lt_source_model;
 DROP FOREIGN TABLE IF EXISTS foreign_hazard_curve;
 DROP FOREIGN TABLE IF EXISTS foreign_hazard_curve_data;
 DROP FOREIGN TABLE IF EXISTS foreign_hazard_map;
+
+DROP FOREIGN TABLE IF EXISTS foreign_output;
+
+
+CREATE FOREIGN TABLE foreign_output (
+	id integer,
+	oq_job_id integer,
+	display_name character varying,
+	output_type character varying
+)
+SERVER priseoq OPTIONS (schema_name 'uiapi', table_name 'output');
+
 
 --SCENARIO DAMAGE
 
@@ -86,7 +101,11 @@ CREATE FOREIGN TABLE foreign_loss_map (
 	id integer,
 	output_id integer,
 	loss_type character varying,
-	insured boolean
+	insured boolean,
+	hazard_output_id integer,
+	poe double precision,
+	statistics character varying,
+	quantile double precision
 )
 SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'loss_map');
 
@@ -160,6 +179,38 @@ CREATE FOREIGN TABLE foreign_hazard_map (
 	imls double precision[]
 )
 SERVER priseoq OPTIONS (schema_name 'hzrdr', table_name 'hazard_map');
+
+
+--PSHA RISK
+
+CREATE FOREIGN TABLE foreign_loss_curve (
+	id integer,
+ 	output_id integer,
+	loss_type character varying,
+	hazard_output_id integer,
+	aggregate boolean,
+	insured boolean,
+	statistics character varying, 
+	quantile double precision
+)
+SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'loss_curve');
+
+
+CREATE FOREIGN TABLE foreign_loss_curve_data (
+	id integer,
+ 	loss_curve_id  integer,
+ 	asset_ref character varying,
+ 	asset_value  double precision,
+ 	loss_ratios  double precision[],
+ 	poes double precision[],
+ 	average_loss_ratio double precision,
+ 	stddev_loss_ratio double precision
+)
+SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'loss_curve_data');
+
+
+
+
 
 
 

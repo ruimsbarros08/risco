@@ -42,22 +42,22 @@ def run_natural_earth(verbose=True):
     lm.save(strict=True, verbose=verbose)
 
 
-def simplify_countries():
-    cursor.execute('UPDATE world_country \
-                    SET geom_simp = world_country_simp.geom \
-                    FROM world_country_simp \
-                    WHERE world_country.name = world_country_simp.name; \
-                    \
-                    UPDATE world_country \
-                    SET geom_simp = world_country_simp.geom \
-                    FROM world_country_simp \
-                    WHERE world_country.geom_simp is NULL \
-                    AND ST_Intersects(world_country_simp.geom, ST_PointOnSurface(world_country.geom)); \
-                    \
-                    UPDATE world_country \
-                    SET geom_simp = geom \
-                    WHERE geom_simp is NULL;')
-    connection.commit()
+#def simplify_countries():
+#    cursor.execute('UPDATE world_country \
+#                    SET geom_simp = world_country_simp.geom \
+#                    FROM world_country_simp \
+#                    WHERE world_country.name = world_country_simp.name; \
+#                    \
+#                    UPDATE world_country \
+#                    SET geom_simp = world_country_simp.geom \
+#                    FROM world_country_simp \
+#                    WHERE world_country.geom_simp is NULL \
+#                    AND ST_Intersects(world_country_simp.geom, ST_PointOnSurface(world_country.geom)); \
+#                    \
+#                    UPDATE world_country \
+#                    SET geom_simp = geom \
+#                    WHERE geom_simp is NULL;')
+#    connection.commit()
 
 
 
@@ -69,12 +69,14 @@ def simplify_countries():
 
 
 level1_mapping = {
-    'id_1' : 'ID_1',
-    'name' : 'NAME_1',
+    'name' : 'ADMIN_NAME',
+    'type' : 'TYPE_ENG',
+    'country_name' : 'CNTRY_NAME',
+    'country_iso' : 'GMI_CNTRY',
     'geom' : 'MULTIPOLYGON',
 }
 
-level1_shp = os.path.abspath(os.path.join(os.path.dirname(__file__), 'datasources/gadm/gadmV2_Level1.shp'))
+level1_shp = os.path.abspath(os.path.join(os.path.dirname(__file__), 'datasources/admin98/admin98.shp'))
 
 def run_level1(verbose=True):
     lm = LayerMapping(Adm_1, level1_shp, level1_mapping, transform=False, encoding='utf-8')
@@ -83,21 +85,68 @@ def run_level1(verbose=True):
 
 def match_country_adm1():
     cursor.execute('UPDATE world_adm_1 \
-        SET country_id = \
-        (SELECT world_country.id \
-            FROM world_country \
-            WHERE ST_Within(world_adm_1.geom, world_country.geom))')
-
+                    SET country_id = world_country.id \
+                    FROM world_country \
+                    WHERE world_country.iso = world_adm_1.country_iso \
+                    AND world_adm_1.new = true ')
     connection.commit()
 
 
 def match_missing_adm1():
     cursor.execute('UPDATE world_adm_1 \
-        SET country_id = \
-        (SELECT world_country.id \
-            FROM world_country \
-            WHERE ST_Contains(world_country.geom, ST_PointOnSurface(world_adm_1.geom))) \
-        WHERE world_adm_1.country_id IS NULL')
+                    SET country_id = \
+                    (SELECT world_country.id \
+                        FROM world_country \
+                        WHERE ST_Contains(world_country.geom, ST_PointOnSurface(world_adm_1.geom))) \
+                    WHERE world_adm_1.country_id IS NULL')
+    connection.commit()
+
+
+
+#############
+### ADM 2 ###
+#############
+
+
+level2_mapping = {
+    'name' : 'NAME_2',
+    'adm_1_name' : 'NAME_1',
+    'country_iso' : 'ISO',
+    'geom' : 'MULTIPOLYGON',
+}
+
+level2_shp = os.path.abspath(os.path.join(os.path.dirname(__file__), 'datasources/gadm_level2/gadm_v1_lev2_shp/gadm_v1_lev2.shp'))
+
+def run_level2(verbose=True):
+    lm = LayerMapping(Adm_2, level2_shp, level2_mapping, transform=False, encoding='utf-8')
+    lm.save(strict=True, verbose=verbose)
+
+
+def match_missing_adm2_1():
+    cursor.execute('UPDATE world_adm_2 \
+                    SET adm_1_id = world_adm_1.id \
+                    FROM world_adm_1 \
+                    WHERE world_adm_2.country_iso = world_adm_1.country_iso \
+                    AND world_adm_1.new = true \
+                    AND world_adm_2.adm_1_name = world_adm_1.name')
+    connection.commit()
+
+
+def match_missing_adm2_2():
+    cursor.execute('UPDATE world_adm_2 \
+                    SET adm_1_id = world_adm_1.id \
+                    FROM world_adm_1 \
+                    WHERE world_adm_2.adm_1_id IS NULL \
+                    AND ST_Contains(world_adm_1.geom, ST_PointOnSurface(world_adm_2.geom))')
+                    #AND world_adm_2.country_iso = world_adm_1.country_iso \
+    connection.commit()
+
+
+def add_missing_adm2():
+    cursor.execute('INSERT INTO world_adm_2 (name, geom, repeated, country_iso) \
+                    SELECT name_1, geom, true, iso  \
+                    FROM world_world \
+                    WHERE iso NOT IN (SELECT country_iso FROM world_adm_2)')
     connection.commit()
 
 

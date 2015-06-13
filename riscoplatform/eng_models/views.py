@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django import forms
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from parsers import exposure_parser, site_model_parser, source_parser, fragility_parser, vulnerability_parser, sm_logic_tree_parser
+from parsers import exposure_parser, site_model_parser, source_parser, fragility_parser, vulnerability_parser, sm_logic_tree_parser, gmpe_logic_tree_parser
 from django.core import serializers
 from django.db import connection
 #from django.db.models import Q
@@ -70,7 +70,7 @@ class AssetForm(forms.ModelForm):
 		model = Asset
 		exclude = ['model', 'parish']
 		widgets = {
-		    'location': forms.HiddenInput(),
+			'location': forms.HiddenInput(),
 		}
 
 			
@@ -219,31 +219,6 @@ def add_asset(request, model_id):
 		return render(request, 'eng_models/detail_exposure.html', {'model': model, 'form': form})
 
 
-@login_required
-def exposure_geojson_tiles(request, model_id, z, x, y):
-	geometries = requests.get(TILESTACHE_HOST+'world/'+str(z)+'/'+str(x)+'/'+str(y)+'.json')
-	geom_dict = json.loads(geometries.text)
-
-	cursor = connection.cursor()
-
-	for g in geom_dict["features"]:
-
-		cursor.execute("select count(*) \
-			from eng_models_exposure_model, eng_models_asset, world_world \
-			where eng_models_exposure_model.id = %s \
-			and eng_models_exposure_model.id = eng_models_asset.model_id \
-			and st_intersects(eng_models_asset.location, world_world.geom) \
-			and world_world.id = %s ", [model_id, g['id']])
-
-		try:
-			g['properties']['n_assets'] = cursor.fetchone()[0]
-			#color = colors.damage_picker(m, int(z))
-			#g['properties']['color'] = '#FF0000'
-		except:
-			pass
-
-	#geom_dict["features"] = [feature for feature in geom_dict["features"] if feature['properties']['limit_states'] != []]
-	return HttpResponse(json.dumps(geom_dict), content_type="application/json")
 
 
 ############################
@@ -274,20 +249,20 @@ def detail_site(request, model_id):
 @login_required
 def detail_site_ajax(request, model_id):
 
-    cursor = connection.cursor()
-    cursor.execute('select ST_AsGeoJSON(cell), avg(vs30), avg(z1pt0), avg(z2pt5), world_fishnet.id \
+	cursor = connection.cursor()
+	cursor.execute('select ST_AsGeoJSON(cell), avg(vs30), avg(z1pt0), avg(z2pt5), world_fishnet.id \
 					from world_fishnet, eng_models_site \
 					where eng_models_site.model_id = %s \
 					and eng_models_site.cell_id = world_fishnet.id \
 					group by world_fishnet.id', [model_id])
 					#and st_intersects(world_fishnet.cell, eng_models_site.location)\
 
-    cells = cursor.fetchall()
-    features = [dict(type='Feature', id=cell[4], properties=dict(color='#FF0000', vs30="{0:.4f}".format(cell[1]),
+	cells = cursor.fetchall()
+	features = [dict(type='Feature', id=cell[4], properties=dict(color='#FF0000', vs30="{0:.4f}".format(cell[1]),
 																z1pt0="{0:.4f}".format(cell[2]),
 																z2pt5="{0:.4f}".format(cell[3])),
 				geometry=json.loads(cell[0])) for cell in cells]
-    return HttpResponse(json.dumps({'type': 'FeatureCollection', 'features': features}), content_type="application/json")
+	return HttpResponse(json.dumps({'type': 'FeatureCollection', 'features': features}), content_type="application/json")
 
 @login_required
 def add_site_model(request):
@@ -320,14 +295,73 @@ def add_site_model(request):
 
 
 class SourceModelForm(forms.ModelForm):
+
 	class Meta:
 		model = Source_Model
 		fields = ['name', 'description', 'xml']
+
+
+source_categories = {'general': ['name', 'tectonic_region', 'mag_scale_rel', 'rupt_aspect_ratio'],
+					'mag_freq_dist': ['mag_freq_dist_type', 'a', 'b', 'min_mag', 'max_mag', 'bin_width', 'occur_rates'],
+					'geometry': ['source_type', 'point', 'upper_depth', 'lower_depth', 'nodal_plane_dist', 'hypo_depth_dist', 'area', 'fault', 'dip', 'rake']} 
+
 
 class SourceForm(forms.ModelForm):
 
 	def clean(self):
 		form_data = self.cleaned_data
+
+		if 'b' in form_data:
+			if form_data['b'] < 0:
+				self._errors["b"] = "This parameter must be a float greater than 0"
+				del form_data['b']
+
+		if form_data['source_type'] != 'SIMPLE_FAULT':
+			if 'nodal_plane_dist' in form_data:
+				nodal_plane_dist = [[]]
+				for e in form_data['nodal_plane_dist']:
+					value = float(e.replace('[', '').replace(']', ''))
+					if len(nodal_plane_dist[-1]) != 4:  
+						pass
+					else:
+						nodal_plane_dist.append([])
+					nodal_plane_dist[-1].append(value)
+
+				prob_sum = 0
+				for e in nodal_plane_dist:
+					prob_sum += e[0]
+
+				if prob_sum != 1:
+					self.add_error(None, 'The sum of the probabilisties must be equal to 1')
+
+
+			form_data['nodal_plane_dist'] = nodal_plane_dist
+
+			if 'hypo_depth_dist' in form_data:
+				hypo_depth_dist = [[]]
+				for e in form_data['hypo_depth_dist']:
+					value = float(e.replace('[', '').replace(']', ''))
+					if len(hypo_depth_dist[-1]) != 2:  
+						pass
+					else:
+						hypo_depth_dist.append([])
+					hypo_depth_dist[-1].append(value)
+
+				prob_sum = 0
+				for e in hypo_depth_dist:
+					if 'lower_depth' in form_data and 'upper_depth' in form_data:
+						if e[1] < form_data['lower_depth'] or e[1] > form_data['upper_depth']:
+							self._errors["lower_depth"] = "All hypocenter depths specified must be between the lower and the upper depth"
+							self._errors["upper_depth"] = "All hypocenter depths specified must be between the lower and the upper depth"
+					prob_sum += e[0]
+				
+				if prob_sum != 1:
+					self.add_error(None, 'The sum of the probabilities must be equal to 1')
+
+				form_data['hypo_depth_dist'] = hypo_depth_dist
+
+
+
 		if 'lower_depth' in form_data and 'upper_depth' in form_data:
 			if form_data['lower_depth'] <= form_data['upper_depth']:
 				self._errors["lower_depth"] = "Lower depth value must be higher than upper depth"
@@ -346,9 +380,12 @@ class SourceForm(forms.ModelForm):
 		model = Source
 		fields = ['name', 'tectonic_region', 'mag_scale_rel', 'rupt_aspect_ratio', 'mag_freq_dist_type', 'a', 'b', 'min_mag', 'max_mag', 'bin_width', 'occur_rates', 'source_type', 'upper_depth', 'lower_depth', 'nodal_plane_dist', 'hypo_depth_dist', 'dip', 'rake', 'point', 'area', 'fault']
 		widgets = {
-            		'point': forms.HiddenInput(),
-            		'area': forms.HiddenInput(),
-            		'fault': forms.HiddenInput(),
+					'point': forms.HiddenInput(),
+					'area': forms.HiddenInput(),
+					'fault': forms.HiddenInput(),
+					'occur_rates': forms.HiddenInput(),
+					'nodal_plane_dist': forms.HiddenInput(),
+					'hypo_depth_dist': forms.HiddenInput()
 					}
 		
 @login_required
@@ -365,7 +402,7 @@ def detail_source(request, model_id):
 	sources = Source.objects.filter(model_id=model_id)
 	page = request.GET.get('page')
 	form = SourceForm()
-	return render(request, 'eng_models/detail_source.html', {'model': model, 'form': form, 'sources': pagination(sources, 10, page)})
+	return render(request, 'eng_models/detail_source.html', {'model': model, 'form': form, 'sources': pagination(sources, 10, page), 'source_categories': source_categories})
 
 @login_required
 def add_source(request, model_id):
@@ -378,10 +415,10 @@ def add_source(request, model_id):
 			return redirect('detail_source', model_id=model_id)
 		else:
 			model = get_object_or_404(Source_Model ,pk=model_id)
-			return render(request, 'eng_models/detail_source.html', {'model': model ,'form': form})
+			return render(request, 'eng_models/detail_source.html', {'model': model ,'form': form, 'source_categories': source_categories})
 	else:
 		form = SourceForm()
-		return render(request, 'eng_models/detail_source.html', {'form': form})
+		return render(request, 'eng_models/detail_source.html', {'form': form, 'source_categories': source_categories})
 
 @login_required
 def add_source_model(request):
@@ -410,15 +447,60 @@ def get_sources(model_id):
 	#model = Source_Model.objects.get(id=model_id)
 
 	point_sources = Source.objects.filter(model_id=model_id, source_type='POINT')
-	point_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
+	point_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name,
+																		tectonic_region=source.tectonic_region,
+																		mag_scale_rel=source.mag_scale_rel,
+																		rupt_aspect_ratio=source.rupt_aspect_ratio,
+																		mag_freq_dist_type=source.mag_freq_dist_type,
+																		a=source.a,
+																		b=source.b,
+																		min_mag=source.min_mag,
+																		max_mag=source.max_mag,
+																		bin_width=source.bin_width,
+																		occur_rates=source.occur_rates,
+																		source_type=source.source_type,
+																		upper_depth=source.upper_depth,
+																		lower_depth=source.lower_depth,
+																		nodal_plane_dist=source.nodal_plane_dist,
+																		hypo_depth_dist=source.hypo_depth_dist),
 				geometry = json.loads(source.point.json) ) for source in point_sources]
 
 	area_sources = Source.objects.filter(model_id=model_id, source_type='AREA')
-	area_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
+	area_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name,
+																		tectonic_region=source.tectonic_region,
+																		mag_scale_rel=source.mag_scale_rel,
+																		rupt_aspect_ratio=source.rupt_aspect_ratio,
+																		mag_freq_dist_type=source.mag_freq_dist_type,
+																		a=source.a,
+																		b=source.b,
+																		min_mag=source.min_mag,
+																		max_mag=source.max_mag,
+																		bin_width=source.bin_width,
+																		occur_rates=source.occur_rates,
+																		source_type=source.source_type,																		
+																		upper_depth=source.upper_depth,
+																		lower_depth=source.lower_depth,
+																		nodal_plane_dist=source.nodal_plane_dist,
+																		hypo_depth_dist=source.hypo_depth_dist),
 				geometry = json.loads(source.area.json) ) for source in area_sources]
 
 	fault_sources = Source.objects.filter(model_id=model_id, source_type='SIMPLE_FAULT')
-	fault_features = [dict(type='Feature', id=source.id, properties=dict( name = source.name ),
+	fault_features = [dict(type='Feature', id=source.id, properties=dict(  name = source.name,
+																		tectonic_region=source.tectonic_region,
+																		mag_scale_rel=source.mag_scale_rel,
+																		rupt_aspect_ratio=source.rupt_aspect_ratio,
+																		mag_freq_dist_type=source.mag_freq_dist_type,
+																		a=source.a,
+																		b=source.b,
+																		min_mag=source.min_mag,
+																		max_mag=source.max_mag,
+																		bin_width=source.bin_width,
+																		occur_rates=source.occur_rates,
+																		source_type=source.source_type,																		
+																		upper_depth=source.upper_depth,
+																		lower_depth=source.lower_depth,
+																		dip=source.dip,
+																		rake=source.rake ),
 				geometry = json.loads(source.fault.json) ) for source in fault_sources]	
 
 	return {'pointSource': {'type': 'FeatureCollection', 'features': point_features},
@@ -441,22 +523,22 @@ def sources_ajax(request, model_id):
 class RuptureForm(forms.ModelForm):
 
 	def clean(self):
-	    form_data = self.cleaned_data
-	    if 'lower_depth' in form_data and 'upper_depth' in form_data:
-		    if form_data['lower_depth'] <= form_data['upper_depth']:
-		        self._errors["lower_depth"] = "Lower depth value must be higher than upper depth"
-		        self._errors["upper_depth"] = "Lower depth value must be higher than upper depth"
-		        del form_data['lower_depth']
-		        del form_data['upper_depth']
-	    return form_data
+		form_data = self.cleaned_data
+		if 'lower_depth' in form_data and 'upper_depth' in form_data:
+			if form_data['lower_depth'] <= form_data['upper_depth']:
+				self._errors["lower_depth"] = "Lower depth value must be higher than upper depth"
+				self._errors["upper_depth"] = "Lower depth value must be higher than upper depth"
+				del form_data['lower_depth']
+				del form_data['upper_depth']
+		return form_data
 
 	class Meta:
 		model = Rupture_Model
 		exclude = ['user', 'date_created']
 		widgets = {
 					'description': forms.Textarea(attrs={'rows':5}),
-            		'location': forms.HiddenInput(),
-            		'rupture_geom': forms.HiddenInput(),
+					'location': forms.HiddenInput(),
+					'rupture_geom': forms.HiddenInput(),
 					}
 
 @login_required
@@ -907,8 +989,70 @@ def add_logic_tree_sm(request):
 			return render(request, 'eng_models/index_logic_tree_sm.html', {'models': pagination(models, 10, 1), 'form': form})
 	else:
 		form = LogicTreeSMForm()
-		#form.fields["source_models"].queryset = Source_Model.objects.filter(source_model_contributor__contributor=request.user)
 		return render(request, 'eng_models/index_logic_tree_sm.html', {'form': form})
+
+
+
+###########################
+##     LOGIC TREE GMPE   ##
+###########################
+
+class LogicTreeGMPEForm(forms.ModelForm):
+	class Meta:
+		model = Logic_Tree_GMPE
+		fields = ['name', 'description', 'xml']
+
+
+@login_required
+def index_logic_tree_gmpe(request):
+	models = Logic_Tree_GMPE.objects.filter(user=request.user).order_by('-date_created')
+	form = LogicTreeGMPEForm()
+	page = request.GET.get('page')
+
+	return render(request, 'eng_models/index_logic_tree_gmpe.html', {'models': pagination(models, 10, page), 'form': form})
+
+@login_required
+def detail_logic_tree_gmpe(request, model_id):
+	model = get_object_or_404(Logic_Tree_GMPE ,pk=model_id, user=request.user)
+	return render(request, 'eng_models/detail_logic_tree_gmpe.html', {'model': model})
+
+@login_required
+def add_logic_tree_gmpe(request):
+	if request.method == 'POST':
+		form = LogicTreeGMPEForm(request.POST, request.FILES)
+		if form.is_valid():
+			model = form.save(commit=False)
+			model.date_created = timezone.now()
+			model.user = request.user
+			model.save()
+
+			if request.FILES:
+				try:
+					gmpe_logic_tree_parser.start(model)
+				except Exception as e:
+					model.delete()
+					return render(request, 'eng_models/index_logic_tree_gmpe.html', {'form': form, 'parse_error': e})
+			return redirect('detail_logic_tree_gmpe', model_id=model.id)
+		else:
+			models = Logic_Tree_GMPE.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'eng_models/index_logic_tree_gmpe.html', {'models': pagination(models, 10, 1), 'form': form})
+	else:
+		form = LogicTreeGMPEForm()
+		return render(request, 'eng_models/index_logic_tree_gmpe.html', {'form': form})
+
+
+#@login_required
+#def logic_tree_gmpe_ajax(request, model_id):
+#	model = get_object_or_404(Logic_Tree_GMPE ,pk=model_id, user=request.user)
+
+#	levels = Logic_Tree_GMPE_Level.objects.filter(model=model)
+
+#	for level in levels:
+
+
+
+
+
 
 #@login_required
 #def download_logic_tree(request, model_id):

@@ -221,3 +221,12 @@ function getRandomColor() {
     }
     return color;
 }
+
+
+function isFloat(n){
+        return   n===Number(n)  && n%1!==0
+}
+
+
+
+

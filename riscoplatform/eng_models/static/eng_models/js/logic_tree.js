@@ -18,6 +18,14 @@ var control = L.control.layers(baseLayers).addTo(map);
 var url = document.URL.split('/');
 var model_id = url[url.length -2];
 
+
+
+
+
+
+
+
+
 /*
 $.ajax('/models/logictree/'+model_id+'/ajax' )
     .done(function(data) {

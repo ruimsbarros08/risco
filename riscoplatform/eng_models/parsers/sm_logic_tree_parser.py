@@ -46,9 +46,19 @@ def start(object):
 			
 			if level_order == 1:
 
+				weight_sum = 0
 				for branch_tag in branches:
 					xml_id = level_tag.getAttribute('branchID')
-					uncertaintyWeight = branch_tag.getElementsByTagName('uncertaintyWeight')[0].firstChild.nodeValue
+					uncertaintyWeight = float(branch_tag.getElementsByTagName('uncertaintyWeight')[0].firstChild.nodeValue)
+
+					weight_sum += uncertaintyWeight
+
+					if weight_sum > 1.0:
+						raise InvalidLogicTree('The sum of the weights in all the branches of a branch set must be less than 1.0')
+
+					if uncertaintyWeight > 1.0 or uncertaintyWeight < 0.0:
+						raise InvalidLogicTree('The weight of a branch must be inside the range [0.0, 1.0]')
+					
 					try:
 						source_model_id = int(branch_tag.getElementsByTagName('uncertaintyModel')[0].firstChild.nodeValue)
 						source_model = Source_Model.objects.get(pk=source_model_id)
@@ -57,6 +67,9 @@ def start(object):
 					object.source_models.add(source_model)
 					branch = Logic_Tree_SM_Branch(branch_set=branch_set, weight=uncertaintyWeight, source_model_id=source_model_id, xml_id=xml_id)
 					branch.save()
+
+				if weight_sum != 1.0:
+					raise InvalidLogicTree('The sum of the weights in all the branches of a branch set must be equal to 1.0')
 
 			else:
 				sources = []
@@ -167,12 +180,20 @@ def start(object):
 
 							branch_set.origins.add(o)
 
+				weight_sum = 0
 
 				for branch_tag in branches:
 					xml_id = branch_tag.getAttribute('branchID')
 					uncertaintyModel = branch_tag.getElementsByTagName('uncertaintyModel')[0].firstChild.nodeValue
-					uncertaintyWeight = branch_tag.getElementsByTagName('uncertaintyWeight')[0].firstChild.nodeValue
+					uncertaintyWeight = float(branch_tag.getElementsByTagName('uncertaintyWeight')[0].firstChild.nodeValue)
 
+					weight_sum += uncertaintyWeight
+
+					if weight_sum > 1.0:
+						raise InvalidLogicTree('The sum of the weights in all the branches of a branch set must be less than 1.0')
+
+					if uncertaintyWeight > 1.0 or uncertaintyWeight < 0.0:
+						raise InvalidLogicTree('The weight of a branch must be inside the range [0.0, 1.0]')
 					
 					if uncertainty_type == 'maxMagGRRelative':
 						branch = Logic_Tree_SM_Branch(branch_set=branch_set, weight=uncertaintyWeight, max_mag_inc=uncertaintyModel, xml_id=xml_id)
@@ -190,6 +211,9 @@ def start(object):
 						branch = Logic_Tree_SM_Branch(branch_set=branch_set, weight=uncertaintyWeight, max_mag=uncertaintyModel, xml_id=xml_id)
 
 					branch.save()
+
+				if weight_sum != 1.0:
+					raise InvalidLogicTree('The sum of the weights in all the branches of a branch set must be equal to 1.0')
 
 		level_order += 1
 

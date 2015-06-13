@@ -8,7 +8,7 @@
 	<div class="col-md-6">
 		<ul class="breadcrumb">
 		  	<li> <a href="{% url 'jobs_home' %}">Jobs</a></li>
-		  	<li> <a href="{% url 'index_psha_hazard' %}">Classical PSHA Hazard</a></li>
+		  	<li> <a href="{% url 'index_psha_hazard' %}">Classical PSHA Risk</a></li>
 		  	<li class="active">{{ job.name }}</li>
 		</ul>
 	</div>
@@ -24,6 +24,7 @@
 	<div class="row">
 		
 		<div class="col-md-9">
+			<div><button id='adm_back' class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>Back</button></div><br>
 			<div id='map' style="height:700px;"></div><br>
 		</div>
 
@@ -32,7 +33,7 @@
 			{% if job.status == 'CREATED' %}
 			<div class="row">
 				<div class="col-md-12">
-					<a href="{% url 'start_psha_hazard' job.id %}"> <button class="btn btn-danger" style="width:100%;">Start job <span class="glyphicon glyphicon-play" aria-hidden="true"></span> </button></a>
+					<a href="{% url 'start_psha_risk' job.id %}"> <button class="btn btn-danger" style="width:100%;">Start job <span class="glyphicon glyphicon-play" aria-hidden="true"></span> </button></a>
 				</div>
 			</div>
 			<br>
@@ -92,6 +93,10 @@
 						<b>Hazard:</b> <a href="{% url 'results_psha_hazard' job.hazard.id %}">{{ job.hazard }}</a>
 					  	</li>
 
+						<li class="list-group-item">
+						<b>Exposure model:</b> <a href="{% url 'detail_exposure' job.exposure_model.id %}">{{ job.exposure_model }}</a>
+					  	</li>
+
 
 
 					  	{% for model in job.vulnerability_models.all %}
@@ -116,9 +121,111 @@
 			</div>
 		</div>
 	</div>
+
+
+	{% if job.status == 'FINISHED' %}
+	<div class="row">
+		<div class="col-md-9">
+
+				<ul id='vulnerability-selector' class="nav nav-tabs">
+
+				{% if total %}
+				<li class=""><a href="#total" data-toggle="tab" aria-expanded="true">Total</a></li>
+				{% endif %}
+
+			  	{% for model in job.classical_psha_risk_vulnerability_set.all %}
+
+					<li class=""><a href="#{{ model.vulnerability_model.type }}" data-toggle="tab" aria-expanded="true">{{ model.vulnerability_model.type }}</a></li>
+
+			  	{% endfor %}
+
+				</ul>
+
+				<div id="myTabContent" class="tab-content">
+
+				{% if total %}
+					<div class="tab-pane fade in" id="total">
+
+						<div class="row">
+							<div class="col-md-6">
+								<div id='total_total' class="well well-sm"></div>
+							</div>
+						</div>
+
+						<div class="row">
+							
+							{% if job.insured_losses %}
+							<div id="total_insured" class="col-md-4"></div>
+							{% endif %}
+							
+							<div id="total_region" class="col-md-4"></div>
+							
+							<div id="total_taxonomy" class="col-md-4"></div>
+
+						</div>
+						
+
+					</div>
+				{% endif %}
+
+			  	{% for model in job.classical_psha_risk_vulnerability_set.all %}
+
+					<div class="tab-pane fade in" id="{{ model.vulnerability_model.type }}">
+
+						<div class="row">
+							<div class="col-md-12">
+								<h4>Model: <a href="{% url 'detail_vulnerability' model.vulnerability_model.id %}">{{ model.vulnerability_model }}</a></h4>
+							</div>
+							<div class="col-md-6">
+								<div id='{{ model.vulnerability_model.type }}_total' class="well well-sm"></div>
+							</div>
+						</div>
+						
+						<div class="row">
+							{% if job.insured_losses %}
+							<div id="{{ model.vulnerability_model.type }}_insured" class="col-md-4"></div>
+							{% endif %}
+							
+							<div id="{{ model.vulnerability_model.type }}_region" class="col-md-4"></div>
+							
+							<div id="{{ model.vulnerability_model.type }}_taxonomy" class="col-md-4"></div>
+						</div>
+
+					</div>
+
+			  	{% endfor %}
+
+			  	</div>
+			
+		</div>
+
+		<div class="col-md-3">
+
+			{% include 'regions_dropdowns.html' %}
+
+			<br>
+			<form class="form-vertical">
+				<fieldset>
+
+					<div class="form-group">
+						<label for="taxonomy" class="control-label">Taxonomy</label>
+						<div class="">
+							<select id='taxonomy' name='taxonomy' class="form-control"></select>
+						</div>
+					</div>
+
+				</fieldset>
+			</form>
+
+		</div>
+
+	</div>
+	{% endif %}
+
+
 </div>
 
 {% load staticfiles %}
-<script type="text/javascript" src="{% static 'jobs/js/psha_hazard_results.js' %}"></script>
+<script type="text/javascript" src="{% static 'jobs/js/psha_risk_results.js' %}"></script>
 
 {% endblock %}

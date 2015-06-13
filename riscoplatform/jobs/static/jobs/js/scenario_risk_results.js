@@ -74,15 +74,29 @@ $( document ).ready(function() {
 
     $('#adm_back').attr("disabled", true);
 
-    $('#adm_back').on('click', function(){
-        country = undefined;
+
+    var zoom_out_adm = function(){
+        //country = undefined;
         level -= 1;
+        if (level == 0){
+            country = undefined;
+        }
+        else if (level == 1){
+            country = $('#country').val();
+        }
+        else if (level == 2){
+            country = $('#level1').val();
+        }
+
         get_data(country, level);   
-    });
+    }
+
+    $('#adm_back').on('click', zoom_out_adm);
 
     $('#country').on('change', function(){
         if ( $(this).val() == 'undefined'){
-            level = 0;
+            zoom_out_adm();
+            return;
         }
         else {
             level = 1;
@@ -91,6 +105,17 @@ $( document ).ready(function() {
         get_data(country, level);
     });
 
+    $('#level1').on('change', function(){
+        if ( $(this).val() == 'undefined'){
+            zoom_out_adm();
+            return;
+        }
+        else {
+            level = 2;
+        }
+        country = $(this).val();
+        get_data(country, level);
+    });
 
     $('#taxonomy').on('change', function(){
         taxonomy = $(this).val();
@@ -134,22 +159,42 @@ $( document ).ready(function() {
 
     var get_data = function(country, next_level){
         level = next_level;
-
-        $.ajax( '/jobs/scenario/risk/results_ajax/'+job_id+'/?country='+country+'&taxonomy='+taxonomy )
+        var adm_1;
+        var adm_0;
+        if (level == 1){
+            adm_0 = country;
+        }
+        else if (level == 2){
+            adm_1 = country;
+        }
+        $.ajax( '/jobs/scenario/risk/results_ajax/'+job_id+'/?adm_1='+adm_1+'&country='+adm_0+'&taxonomy='+taxonomy )
         .done(function(data) {
             display_data(data)
         });
     }
 
 
+    $('#level1').attr("disabled", true);
+    $('#level2').attr("disabled", true);
     var fill_regions_dropdowns = function(regions){
         if (level == 0){
             var $elem = $("#country");
             $("#level1").empty();
+            $("#level2").empty();
+            $('#level2').attr("disabled", true);
+            $('#level1').attr("disabled", true);
         }
         else if (level == 1){
             $("#country").val(country);
             var $elem = $("#level1");
+            $("#level2").empty();
+            $('#level1').attr("disabled", false);
+            $('#level2').attr("disabled", true);
+        }
+        else if (level == 2){
+            $("#level1").val(country);
+            var $elem = $("#level2");
+            $('#level2').attr("disabled", false);
         }
         $elem.empty();
         $elem.append('<option value="undefined">All</option>');
