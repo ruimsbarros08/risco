@@ -10,6 +10,9 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from parsers import exposure_parser, site_model_parser, source_parser, fragility_parser, vulnerability_parser, sm_logic_tree_parser, gmpe_logic_tree_parser
 from django.core import serializers
 from django.db import connection
+from django.db import transaction
+from django.contrib.gis.geos import Point
+
 #from django.db.models import Q
 #from django.db.models import F
 import json
@@ -63,8 +66,8 @@ class ExposureForm(forms.ModelForm):
 	tax_source_desc = forms.CharField(required=False)
 	class Meta:
 		model = Exposure_Model
-		fields = ['name', 'description', 'taxonomy_source', 'area_type', 'area_unit', 'aggregation', 'currency', 'deductible', 'insurance_limit', 'xml']
-
+		fields = ['name', 'description', 'taxonomy_source', 'area_type', 'area_unit', 'deductible', 'insurance_limit', 'struct_cost_type', 'struct_cost_currency', 'non_struct_cost_type', 'non_struct_cost_currency', 'contents_cost_type', 'contents_cost_currency', 'business_int_cost_type', 'business_int_cost_currency', 'xml']
+     
 class AssetForm(forms.ModelForm):
 	class Meta:
 		model = Asset
@@ -92,74 +95,416 @@ def detail_exposure(request, model_id):
 
 @login_required
 def ajax_assets(request, model_id):
+
 	model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
-	try:
-		page = int(request.GET.get('page'))
-	except:
-		page = 1
-	
-	cursor = connection.cursor()
+	model_json = serializers.serialize("json", [model])
+	model_json = json.loads(model_json)
 
-	if request.GET.get('adm1') != 'undefined':
-		adm1_id = request.GET.get('adm1')
-		#adm1 = Adm_1.objects.get(pk=adm1_id)
-		#asset_list = Asset.objects.filter(model=model, location__intersects=adm1.geom)[page:page+49]
-
-		cursor.execute('select st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
-						eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
-						eng_models_asset.n_buildings, eng_models_asset.area, \
-						eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
-						eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
-						eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
-						eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
-						eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
-						from eng_models_asset, world_adm_1, eng_models_building_taxonomy \
-						where eng_models_asset.model_id = %s \
-						and eng_models_building_taxonomy.id = eng_models_asset.taxonomy_id \
-						and eng_models_asset.adm_1_id = world_adm_1.id \
-						and world_adm_1.id = %s \
-						order by id asc', [model.id, adm1_id])
-
-	elif request.GET.get('country') != 'undefined':
-		country_id = request.GET.get('country')
-		#country = Country.objects.get(pk=country_id)
-		#asset_list = Asset.objects.filter(model=model, location__intersects=country.geom)[page:page+49]
-
-		cursor.execute('select st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
-						eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
-						eng_models_asset.n_buildings, eng_models_asset.area, \
-						eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
-						eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
-						eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
-						eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
-						eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
-						from eng_models_asset, world_country, world_adm_1, eng_models_building_taxonomy \
-						where eng_models_asset.model_id = %s \
-						and eng_models_building_taxonomy.id = eng_models_asset.taxonomy_id \
-						and eng_models_asset.adm_1_id = world_adm_1.id \
-						and world_adm_1.country_id = world_country.id \
-						and world_country.id = %s \
-						order by id asc', [model.id, country_id])
+	if request.GET.get('taxonomy') != 'undefined':
+		taxonomies_json = []
 
 	else:
-		#asset_list = Asset.objects.filter(model=model)[page:page+49]
-		cursor.execute('select st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
-						eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
-						eng_models_asset.n_buildings, eng_models_asset.area, \
-						eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
-						eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
-						eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
-						eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
-						eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
-						from eng_models_asset, eng_models_building_taxonomy \
-						where eng_models_asset.model_id = %s \
-						and eng_models_building_taxonomy.id = eng_models_asset.taxonomy_id \
-						order by eng_models_asset.id asc', [model.id])
+		taxonomies = Building_Taxonomy.objects.filter(source = model.taxonomy_source)
+		taxonomies_json = serializers.serialize("json", taxonomies)
+		taxonomies_json = json.loads(taxonomies_json)
+
+	cursor = connection.cursor()
+	
+	if request.method == 'GET':
+		
+		region = request.GET.get('region')
+
+		if int(request.GET.get('level')) == 3:
+
+			regions = []
+
+			if request.GET.get('taxonomy') != 'undefined':
+				taxonomy = request.GET.get('taxonomy')
+
+				cursor.execute('SELECT st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+							eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+							eng_models_asset.n_buildings, eng_models_asset.area, \
+							eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
+							eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
+							eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
+							eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
+							eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
+							FROM eng_models_asset, eng_models_building_taxonomy \
+							WHERE eng_models_asset.model_id = %s \
+							AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+							AND eng_models_building_taxonomy.id = %s \
+							AND eng_models_asset.adm_2_id = %s \
+							ORDER BY eng_models_asset.id ASC', [model.id, taxonomy, region])
+
+			else:
+
+				cursor.execute('SELECT st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+							eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+							eng_models_asset.n_buildings, eng_models_asset.area, \
+							eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
+							eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
+							eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
+							eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
+							eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
+							FROM eng_models_asset, eng_models_building_taxonomy \
+							WHERE eng_models_asset.model_id = %s \
+							AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+							AND eng_models_asset.adm_2_id = %s \
+							ORDER BY eng_models_asset.id ASC', [model.id, region])
 
 
-	data = cursor.fetchall()
+		elif int(request.GET.get('level')) == 2:
 
-	return HttpResponse(json.dumps({'assets': data }), content_type="application/json")
+			cursor.execute('SELECT DISTINCT world_adm_2.id, world_adm_2.name \
+							FROM eng_models_asset, world_adm_2 \
+							WHERE eng_models_asset.model_id = %s \
+							AND eng_models_asset.adm_2_id = world_adm_2.id \
+							AND world_adm_2.adm_1_id = %s', [model.id, region])
+
+			regions = [ {'id': r[0], 'name': r[1]} for r in cursor.fetchall() ]
+
+			if request.GET.get('taxonomy') != 'undefined':
+				taxonomy = request.GET.get('taxonomy')
+
+				cursor.execute('SELECT st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+							eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+							eng_models_asset.n_buildings, eng_models_asset.area, \
+							eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
+							eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
+							eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
+							eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
+							eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
+							FROM eng_models_asset, world_adm_2, eng_models_building_taxonomy \
+							WHERE eng_models_asset.model_id = %s \
+							AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+							AND eng_models_building_taxonomy.id = %s \
+							AND eng_models_asset.adm_2_id = world_adm_2.id \
+							AND world_adm_2.adm_1_id = %s \
+							ORDER BY eng_models_asset.id ASC', [model.id, taxonomy, region])
+
+			else:
+
+				cursor.execute('SELECT st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+							eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+							eng_models_asset.n_buildings, eng_models_asset.area, \
+							eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
+							eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
+							eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
+							eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
+							eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
+							FROM eng_models_asset, world_adm_2, eng_models_building_taxonomy \
+							WHERE eng_models_asset.model_id = %s \
+							AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+							AND eng_models_asset.adm_2_id = world_adm_2.id \
+							AND world_adm_2.adm_1_id = %s \
+							ORDER BY eng_models_asset.id ASC', [model.id, region])
+
+
+		elif int(request.GET.get('level')) == 1:
+
+			cursor.execute('SELECT DISTINCT world_adm_1.id, world_adm_1.name \
+							FROM eng_models_asset, world_adm_1, world_adm_2 \
+							WHERE eng_models_asset.model_id = %s \
+							AND eng_models_asset.adm_2_id = world_adm_2.id \
+							AND world_adm_2.adm_1_id = world_adm_1.id \
+							AND world_adm_1.country_id = %s', [model.id, region])
+
+			regions = [ {'id': r[0], 'name': r[1]} for r in cursor.fetchall() ]
+
+			if request.GET.get('taxonomy') != 'undefined':
+				taxonomy = request.GET.get('taxonomy')
+
+				cursor.execute('SELECT st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+							eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+							eng_models_asset.n_buildings, eng_models_asset.area, \
+							eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
+							eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
+							eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
+							eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
+							eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
+							FROM eng_models_asset, world_adm_2, world_adm_1, eng_models_building_taxonomy \
+							WHERE eng_models_asset.model_id = %s \
+							AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+							AND eng_models_building_taxonomy.id = %s \
+							AND eng_models_asset.adm_2_id = world_adm_2.id \
+							AND world_adm_2.adm_1_id = world_adm_1.id \
+							AND world_adm_1.country_id = %s \
+							ORDER BY eng_models_asset.id ASC', [model.id, taxonomy, region])
+
+			else:
+
+				cursor.execute('SELECT st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+							eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+							eng_models_asset.n_buildings, eng_models_asset.area, \
+							eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
+							eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
+							eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
+							eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
+							eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
+							FROM eng_models_asset, world_adm_2, world_adm_1, eng_models_building_taxonomy \
+							WHERE eng_models_asset.model_id = %s \
+							AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+							AND eng_models_asset.adm_2_id = world_adm_2.id \
+							AND world_adm_2.adm_1_id = world_adm_1.id \
+							AND world_adm_1.country_id = %s \
+							ORDER BY eng_models_asset.id ASC', [model.id, region])
+
+
+		else:
+
+			cursor.execute('SELECT DISTINCT world_country.id, world_country.name \
+							FROM eng_models_asset, world_country, world_adm_1, world_adm_2 \
+							WHERE eng_models_asset.model_id = %s \
+							AND eng_models_asset.adm_2_id = world_adm_2.id \
+							AND world_adm_2.adm_1_id = world_adm_1.id \
+							AND world_adm_1.country_id = world_country.id', [model.id])
+
+			regions = [ {'id': r[0], 'name': r[1]} for r in cursor.fetchall() ]
+
+			if request.GET.get('taxonomy') != 'undefined':
+				taxonomy = request.GET.get('taxonomy')
+
+				cursor.execute('SELECT st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+							eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+							eng_models_asset.n_buildings, eng_models_asset.area, \
+							eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
+							eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
+							eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
+							eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
+							eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
+							FROM eng_models_asset, eng_models_building_taxonomy \
+							WHERE eng_models_asset.model_id = %s \
+							AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+							AND eng_models_building_taxonomy.id = %s \
+							ORDER BY eng_models_asset.id ASC', [model.id, taxonomy])
+
+			else:
+
+				cursor.execute('SELECT st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+							eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+							eng_models_asset.n_buildings, eng_models_asset.area, \
+							eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
+							eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
+							eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
+							eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
+							eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
+							FROM eng_models_asset, eng_models_building_taxonomy \
+							WHERE eng_models_asset.model_id = %s \
+							AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+							ORDER BY eng_models_asset.id ASC', [model.id])
+			
+		assets = [ {'lat': asset[0],
+					'lon': asset[1],
+					'id': asset[2],
+					'name': asset[3],
+					'taxonomy': asset[4],
+					'n_buildings': asset[5],
+					'area': asset[6],
+					'struct_cost': asset[7],
+					'struct_deductible': asset[8],
+					'struct_insurance_limit': asset[9],
+					'retrofitting_cost': asset[10],
+					'non_struct_cost': asset[11],
+					'non_struct_deductible': asset[12],
+					'non_struct_insurance_limit': asset[13],
+					'contents_cost': asset[14],
+					'contents_deductible': asset[15],
+					'contents_insurance_limit': asset[16],
+					'business_int_cost': asset[17],
+					'business_int_deductible': asset[18],
+					'business_int_insurance_limit': asset[19],
+					'oc_day': asset[20],
+					'oc_night': asset[21],
+					'oc_transit': asset[22],
+					'selected': False} for asset in cursor.fetchall()]
+				
+
+	elif request.method == 'POST':
+		assets = json.loads(request.body)
+		with transaction.atomic():
+			for asset in assets:
+				try:
+					tax = Building_Taxonomy.objects.get(source=model.taxonomy_source, name=asset['taxonomy'])
+				except:
+					tax = Building_Taxonomy(source=model.taxonomy_source, name=asset['taxonomy'])
+					tax.save()
+
+				try:
+					a = Asset.objects.get(name=asset['name'], model=model)
+
+					try:
+						loc = Point(float( asset['lon']), float( asset['lat']))
+					except:
+						asset['error'] = 'Invalid location'
+						break
+
+					try:
+						adm_2 = Adm_2.objects.get(geom__intersects=loc)
+					except:
+						adm_2 = None
+
+					try:
+						a.name = asset['name']
+						a.taxonomy = tax
+						a.adm_2 = adm_2
+						a.n_buildings = asset['n_buildings']
+						a.area = asset['area']
+						a.struct_cost = asset['struct_cost']
+						a.struct_deductible = asset['struct_deductible']
+						a.struct_insurance_limit = asset['struct_insurance_limit']
+						a.retrofitting_cost = asset['retrofitting_cost']
+						a.non_struct_cost = asset['non_struct_cost']
+						a.non_struct_deductible = asset['non_struct_deductible']
+						a.non_struct_insurance_limit = asset['non_struct_insurance_limit']
+						a.contents_cost = asset['contents_cost']
+						a.contents_deductible = asset['contents_deductible']
+						a.contents_insurance_limit = asset['contents_insurance_limit']						
+						a.business_int_cost = asset['business_int_cost']
+						a.business_int_deductible = asset['business_int_deductible']
+						a.business_int_insurance_limit = asset['business_int_insurance_limit']
+						a.location = loc
+						a.model = model
+						a.oc_day = asset['oc_day']
+						a.oc_night = asset['oc_night']
+						a.oc_transit = asset['oc_transit']
+
+						a.save()
+						
+					except Exception, e:
+						asset['error'] = e
+
+
+				except Exception as e:
+					if asset['name'] != None:
+
+						try:
+							loc = Point(float( asset['lon']), float( asset['lat']))
+						except:
+							asset['error'] = 'Invalid location'
+							break
+
+						try:
+							adm_2 = Adm_2.objects.get(geom__intersects=loc)
+						except:
+							adm_2 = None
+
+						try:
+							a = Asset(name = asset['name'],
+									taxonomy = tax,
+									adm_2 = adm_2,
+									n_buildings = asset['n_buildings'],
+									area = asset['area'],
+									struct_cost = asset['struct_cost'],
+									struct_deductible = asset['struct_deductible'],
+									struct_insurance_limit = asset['struct_insurance_limit'],
+									retrofitting_cost = asset['retrofitting_cost'],
+									non_struct_cost = asset['non_struct_cost'],
+									non_struct_deductible = asset['non_struct_deductible'],
+									non_struct_insurance_limit = asset['non_struct_insurance_limit'],
+									contents_cost = asset['contents_cost'],
+									contents_deductible = asset['contents_deductible'],
+									contents_insurance_limit = asset['contents_insurance_limit'],						
+									business_int_cost = asset['business_int_cost'],
+									business_int_deductible = asset['business_int_deductible'],
+									business_int_insurance_limit = asset['business_int_insurance_limit'],
+									location = loc,
+									model = model,
+									oc_day = asset['oc_day'],
+									oc_night = asset['oc_night'],
+									oc_transit = asset['oc_transit'])
+
+							a.save()
+						except Exception as e:
+
+							asset['error'] = e
+
+					else:
+						if asset['id']:
+							a = Asset.objects.get(pk=asset['id'])
+							a.delete()
+
+
+
+
+		cursor.execute('SELECT DISTINCT world_country.id, world_country.name \
+						FROM eng_models_asset, world_country, world_adm_1, world_adm_2 \
+						WHERE eng_models_asset.model_id = %s \
+						AND eng_models_asset.adm_2_id = world_adm_2.id \
+						AND world_adm_2.adm_1_id = world_adm_1.id \
+						AND world_adm_1.country_id = world_country.id', [model.id])
+
+		regions = [ {'id': r[0], 'name': r[1]} for r in cursor.fetchall() ]
+
+
+	elif request.method == 'DELETE':
+
+		cursor.execute('SELECT DISTINCT world_country.id, world_country.name \
+						FROM eng_models_asset, world_country, world_adm_1, world_adm_2 \
+						WHERE eng_models_asset.model_id = %s \
+						AND eng_models_asset.adm_2_id = world_adm_2.id \
+						AND world_adm_2.adm_1_id = world_adm_1.id \
+						AND world_adm_1.country_id = world_country.id', [model.id])
+
+		regions = [ {'id': r[0], 'name': r[1]} for r in cursor.fetchall() ]
+
+
+		assets = json.loads(request.body)
+		with transaction.atomic():
+			for asset in assets:
+				try:
+					a = Asset.objects.get(name=asset, model=model)
+					a.delete()
+				except:
+					pass
+
+		taxonomies = Building_Taxonomy.objects.filter(source = model.taxonomy_source)
+		taxonomies_json = serializers.serialize("json", taxonomies)
+		taxonomies_json = json.loads(taxonomies_json)
+
+		cursor.execute('SELECT st_y(eng_models_asset.location), st_x(eng_models_asset.location), \
+					eng_models_asset.id, eng_models_asset.name, eng_models_building_taxonomy.name, \
+					eng_models_asset.n_buildings, eng_models_asset.area, \
+					eng_models_asset.struct_cost, eng_models_asset.struct_deductible, eng_models_asset.struct_insurance_limit, eng_models_asset.retrofitting_cost, \
+					eng_models_asset.non_struct_cost, eng_models_asset.non_struct_deductible, eng_models_asset.non_struct_insurance_limit, \
+					eng_models_asset.contents_cost, eng_models_asset.contents_deductible, eng_models_asset.contents_insurance_limit, \
+					eng_models_asset.business_int_cost, eng_models_asset.business_int_deductible, eng_models_asset.business_int_insurance_limit, \
+					eng_models_asset.oc_day, eng_models_asset.oc_night, eng_models_asset.oc_transit \
+					FROM eng_models_asset, eng_models_building_taxonomy \
+					WHERE eng_models_asset.model_id = %s \
+					AND eng_models_asset.taxonomy_id = eng_models_building_taxonomy.id \
+					ORDER BY eng_models_asset.id ASC', [model.id])
+			
+		assets = [ {'lat': asset[0],
+					'lon': asset[1],
+					'id': asset[2],
+					'name': asset[3],
+					'taxonomy': asset[4],
+					'n_buildings': asset[5],
+					'area': asset[6],
+					'struct_cost': asset[7],
+					'struct_deductible': asset[8],
+					'struct_insurance_limit': asset[9],
+					'retrofitting_cost': asset[10],
+					'non_struct_cost': asset[11],
+					'non_struct_deductible': asset[12],
+					'non_struct_insurance_limit': asset[13],
+					'contents_cost': asset[14],
+					'contents_deductible': asset[15],
+					'contents_insurance_limit': asset[16],
+					'business_int_cost': asset[17],
+					'business_int_deductible': asset[18],
+					'business_int_insurance_limit': asset[19],
+					'oc_day': asset[20],
+					'oc_night': asset[21],
+					'oc_transit': asset[22],
+					'selected': False} for asset in cursor.fetchall()]
+
+
+
+	return HttpResponse(json.dumps({'model': model_json,
+									'assets': assets,
+									'taxonomies': taxonomies_json,
+									'regions': regions}), content_type="application/json")
 
 
 

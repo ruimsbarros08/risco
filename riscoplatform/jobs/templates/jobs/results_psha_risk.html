@@ -98,15 +98,6 @@
 					  	</li>
 
 
-
-					  	{% for model in job.vulnerability_models.all %}
-					  	<li class="list-group-item">
-					  		<b>{{ model.get_asset_category_display }} vulnerability:</b> <a href="{% url 'detail_vulnerability' model.id %}">{{ model }}</a>
-					  	</li>
-					  	{% endfor %}
-
-
-
 					  	<li class="list-group-item">
 						<b>Asset hazard distance:</b> {{ job.asset_hazard_distance }}
 					  	</li>

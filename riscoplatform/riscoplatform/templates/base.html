@@ -13,6 +13,16 @@
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap/dist/css/bootstrap.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap-theme-flatly/flatly.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap-tags/dist/css/bootstrap-tags.css' %}" />
+    
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/angular/angular-csp.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/ng-tags-input/ng-tags-input.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/ng-tags-input/ng-tags-input.bootstrap.min.css' %}" />
+    <!--
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/angular-tags/angular-tags-0.2.10.css' %}" />
+    -->
+
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/handsontable/dist/handsontable.full.min.css' %}" />
+
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet/dist/leaflet.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet-draw/dist/leaflet.draw.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/leaflet.markercluster/dist/MarkerCluster.css' %}" />
@@ -128,6 +138,15 @@
 <script type="text/javascript" src="{% static 'bower_components/bootstrap/js/transition.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/bootstrap/js/modal.js' %}"></script>
 <!--<script type="text/javascript" src="{% static 'bower_components/jquery-ui/jquery-ui.min.js' %}"></script>-->
+
+<script type="text/javascript" src="{% static 'bower_components/angular/angular.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/ng-tags-input/ng-tags-input.min.js' %}"></script>
+<!--
+<script type="text/javascript" src="{% static 'bower_components/angular-tags/dist/angular-tags-0.2.10.min.min.js' %}"></script>
+-->
+<script type="text/javascript" src="{% static 'bower_components/handsontable/dist/handsontable.full.min.js' %}"></script>
+
+
 <script type="text/javascript" src="{% static 'bower_components/highcharts/highcharts.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/highcharts/highcharts-more.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/chartjs/src/Chart.Core.js' %}"></script>
@@ -137,6 +156,7 @@
 <script type="text/javascript" src="{% static 'bower_components/chartjs/src/Chart.PolarArea.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/chartjs/src/Chart.Radar.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/Chart.Scatter.js/Chart.Scatter.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/Chart.StackedBar.js/src/Chart.StackedBar.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'bower_components/leaflet/dist/leaflet.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-draw/dist/leaflet.draw.js' %}"></script>
@@ -169,7 +189,9 @@
 
 <div class="container">
     <div class="row">
-        <div style="height:100px;"></div>
+        <div class="col-md-12" style="height:100px;">
+
+        </div>
     </div>
 </div>
 

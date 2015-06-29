@@ -2,6 +2,10 @@
 
 (function($) {
 $( document ).ready(function() {
+
+
+    $( "#vulnerability-selector li:first-child" ).addClass( "active" );
+    $( "#myTabContent div:first-child" ).addClass( "tab-pane fade active in" );
     
     var map = new L.Map('map', {
         fullscreenControl: true,
@@ -124,6 +128,19 @@ $( document ).ready(function() {
         });
     }
 
+    var get_locations = function(country){
+        $.ajax( '/jobs/psha/risk/results_locations/'+job_id+'/?country='+country+'&taxonomy='+taxonomy)
+        .done(function(data) {
+            display_locations(data);
+        });
+    }
+
+    var get_curves = function(country, lat, lon){
+        $.ajax( '/jobs/psha/risk/results_curves/'+job_id+'/?country='+country+'&lat='+lat+'&lon='+lon)
+        .done(function(data) {
+            display_curves(data);
+        });
+    }
 
     $('#level1').attr("disabled", true);
     $('#level2').attr("disabled", true);
@@ -198,7 +215,87 @@ $( document ).ready(function() {
         else {
             $('#adm_back').attr("disabled", false);
         }
-    } 
+    }
+
+
+    var display_chart = function(type, data, units){
+
+        chart_data = [];
+        var ctx = $('#'+type+'_chart').get(0).getContext("2d");
+
+        for (var j = 0; j < data.values.length; j++ ){
+            var color = getRandomColor();
+            $('#'+data.name+'_chart_legend ul').append('<li class="no-bullets"> <span class="glyphicon glyphicon-stop" style="color:'+color+';" aria-hidden="true"></span> <b> '+
+                        data.values[j].name+'</b>: '+
+                        Humanize.intword(data.values[j].value, 'M', 1)+' +- '+
+                        Humanize.intword(data.values[j].stddev, 'M', 1)+' '+
+                        units+'</li>');
+            chart_data.push({value: data.values[j].value,
+                            label: data.values[j].name,
+                            color: color,
+                            highlight: "#EBD800",});
+        }
+
+        var chart = new Chart(ctx).Pie(chart_data, chart_options);
+        
+        $('#'+type+'_chart').on('click', function(evt){
+            try {  
+                var selectedLabel = chart.getSegmentsAtEvent(evt)[0].label;
+                for (var k = 0; k < regions.features.length; k++){
+                    if (selectedLabel == regions.features[k].properties.name){
+                        country = regions.features[k].id;
+                        $("#country").val(country);
+                        level = level+1;
+                        get_data(country, level);
+                    }
+                }
+            }
+            catch(err){
+                console.log('Click on a slice')
+            }
+        });
+
+    }
+
+
+    var locationsGroup = new L.LayerGroup();
+    control.addOverlay(locationsGroup, 'Locations');
+
+    var display_locations = function(data){
+        locationsGroup.clearLayers();
+
+        var locations = data.locations;
+        var bounds = [];
+
+        if (job.status == 'FINISHED'){
+            
+            for (var i = 0; i<locations.length; i++){
+
+                var marker = L.marker(L.latLng(locations[i].lat, locations[i].lon), {icon: blueIcon});
+                bounds.push([locations[i].lat, locations[i].lon]);
+                marker.bindPopup( '<b>Latitude: </b>'+locations[i].lat + '<br><b>Longitude:</b> '+locations[i].lon + '<br><b>Name:</b> '+locations[i].adm_2 );
+                locationsGroup.addLayer(marker);
+
+                marker.on('click', function(){
+
+                    locationsGroup.eachLayer(function (layer){
+                        layer.setIcon( blueIcon );
+                    });
+
+                    this.setIcon( redIcon );
+                });
+
+            }
+            locationsGroup.addTo(map);
+            map.fitBounds(bounds);
+
+        }
+
+    }
+
+
+
+
 
     var display_data = function(data){
 
@@ -237,32 +334,61 @@ $( document ).ready(function() {
                 chart_options.tooltipTemplate = "<%= label %>: <%= Humanize.intword(value, 'M', 1) %> "+units;
 
                 //MAP DVF OPTIONS
-                losses_options = get_losses_options(regions, losses_data[i].total_scale);
+                losses_options = get_losses_options(regions, losses_data[i].max);
                 losses_options.onEachRecord = function(layer, record){
                     layer.on('click', function () {
                         country = record.id;
                         var next_level = level+1;
-                        get_data(country, next_level);
+                        if (level != 2){
+                            get_data(country, next_level);
+                        }
+                        else {
+                            get_locations(country);
+                        }
                     });
                 }
-
-            
 
                 $tab_elem.removeClass( "active in" );
 
                 //ADD LAYERS
 
+                map.on('overlayadd', function (layer){
+                    var name_array = layer.name.split(' ');
+                    for (var i=0; i<losses_data.length;i++){
+                        if (name_array[0] == losses_data[i].name){
+                            var poe = parseFloat(name_array[2]);
+                            if (name_array.length > 3){
+                                var quantile = name_array[4];
+                            }
+
+                            for (var j=0; j<losses_data[i].values_per_region.length; j++){
+                                if (losses_data[i].values_per_region[j].poe == poe){
+                                    if (losses_data[i].values_per_region[j].quantile == quantile){
+
+                                        display_chart(losses_data[i].name, losses_data[i].values_per_region[j], 'EUR');
+                                    }
+                                }
+                            }                                                        
+                        }  
+                    }
+                });
+
                 for (var j=0; j<losses_data[i].values_per_region.length;j++){
                     lossesLayer = new L.ChoroplethDataLayer(losses_data[i].values_per_region[j], losses_options);
 
-                    
                     if (j==0){
                         lossesLayer.addTo(map);
                     }
 
                     lossesGroup.addLayer(lossesLayer);
-                    //control.addOverlay(lossesLayer ,losses_data[i].name);
-                    control.addOverlay(lossesLayer ,'Oi');
+                    if (losses_data[i].values_per_region[j].quantile){
+                        var layer_name = losses_data[i].name + ' Poe: ' + losses_data[i].values_per_region[j].poe + ' Quantile: ' + losses_data[i].values_per_region[j].quantile 
+                    }
+                    else {
+                        var layer_name = losses_data[i].name + ' Poe: ' + losses_data[i].values_per_region[j].poe + ' Mean'
+                    }
+                    
+                    control.addOverlay(lossesLayer ,layer_name);
                     map.fitBounds(lossesLayer.getBounds());
                     
                 }

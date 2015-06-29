@@ -16,7 +16,7 @@
 	
 	<div class="row">
 
-		<div class="col-md-8">
+		<div class="col-md-12">
 			
 			<h3>{{ model.name }}</h3>
 			<br>
@@ -47,6 +47,7 @@
 			<br>
 
 		</div>
+		<!--
 		<div class="col-md-4">
 			<div class="well">
 				<div class="row">
@@ -62,91 +63,106 @@
 				</div>
 			</div>
 		</div>
-
+		-->
 	</div>
 
-	<div class="row">
-		<div class="col-md-8">
-			<div class="row">
-				<div class="col-md-12">
-					<div id="map" class="vertical-map"></div><br>
-				</div>
-			</div>
+</div>
 
-			<div class="row">
-				<div class="col-md-12">
-					<div id="asset_info">
-						<p>Select an asset on the list</p>
-					</div><br>
-				</div>
-			</div>
+<div class="container-fluid" ng-app='exposureApp'>
 
-
-		</div>
+	<div class="row" ng-controller='exposureCtrl'>
 		<div class="col-md-4">
-
-
 			<div class="row">
 				<div class="col-md-12">
-				<form class="form-horizontal">
-					<fieldset>
-						<legend>Select by Region</legend>
-
-						<div class="form-group">
-							<label for="country" class="col-lg-2 control-label">Country</label>
-							<div class="col-lg-10">
-								<select id='country' name='country' class="form-control"></select>
-							</div>
-						</div>
-						<div class="form-group">
-							<label for="level1" class="col-lg-2 control-label">Level 1</label>
-							<div class="col-lg-10">
-								<select id='level1' name='level1' class="form-control"></select>
-							</div>
-						</div>
-						<!--
-						<div class="form-group">
-							<label for="level2" class="col-lg-2 control-label">Level 2</label>
-							<div class="col-lg-10">
-								<select id='level2' name='level2' class="form-control"></select>
-							</div>
-						</div>
-						<div class="form-group">
-							<label for="level3" class="col-lg-2 control-label">Level 3</label>
-							<div class="col-lg-10">
-								<select id='level3' name='level3' class="form-control"></select>
-							</div>
-						</div>
-						-->
-
-					</fieldset>
-				</form>
+					<div id="map" style="height:90vh;"></div>
+					<div id="region-selector">
+						<select ng-model="region0" ng-options="region.name for region in regions0" class="form-control input-sm" ng-change='selectRegion(1, region0.id)'></select>
+                        
+                        <select ng-model="region1" ng-options="region.name for region in regions1" class="form-control input-sm" ng-change='selectRegion(2, region1.id)' ng-disabled='region1Disabled'></select>
+                        
+                        <select ng-model="region2" ng-options="region.name for region in regions2" class="form-control input-sm" ng-change='selectRegion(3, region2.id)' ng-disabled='region2Disabled'></select>
+                    	
+                    	<button class="btn btn-sm" ng-click='goHome()' ng-disabled='disableHome'><span class="glyphicon glyphicon-home" aria-hidden="true"></span></button>
+                    	
+                    	<button class="btn btn-sm" ng-click='upOneLevel()' ng-disabled='disableUp'><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></button>
+                    </div>
 				</div>
 			</div>
-			
-			<div id='assets_table_container' style="height: 1000px; overflow: auto;">
-				<div class="row">
-					<div class="col-md-12">
-					<table id='assets_table' class="table table-striped table-hover ">
-						<caption>Assets</caption>
-						  	<thead>
-							    <tr>
-							      <th></th>
-							      <th>Name</th>
-							      <th>Taxonomy</th>
-							      <th>Number of buildings</th>
-							      <th>Area</th>
-							    </tr>
-							</thead>
-							<tbody>
+		</div>
+		<div class="col-md-8">
+			<div class="row" style="height: 30vh;">
+				<div class="col-md-2">
+					<label>Taxonomies:</label>
+				</div>
+				<div class="col-md-2">
+					<select style="width:100%;" ng-model='taxonomy' ng-options="taxonomy.name for taxonomy in taxonomies" class="form-control input-sm" ng-change='setTaxonomy(taxonomy.id)'></select>
+				</div>
+				<div class="col-md-2">
+					<button style="width:100%;" class="btn btn-primary btn-sm" ng-click='allTaxonomies()' ng-disabled='disableAllTaxonomies'>All Taxonomies <span class="glyphicon glyphicon-refresh" aria-hidden="true" ></span></button>
+				</div>
+				<div class="col-md-2">
+					<button style="width:100%;" class="btn btn-sm btn btn-primary" ng-click='scrollToTop()'>Top <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></button>		
+				</div>
+				
+				<div class="col-md-2">
+					<button style="width:100%;" class="btn btn-sm btn btn-primary" ng-click='scrollToEnd()'>End <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></button>
+				</div>
+				
+				<div class="col-md-2">
+					<button style="width:100%;" class="btn btn-sm btn btn-success" ng-click='saveData()' ng-disabled="disableSave">Save <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
+				</div>
+				<div class="col-md-12">
+					<br>
+					<div id='assets_table_container' style="height:250px; overflow: auto;"></div>
+				</div>
+			</div>
 
-							</tbody>
-						</table>
-
+			<div  class="row" id="asset_info" style="height:30vh;">
+				<div class="col-md-12">
+					<h5>Selected Assets</h5>
+					<div class="row">
+						<div class="col-md-10">
+							<!--<tags-input ng-model="selectedAssets" class="ti-input-sm" display-property="name" placeholder="Add an asset" >
+							</tags-input>
+							-->
+							<div id="assets-tag-list" class="tag-list"></div>
+						</div>
+						<div class="col-md-2">
+							<button class="btn btn-danger btn-sm" ng-disabled='disableDelete' ng-click='deleteAssets()'> <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete assets</button>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="alert alert-dismissible alert-success" ng-show='info'>
+								<button type="button" class="close" data-dismiss="alert">×</button>
+								[[ message ]] <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+							</div>
+							<div class="alert alert-dismissible alert-danger" ng-show='error_info'>
+								<button type="button" class="close" data-dismiss="alert">×</button>
+								[[ error_message ]] <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+							</div>
+						</div>
 					</div>
 				</div>
+				
+				<div class="col-md-12">
+					<h2>[[ asset_name ]]</h2>
+				</div>
+				
+				<div class="col-md-6">
+					<h4>Costs</h4>
+					<canvas id="asset_chart" width="200" height="200"></canvas>
+				</div>
+				<div class="col-md-6">
+					<h4>Occupancies</h4>
+					<canvas id="asset_occ_chart" width="200" height="200"></canvas>
+				</div>					
 			</div>
+
 		</div>
+
+		<!--<div class="col-md-4">
+		</div>-->
 	</div>
 
 

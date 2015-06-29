@@ -103,8 +103,8 @@ def start(object):
 				raise InvalidExposureModel('The area aggregation settings must be one of the three possibilities: "per_asset", "per_unit", "per_area" or "aggregated". If "per_area" the area type and units must be defined')
 			
 			structural_cost_unit = cost.getAttribute('unit')
-			if structural_cost_unit not in ['EUR', 'DOL'] :
-				raise InvalidExposureModel('The currency must be one of the two possibilities: "EUR" or "DOL" ')
+			if structural_cost_unit not in ['EUR', 'USD'] :
+				raise InvalidExposureModel('The currency must be one of the two possibilities: "EUR" or "USD" ')
 		
 
 		if cost.getAttribute('name') == 'nonstructural':
@@ -113,8 +113,8 @@ def start(object):
 				raise InvalidExposureModel('The area aggregation settings must be one of the three possibilities: "per_asset", "per_unit", "per_area" or "aggregated". If "per_area" the area type and units must be defined')
 			
 			non_structural_cost_unit = cost.getAttribute('unit')
-			if non_structural_cost_unit not in ['EUR', 'DOL'] :
-				raise InvalidExposureModel('The currency must be one of the two possibilities: "EUR" or "DOL" ')
+			if non_structural_cost_unit not in ['EUR', 'USD'] :
+				raise InvalidExposureModel('The currency must be one of the two possibilities: "EUR" or "USD" ')
 		
 		if cost.getAttribute('name') == 'business_interruption':
 			business_interruption_cost_type = cost.getAttribute('type')
@@ -122,8 +122,8 @@ def start(object):
 				raise InvalidExposureModel('The area aggregation settings must be one of the three possibilities: "per_asset", "per_unit", "per_area" or "aggregated". If "per_area" the area type and units must be defined')
 			
 			business_interruption_cost_unit = cost.getAttribute('unit')
-			if business_interruption_cost_unit not in ['EUR', 'DOL'] :
-				raise InvalidExposureModel('The currency must be one of the two possibilities: "EUR" or "DOL" ')
+			if business_interruption_cost_unit not in ['EUR', 'USD'] :
+				raise InvalidExposureModel('The currency must be one of the two possibilities: "EUR" or "USD" ')
 		
 		if cost.getAttribute('name') == 'contents':
 			contents_cost_type = cost.getAttribute('type')
@@ -131,8 +131,8 @@ def start(object):
 				raise InvalidExposureModel('The area aggregation settings must be one of the three possibilities: "per_asset", "per_unit", "per_area" or "aggregated". If "per_area" the area type and units must be defined')
 			
 			contents_cost_unit = cost.getAttribute('unit')
-			if contents_cost_unit not in ['EUR', 'DOL'] :
-				raise InvalidExposureModel('The currency must be one of the two possibilities: "EUR" or "DOL" ')
+			if contents_cost_unit not in ['EUR', 'USD'] :
+				raise InvalidExposureModel('The currency must be one of the two possibilities: "EUR" or "USD" ')
 		
 
 	object.deductible = deductible_abs
@@ -148,8 +148,6 @@ def start(object):
 	object.business_int_cost_type = business_interruption_cost_type
 	object.business_int_cost_currency = business_interruption_cost_unit
 
-	object.aggregation = None
-	object.currency = None
 	#object.date_created = timezone.now()
 	object.save()
 
@@ -215,6 +213,11 @@ def start(object):
 			loc = Point(float(lon), float(lat))
 		except:
 			raise InvalidExposureModel('The location of all the assets must be correct')
+
+		try:
+			adm_2 = Adm_2.objects.get(geom__intersects=loc)
+		except:
+			adm_2 = None
 		
 		costs = asset.getElementsByTagName('costs')[0].getElementsByTagName('cost')
 		for cost in costs:
@@ -358,8 +361,7 @@ def start(object):
 
 		new_asset = Asset(name = asset_name,
 							taxonomy = taxonomy,
-							parish = None,
-							adm_2 = Adm_2.objects.get(geom__intersects=loc),
+							adm_2 = adm_2,
 							n_buildings = number,
 							area = area,
 							struct_cost = structural_value,

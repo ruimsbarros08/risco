@@ -1,4 +1,29 @@
 
+$.ajaxSetup({ 
+     beforeSend: function(xhr, settings) {
+         function getCookie(name) {
+             var cookieValue = null;
+             if (document.cookie && document.cookie != '') {
+                 var cookies = document.cookie.split(';');
+                 for (var i = 0; i < cookies.length; i++) {
+                     var cookie = jQuery.trim(cookies[i]);
+                     // Does this cookie string begin with the name we want?
+                 if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                     break;
+                 }
+             }
+         }
+         return cookieValue;
+         }
+         if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+             // Only send the token to relative URLs i.e. locally.
+             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+         }
+     } 
+});
+
+
 //SPINNER
 
 var spinner_opts = {
@@ -167,7 +192,15 @@ function get_losses_options(geojson, total){
         };
 }
 
+    var redIcon = L.AwesomeMarkers.icon({
+                        icon: 'stats',
+                        markerColor: 'red'
+                    });
 
+    var blueIcon = L.AwesomeMarkers.icon({
+                        icon: 'stats',
+                        markerColor: 'blue'
+                    });
 
 
 
@@ -193,6 +226,9 @@ var transportUrl='http://{s}.tile2.opencyclemap.org/transport/{z}/{x}/{y}.png';
 var transportAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
 var transport = new L.TileLayer(transportUrl, {attribution: transportAttrib});
 
+var Esri_WorldImagery = 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+var Esri_WorldImagery_attribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
+var Esri_WorldImageryLayer = new L.tileLayer(Esri_WorldImagery, {attribution: Esri_WorldImagery_attribution});
 
 
 var baseLayers = {
@@ -201,6 +237,7 @@ var baseLayers = {
     "OpenCycleMap": ocm,
     "Hiking": hiking,
     "Transport": transport,
+    "ESRI World": Esri_WorldImageryLayer
 };
 
 
@@ -222,10 +259,32 @@ function getRandomColor() {
     return color;
 }
 
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
 
 function isFloat(n){
         return   n===Number(n)  && n%1!==0
 }
+
+
+
+var RegionSelectControl = L.Control.extend({
+    options: {
+        position: 'topright'
+    },
+
+    onAdd: function (map) {
+        var container = L.DomUtil.get('region-selector');
+        return container;
+    }
+});
 
 
 

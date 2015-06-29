@@ -70,16 +70,6 @@ $( document ).ready(function() {
 
     var curve_markers = L.featureGroup();
 
-    var redIcon = L.AwesomeMarkers.icon({
-                        icon: 'stats',
-                        markerColor: 'red'
-                    });
-
-    var blueIcon = L.AwesomeMarkers.icon({
-                        icon: 'stats',
-                        markerColor: 'blue'
-                    });
-
     curve_markers.addTo(map);
     control.addOverlay(curve_markers, 'Point Curves');
 

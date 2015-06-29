@@ -1657,9 +1657,18 @@ def results_psha_risk_maps_ajax(request, job_id):
 		if vulnerability.vulnerability_model.type != 'occupants_vulnerability':
 			economic_loss_types.append(vulnerability.vulnerability_model.type)
 
+		max_list = []
+		for map in info_per_region:
+			max_total = max( list( f['value'] for f in map['values'] ) )
+			max_list.append(max_total)
+
+		max_ = max(max_list)
+
 		d.append({'name': vulnerability.vulnerability_model.type,
 				'values_per_region': info_per_region,
-				'values_per_taxonomy': info_per_taxonomy,})
+				'values_per_taxonomy': info_per_taxonomy,
+				'max': max_})	
+
 
 	if len(economic_loss_types) > 1:
 		pass
@@ -1674,6 +1683,165 @@ def results_psha_risk_maps_ajax(request, job_id):
 									'exposure_model': exp_json,
 									'losses': d,
 									'geojson': geo_json }), content_type="application/json")
+
+
+
+@login_required
+def results_psha_risk_locations_ajax(request, job_id):
+	job = Classical_PSHA_Risk.objects.get(pk=job_id, user=request.user)
+
+	adm_2_id = request.GET.get('country')
+
+	cursor = connection.cursor()
+	cursor.execute("SELECT DISTINCT ST_X(eng_models_asset.location), ST_Y(eng_models_asset.location), world_adm_2.name \
+					FROM jobs_classical_psha_risk_vulnerability, jobs_classical_psha_risk_loss_maps, eng_models_asset, world_adm_2 \
+					WHERE jobs_classical_psha_risk_vulnerability.job_id = %s \
+					AND jobs_classical_psha_risk_loss_maps.vulnerability_model_id = jobs_classical_psha_risk_vulnerability.id \
+					AND jobs_classical_psha_risk_loss_maps.asset_id = eng_models_asset.id \
+					AND eng_models_asset.adm_2_id = world_adm_2.id \
+					AND world_adm_2.id = %s ", [job.id, adm_2_id])
+	points = [{ 'lon': pt[0],
+				'lat': pt[1],
+				'adm_2': pt[2]} for pt in cursor.fetchall() ]
+
+	if job.status == 'FINISHED':
+		return HttpResponse(json.dumps({'locations': points}), content_type="application/json")
+	else:
+		return HttpResponse(json.dumps({'locations': None }), content_type="application/json")
+
+
+#@login_required
+#def results_psha_risk_locations_ajax(request, job_id):
+#	job = Classical_PSHA_Risk.objects.get(pk=job_id, user=request.user)
+#	vulnerability_types = Classical_PSHA_Risk_Vulnerability.objects.filter(job = job)
+#
+#	adm_2_id = request.GET.get('country')
+#
+#	d = []
+#
+#	cursor = connection.cursor()
+#	
+#	for vulnerability in vulnerability_types:
+#
+#		if request.GET.get('taxonomy') != 'undefined':
+#			taxonomy_id = request.GET.get('taxonomy')
+#
+#			for poe in job.poes:
+#
+#				for quantile in job.quantile_loss_curves:
+#
+#					cursor.execute("SELECT ST_X(eng_models_asset.location), ST_Y(eng_models_asset.location), world_adm_2.name, \
+#									sum(jobs_classical_psha_risk_loss_maps.mean), sum(jobs_classical_psha_risk_loss_maps.stddev) \
+#									FROM jobs_classical_psha_risk_vulnerability, jobs_classical_psha_risk_loss_maps, eng_models_asset, world_adm_2 \
+#									WHERE jobs_classical_psha_risk_vulnerability.id = %s\
+#									AND jobs_classical_psha_risk_loss_maps.quantile = %s \
+#									AND jobs_classical_psha_risk_loss_maps.poe = %s \
+#									AND jobs_classical_psha_risk_loss_maps.asset_id = eng_models_asset.id \
+#									AND eng_models_asset.adm_2_id = world_adm_2.id \
+#									AND world_adm_2.id = %s \
+#									GROUP BY eng_models_asset.location", [vulnerability.id, adm_2_id])
+#
+#				cursor.execute("SELECT ST_X(eng_models_asset.location), ST_Y(eng_models_asset.location), world_adm_2.name, \
+#					sum(jobs_classical_psha_risk_loss_maps.mean), sum(jobs_classical_psha_risk_loss_maps.stddev) \
+#					FROM jobs_classical_psha_risk_vulnerability, jobs_classical_psha_risk_loss_maps, eng_models_asset, world_adm_2 \
+#					WHERE jobs_classical_psha_risk_vulnerability.id = %s\
+#					AND jobs_classical_psha_risk_loss_maps.statistics = 'mean' \
+#					AND jobs_classical_psha_risk_loss_maps.poe = %s \
+#					AND jobs_classical_psha_risk_loss_maps.asset_id = eng_models_asset.id \
+#					AND eng_models_asset.adm_2_id = world_adm_2.id \
+#					AND world_adm_2.id = %s \
+#					GROUP BY eng_models_asset.location", [vulnerability.id, adm_2_id])
+
+
+#		else:
+#
+#			for poe in job.poes:
+#
+#				for quantile in job.quantile_loss_curves:
+#
+#					cursor.execute("SELECT ST_X(eng_models_asset.location), ST_Y(eng_models_asset.location), world_adm_2.name, \
+#									sum(jobs_classical_psha_risk_loss_maps.mean), sum(jobs_classical_psha_risk_loss_maps.stddev) \
+#									FROM jobs_classical_psha_risk_vulnerability, jobs_classical_psha_risk_loss_maps, eng_models_asset, world_adm_2 \
+#									WHERE jobs_classical_psha_risk_vulnerability.id = %s\
+#									AND jobs_classical_psha_risk_loss_maps.quantile = %s \
+#									AND jobs_classical_psha_risk_loss_maps.poe = %s \
+#									AND jobs_classical_psha_risk_loss_maps.asset_id = eng_models_asset.id \
+#									AND eng_models_asset.adm_2_id = world_adm_2.id \
+#									AND world_adm_2.id = %s \
+#									GROUP BY eng_models_asset.location", [vulnerability.id, adm_2_id])
+#
+#				cursor.execute("SELECT ST_X(eng_models_asset.location), ST_Y(eng_models_asset.location), world_adm_2.name, \
+#					sum(jobs_classical_psha_risk_loss_maps.mean), sum(jobs_classical_psha_risk_loss_maps.stddev) \
+#					FROM jobs_classical_psha_risk_vulnerability, jobs_classical_psha_risk_loss_maps, eng_models_asset, world_adm_2 \
+#					WHERE jobs_classical_psha_risk_vulnerability.id = %s\
+#					AND jobs_classical_psha_risk_loss_maps.statistics = 'mean' \
+#					AND jobs_classical_psha_risk_loss_maps.poe = %s \
+#					AND jobs_classical_psha_risk_loss_maps.asset_id = eng_models_asset.id \
+#					AND eng_models_asset.adm_2_id = world_adm_2.id \
+#					AND world_adm_2.id = %s \
+#					GROUP BY eng_models_asset.location", [vulnerability.id, adm_2_id])
+#
+#		points = [{ 'lon': pt[0],
+#					'lat': pt[1],
+#					'adm_2': pt[2]} for pt in cursor.fetchall() ]
+#
+#	if job.status == 'FINISHED':
+#		return HttpResponse(json.dumps({'locations': points}), content_type="application/json")
+#	else:
+#		return HttpResponse(json.dumps({'locations': None }), content_type="application/json")
+#
+
+
+
+@login_required
+def results_psha_risk_curves_ajax(request, job_id):
+	job = Classical_PSHA_Risk.objects.get(pk=job_id, user=request.user)
+	vulnerability_types = Classical_PSHA_Risk_Vulnerability.objects.filter(job = job)
+
+	job_json = serializers.serialize("json", [job])
+	job_json = json.loads(job_json)
+	
+	adm_2_id = request.GET.get('country')
+	lat = request.GET.get('lat')
+	lon = request.GET.get('lon')
+
+	location = 'POINT('+lon+' '+lat+')'
+
+	d = []
+
+	for vulnerability in vulnerability_types:
+
+		cursor = connection.cursor()
+		cursor.execute("SELECT eng_models_asset.name, \
+						jobs_classical_psha_risk_loss_curves.statistics, jobs_classical_psha_risk_loss_curves.quantile, \
+						jobs_classical_psha_risk_loss_curves.loss_ratios, jobs_classical_psha_risk_loss_curves.poes, \
+						jobs_classical_psha_risk_loss_curves.average_loss_ratio, jobs_classical_psha_risk_loss_curves.stddev_loss_ratio, \
+						jobs_classical_psha_risk_loss_curves.asset_value, jobs_classical_psha_risk_loss_curves.insured \
+						FROM jobs_classical_psha_risk_loss_curves, eng_models_asset \
+						WHERE jobs_classical_psha_risk_loss_curves.vulnerability_model_id = %s \
+						AND jobs_classical_psha_risk_loss_curves.asset_id = eng_models_asset.id \
+						AND eng_models_asset.adm_2_id = %s", [vulnerability.id, adm_2_id])
+		points = [{ 'lon': pt[0],
+					'lat': pt[1],
+					'asset_name': pt[2],
+					'statistics': pt[3],
+					'quantile': pt[4],
+					'loss_ratios': pt[5],
+					'poes': pt[6],
+					'average_loss_ratio': pt[7],
+					'stddev_loss_ratio': pt[8],
+					'asset_value': pt[9],
+					'insured': pt[10]} for pt in cursor.fetchall() ]
+
+		d.append({'name': vulnerability.vulnerability_model.type,
+				'values': points })	
+
+	if job.status == 'FINISHED':
+
+		return HttpResponse(json.dumps({'curves': d,
+										'job': job_json }), content_type="application/json")
+	else:
+		return HttpResponse(json.dumps({'job': job_json }), content_type="application/json")
 
 
 

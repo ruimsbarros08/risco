@@ -2,8 +2,8 @@
 
 @font-face {
   font-family: 'Glyphicons Halflings';
-  src: url('../eng_models/bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.eot');
-  src: url('../eng_models/bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../eng_models/bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.woff') format('woff'), url('../eng_models/bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../eng_models/bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
+  src: url('../bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.eot');
+  src: url('../bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.woff') format('woff'), url('../bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
 }
 /*
 .full-size {
@@ -68,3 +68,18 @@ textarea { resize: none; }
 .no-bullets {
   list-style-type: none;
 }
+
+
+
+.currentRow {
+    background-color : #F9F9FB !important;
+}
+
+.selectedRow {
+    color : #FFFFBF !important;
+}
+
+
+
+
+

@@ -36,6 +36,8 @@ urlpatterns = patterns('',
     url(r'^psha/risk/add/$', views.add_psha_risk, name='add_psha_risk'),
     url(r'^psha/risk/results/(?P<job_id>\d+)/$', views.results_psha_risk, name='results_psha_risk'),
     url(r'^psha/risk/results_maps/(?P<job_id>\d+)/$', views.results_psha_risk_maps_ajax, name='results_psha_risk_maps_ajax'),
+    url(r'^psha/risk/results_locations/(?P<job_id>\d+)/$', views.results_psha_risk_locations_ajax, name='results_psha_risk_locations_ajax'),
+    url(r'^psha/risk/results_curves/(?P<job_id>\d+)/$', views.results_psha_risk_curves_ajax, name='results_psha_risk_curves_ajax'),
     url(r'^psha/risk/(?P<job_id>\d+)/start/$', views.start_psha_risk, name='start_psha_risk'),
 
 

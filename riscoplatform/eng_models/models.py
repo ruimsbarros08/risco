@@ -136,8 +136,8 @@ class Exposure_Model(models.Model):
     xml                         = models.FileField(upload_to='uploads/exposure/', null=True, blank=True)
     oq_id                       = models.IntegerField(null=True)
 
-    aggregation                 = models.CharField(max_length=20, choices=AGG_CHOICES, null=True, blank=True)
-    currency                    = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True, blank=True)
+    #aggregation                 = models.CharField(max_length=20, choices=AGG_CHOICES, null=True, blank=True)
+    #currency                    = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True, blank=True)
 
     def __unicode__(self):
         return self.name
@@ -159,8 +159,6 @@ class Exposure_Model_Contributor(models.Model):
 class Asset(models.Model):
     model                       = models.ForeignKey(Exposure_Model)
     taxonomy                    = models.ForeignKey(Building_Taxonomy)
-    parish                      = models.ForeignKey(World, null=True)
-    adm_1                       = models.ForeignKey(Adm_1, null=True)
     adm_2                       = models.ForeignKey(Adm_2, null=True)
     location                    = models.PointField(null=True, srid=4326)
     name                        = models.CharField(max_length=10)
