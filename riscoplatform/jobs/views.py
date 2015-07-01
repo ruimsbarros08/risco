@@ -1847,5 +1847,118 @@ def results_psha_risk_curves_ajax(request, job_id):
 
 
 
+###############################
+##     EVENT BASED HAZARD    ##
+###############################
+
+
+event_based_form_categories = {'general': ['name', 'description', 'description', 'grid_spacing',
+								'region', 'investigation_time', 'truncation_level', 'max_distance', 'random_seed', 'imt_l'],
+						'rupture': ['rupture_mesh_spacing', 'width_of_mfd_bin', 'area_source_discretization'],
+						'sites': ['sites_type', 'site_model', 'vs30', 'vs30type', 'z1pt0', 'z2pt5'],
+						'logic_trees': ['n_lt_samples', 'gmpe_logic_tree', 'sm_logic_tree', 'ses_per_logic_tree_path'],
+						'imts': ['structural_vulnerability', 'non_structural_vulnerability', 'contents_vulnerability',
+								'business_int_vulnerability', 'occupants_vulnerability'],
+						'outputs': ['quantile_hazard_curves', 'poes']}
+
+
+class EventBased_HazardForm(forms.ModelForm):
+	structural_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
+	non_structural_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
+	contents_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
+	business_int_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='business_interruption_vulnerability'), required=False)
+	occupants_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='occupants_vulnerability'), required=False)
+
+	def clean(self):
+		form_data = self.cleaned_data
+
+		if 'gmpe_logic_tree' in form_data and 'sm_logic_tree' in form_data:
+
+			levels = Logic_Tree_GMPE_Level.objects.filter(logic_tree = form_data['gmpe_logic_tree'])
+
+			for level in levels:
+				region = level.tectonic_region
+
+				check = False
+				for source_model in form_data['sm_logic_tree'].source_models.all():
+					sources = Source.objects.filter(model=source_model)
+
+					for source in sources:
+						if source.tectonic_region == region:
+							check = True
+
+				if check == False:
+					self.add_error(None, 'Every tectonic region specified in the GMPE logic tree must have at least one source from the same type in the Source Models of the Source Model Logic Tree')
+					break
+
+		return form_data
+
+	class Meta:
+		model = Event_Based_Hazard
+		exclude = ['user', 'date_created', 'vulnerability_models', 'status', 'oq_id', 'ini_file']
+		widgets = {
+					'description': forms.Textarea(attrs={'rows':5}),
+					'quantile_hazard_curves': forms.TextInput(attrs={'placeholder': 'Ex: 0.05, 0.5, 0.95'}),
+					'poes': forms.TextInput(attrs={'placeholder': 'Ex: 0.2, 0.5, 0.9 ...'}),
+           			'region': forms.HiddenInput(),
+           			'imt_l': forms.HiddenInput(),
+					}
+
+@login_required	
+def index_event_based_hazard(request):
+	jobs = Event_Based_Hazard.objects.filter(user=request.user).order_by('-date_created')
+	form = EventBased_HazardForm()
+	form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+	form.fields["non_structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+	form.fields["contents_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+	form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+	form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+	
+	return render(request, 'jobs/index_event_based_hazard.html', {'jobs': jobs, 'form': form, 'categories': event_based_form_categories})
+
+
+@login_required
+def add_event_based_hazard(request):
+	if request.method == 'POST':
+		form = EventBased_HazardForm(request.POST)
+
+		form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
+		form.fields["non_structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
+		form.fields["contents_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='contents_vulnerability').order_by('-date_created')
+		form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
+		form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
+
+		if form.is_valid():
+			job = form.save(commit=False)
+			job.date_created = timezone.now()
+			job.user = request.user
+			job.save()
+
+			return redirect('results_event_based_hazard', job.id)
+		else:
+			jobs = Event_Based_Hazard.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'jobs/index_event_based_hazard.html', {'jobs': jobs, 'form': form, 'categories': event_based_form_categories})
+	else:
+		form = EventBased_HazardForm()
+		return render(request, 'jobs/index_event_based_hazard.html', {'form': form })
+
+@login_required
+def results_event_based_hazard(request, job_id):
+	job = get_object_or_404(Event_Based_Hazard ,pk=job_id, user=request.user)
+	#imts = job.imt_l.keys()
+	return render(request, 'jobs/results_event_based_hazard.html', {'job': job})
+
+@login_required
+def start_event_based_hazard(request, job_id):
+	job = get_object_or_404(Event_Based_Hazard ,pk=job_id, user=request.user)
+	try:
+		queue_job(job, 'event_based_hazard')
+		return redirect('results_event_based_hazard', job.id)
+	except:
+		return render(request, 'jobs/results_event_based_hazard.html', {'job': job, 'connection_error': True})
+
+
+
+
 
 

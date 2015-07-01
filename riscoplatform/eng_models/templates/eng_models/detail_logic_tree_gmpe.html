@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="container">
+<div class="container" ng-app="gmpeLogicTreeApp">
 
 <div class="row">
 	<div class="col-md-6">
@@ -15,17 +15,94 @@
 </div>
 
 	<div class="row">
-		<div class="col-md-12">
+		<div class="col-md-4">
 			<h3>{{ model.name }}</h3>
 			<br>
 			<h4>{{ model.description }}</h4>
 			<br>
-
-			<!--<div id="tree" class="vertical-map"></div>-->
-			<div id="tree" class="logic-tree"></div><br>
-
-			<div id="map" class="vertical-map"></div><br>
 		</div>
+		<div class="well col-md-offset-4 col-md-4">
+			<button class="btn btn-success btn-sm"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save </button>
+			<button class="btn btn-warning btn-sm"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Discard changes </button>
+			<button class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete logic tree </button>
+		</div>
+	</div>
+
+	<div class="row" ng-controller="gmpeLogicTreeCtrl">
+
+		<ul class="no-bullets" ui-sortable="sortableOptions" ng-model="levels" >
+		  	<li ng-repeat="level in levels" class="col-md-3">
+
+				<div class="panel panel-default">
+				  	<div class="panel-heading" drag-alert>
+				  		Level [[ getLevel(level) ]]
+				  	</div>
+					<div class="panel-body" style="height:300px;">
+						<h4>
+				    		[[ level.tectonic_region ]]
+						</h4>
+						<div style="height: 200px; overflow-y: scroll">
+					    	<table class="table table-striped">
+					    		<tbody>
+						    		<tr ng-repeat="gmpe in level.gmpes">
+						    			<td>[[ gmpe.name ]]</td>
+						    			<td>[[ gmpe.weight ]]</td>
+						    			<!--<td></td>-->
+						    		</tr>
+						    			<!--
+						    		<tr>
+						    			<td> <select class="form-control input-sm"></select> </td>
+						    			<td> <input class="form-control input-sm"> </td>
+						    			<td> <button class="btn btn-sm btn-success" ng-disabled=""><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button> </td>
+						    		</tr>
+						    			-->
+					    		</tbody>
+					    	</table>
+						</div>
+				  	</div>
+				  	<div class="panel-footer">
+				  		<button class="btn btn-sm btn-info" ng-disabled="checkFirst(level)" ng-click="move(level, -1)"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span></button>
+				  		<button class="btn btn-sm btn-info" ng-disabled="checkLast(level)" ng-click="move(level, 1)"><span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span></button>
+				  		<button class="btn btn-sm btn-danger" ng-click="deleteLevel(level)"> <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> </button>
+				  	</div>
+				</div>
+			</li>
+			<li class="col-md-3">
+				<div class="panel panel-default">
+				  	<div class="panel-heading">
+				  		<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add level
+				  	</div>
+					<div class="panel-body" style="height:300px;">
+						<h4>
+				    		Tectonic Region:
+						</h4>
+						<div>
+				    		<select ng-model='new_region' class="form-control input-sm" ng-options="region as region.name for region in regions" ng-change="clearGMPEs()"></select>
+						</div>
+						<div style="height: 200px; overflow-y: scroll">
+					    	<table class="table table-striped">
+					    		<tbody>
+					    			<tr ng-repeat="gmpe in new_gmpes">
+						    			<td>[[ gmpe.name ]]</td>
+						    			<td>[[ gmpe.weight ]]</td>
+						    			<td> <button class="btn btn-xs btn-danger" ng-click="deleteGMPE(gmpe)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button> </td>
+					    			</tr>
+						    		<tr>
+						    			<td> <select ng-model='gmpe' class="form-control input-sm" ng-options="gmpe for gmpe in new_region.gmpes "></select> </td>
+						    			<td> <input type='number' ng-model='weight' class="form-control input-sm"> </td>
+						    			<td> <button class="btn btn-xs btn-success" ng-disabled="cantAddGMPE()" ng-click="addGMPE(gmpe, weight)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button> </td>
+						    		</tr>
+					    		<tbody></tbody>
+					    	</table>
+						</div>
+				  	</div>
+				  	<div class="panel-footer">
+				  		<button class="btn btn-sm btn-success" ng-disabled="cantAddLevel()" ng-click="addLevel(new_region)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+				  	</div>
+				</div>
+			</li>
+		</ul>
+
 
 	</div>
 
@@ -35,7 +112,7 @@
 
 {% load staticfiles %}
 
-<script type="text/javascript" src="{% static 'eng_models/js/logic_tree.js' %}"></script>
+<script type="text/javascript" src="{% static 'eng_models/js/gmpe_logic_tree.js' %}"></script>
 
 
 {% endblock %}

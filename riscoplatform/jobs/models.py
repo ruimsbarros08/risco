@@ -5,7 +5,7 @@ from world.models import World, Fishnet
 from djorm_pgarray.fields import FloatArrayField, TextArrayField
 from eng_models.models import *
 from eng_models.constants import *
-from jsonfield import JSONField
+from django_pgjson.fields import JsonField
 
 # Create your models here.
 MODEL = 'VARIABLE_CONDITIONS'
@@ -32,6 +32,34 @@ STATUS_CHOICES = (
     (ERROR, 'Error'),
     (FINISHED, 'Finished'),
 )
+
+
+# class Job(models.Model):
+#     user                        = models.ForeignKey(User)
+#     date_created                = models.DateTimeField('date created')
+#     name                        = models.CharField(max_length=200)
+#     description                 = models.CharField(max_length=200, null=True)
+
+
+# class Hazard(models.Model):
+#     #Region
+#     region                      = models.PolygonField(srid=4326)
+#     grid_spacing                = models.FloatField(default=1)
+
+#     #Sites
+#     sites_type                  = models.CharField(max_length=50, choices=SITES_CHOICES, default=DEFAULT)
+#     site_model                  = models.ForeignKey(Site_Model, null=True, blank=True)
+#     vs30                        = models.FloatField(null=True, blank=True)
+#     vs30type                    = models.CharField(max_length=10, choices=VS30_CHOICES, default=MEASURED, null=True, blank=True)
+#     z1pt0                       = models.FloatField(null=True, blank=True)
+#     z2pt5                       = models.FloatField(null=True, blank=True)
+
+#     rupture_mesh_spacing        = models.IntegerField(default=5)
+#     random_seed                 = models.IntegerField(default=3)
+#     truncation_level            = models.FloatField(default=3)
+#     max_distance                = models.FloatField(default=200)
+
+
 
 class Scenario_Hazard(models.Model):
 
@@ -219,12 +247,12 @@ class Classical_PSHA_Hazard(models.Model):
     z2pt5                       = models.FloatField(null=True, blank=True)
 
     sm_logic_tree               = models.ForeignKey(Logic_Tree_SM)
-    gmpe_logic_tree            = models.ForeignKey(Logic_Tree_GMPE)
+    gmpe_logic_tree             = models.ForeignKey(Logic_Tree_GMPE)
     
     investigation_time          = models.IntegerField()
     #pga                         = models.BooleanField(default=True)
     #sa_periods                  = FloatArrayField(null=True)
-    imt_l                       = JSONField()
+    imt_l                       = JsonField()
     truncation_level            = models.FloatField()
     max_distance                = models.FloatField(default=200)
 
@@ -344,6 +372,12 @@ class Classical_PSHA_Risk_Loss_Maps(models.Model):
 
 
 
+
+class Event_Based_Hazard(Classical_PSHA_Hazard):
+    ses_per_logic_tree_path     = models.IntegerField()
+
+    def __unicode__(self):
+        return self.name
 
 
 

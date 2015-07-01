@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+<div class="row">
+	<div class="col-md-6">
+		<ul class="breadcrumb">
+		  	<li> <a href="{% url 'jobs_home' %}">Jobs</a></li>
+		  	<li> <a href="{% url 'index_event_based_hazard' %}">Event Based PSHA Hazard</a></li>
+		  	<li class="active">{{ job.name }}</li>
+		</ul>
+	</div>
+</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<h3> {{ job.name }} </h3><br>
+			<h4> {{ job.description }} </h4><br>
+		</div>
+	</div>
+
+	<div class="row">
+		
+		<div class="col-md-9">
+			<div id='map' style="height:700px;"></div><br>
+		</div>
+
+		<div class="col-md-3">
+
+			{% if job.status == 'CREATED' %}
+			<div class="row">
+				<div class="col-md-12">
+					<a href="{% url 'start_event_based_hazard' job.id %}"> <button class="btn btn-danger" style="width:100%;">Start job <span class="glyphicon glyphicon-play" aria-hidden="true"></span> </button></a>
+				</div>
+			</div>
+			<br>
+			{% elif job.status == 'STARTED' %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-warning disabled" style="width:100%;">Calculating...</button>
+				</div>
+			</div>
+			<br>
+			{% elif job.status == 'ERROR' %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-danger disabled" style="width:100%;">ERROR!</button>
+				</div>
+			</div>
+			<br>
+			{% elif job.status == 'FINISHED' %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-success disabled" style="width:100%;">Results ready!</button>
+				</div>
+			</div>
+			<br>
+			{% endif %}
+
+			{% if connection_error %}
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-error" style="width:100%;">Impossible to lauch the job. Please try again later</button>
+				</div>
+			</div>
+			{% endif %}
+
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-primary" style="width:100%;">Download files <span class="glyphicon glyphicon-download" aria-hidden="true"></span> </button>
+				</div>
+			</div>
+			<br>
+
+			<div class="row">
+				<div class="col-md-12">
+
+					<ul class="list-group">
+					  	<li class="list-group-item active">
+					  	Job parameters	
+					  	</li>
+
+					  	<li class="list-group-item">
+					    <b>Grid spacing:</b> {{ job.grid_spacing }} 
+					  	</li>
+
+					  	{% if job.sites_type == 'VARIABLE_CONDITIONS' %}
+					  	<li class="list-group-item">
+						<b>Site model:</b> <a href="{% url 'detail_site' job.site_model.id %}">{{ job.site_model }} </a> 
+					  	</li>
+						{% else %}
+						<li class="list-group-item">
+						<b>vs30:</b> {{ job.vs30 }} 
+					  	</li>
+
+					  	<li class="list-group-item">
+						<b>vs30type:</b> {{ job.vs30type }}
+					  	</li>
+					    
+					    <li class="list-group-item">
+						<b>z1pt0:</b> {{ job.z1pt0 }}
+					  	</li>
+					    
+					    <li class="list-group-item">
+						<b>z2pt5:</b> {{ job.z2pt5 }}
+					  	</li>
+						{% endif %}
+
+						<li class="list-group-item">
+						<b>Random seed:</b> {{ job.random_seed }}
+					  	</li>
+
+
+
+					  	{% for model in job.vulnerability_models.all %}
+					  	<li class="list-group-item">
+					  		<b>{{ model.get_asset_category_display }} vulnerability:</b> <a href="{% url 'detail_vulnerability' model.id %}">{{ model }}</a>
+					  	</li>
+					  	{% endfor %}
+
+
+					  	<li class="list-group-item">
+						<b>Number of logic trees samples:</b> {{ job.n_lt_samples }}
+					  	</li>
+
+
+					  	<li class="list-group-item">
+						<b>Rupture mesh spacing:</b> {{ job.rupture_mesh_spacing }}
+					  	</li>
+
+					  	<li class="list-group-item">
+						<b>Width of mfd bin:</b> {{ job.width_of_mfd_bin }}
+					  	</li>
+
+
+					  	<li class="list-group-item">
+						<b>Area source discretization:</b> {{ job.area_source_discretization }} 
+					  	</li>
+
+					  	<li class="list-group-item">
+					  		<b>GMPE logic tree:</b> <a href="{% url 'detail_logic_tree_gmpe' job.gmpe_logic_tree.id %}">{{ job.gmpe_logic_tree }}</a>
+					  	</li>
+
+					  	<li class="list-group-item">
+					  		<b>Source Model logic tree:</b> <a href="{% url 'detail_logic_tree_sm' job.sm_logic_tree.id %}">{{ job.sm_logic_tree }}</a>
+					  	</li>
+
+					  	<li class="list-group-item">
+						<b>Investigation time:</b> {{ job.investigation_time }}
+					  	</li>
+
+					  	<li class="list-group-item">
+						<b>Truncation level:</b> {{ job.truncation_level }}
+					  	</li>
+
+
+					  	<li class="list-group-item">
+						<b>Max distance:</b> {{ job.max_distance }}
+					  	</li>
+
+
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{% if job.status == 'FINISHED' %}
+	<div class="row">
+		<div class="col-md-12">
+		<!--
+			{% for chart in imts %}
+			<canvas id="{{ chart }}_chart" width="400" height="400"></canvas>
+			{% endfor %}
+		-->
+		</div>
+	</div>
+	{% endif %}
+
+</div>
+
+{% load staticfiles %}
+<script type="text/javascript" src="{% static 'jobs/js/psha_hazard_results.js' %}"></script>
+
+{% endblock %}

@@ -15,8 +15,6 @@
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap-tags/dist/css/bootstrap-tags.css' %}" />
     
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/angular/angular-csp.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/ng-tags-input/ng-tags-input.min.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/ng-tags-input/ng-tags-input.bootstrap.min.css' %}" />
     <!--
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/angular-tags/angular-tags-0.2.10.css' %}" />
     -->
@@ -89,7 +87,7 @@
                                     <li><a href="#">DISAGGREGATION</a></li>
                                     <li class="divider"></li>
                                     <li class="dropdown-header">EVENT BASED</li>
-                                    <li><a href="#">HAZARD</a></li>
+                                    <li><a href="{% url 'index_event_based_hazard' %}">HAZARD</a></li>
                                     <li><a href="#">RISK</a></li>
                                 </ul>
                             </li>
@@ -133,6 +131,7 @@
 </div>
 
 <script type="text/javascript" src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
+<script type="text/javascript" src="http://cdn.jsdelivr.net/g/jquery.ui@1.10%28jquery.ui.core.min.js+jquery.ui.widget.min.js+jquery.ui.mouse.min.js+jquery.ui.sortable.min.js%29"></script>
 <script type="text/javascript" src="{% static 'bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/bootstrap-tags/dist/js/bootstrap-tags.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/bootstrap/js/transition.js' %}"></script>
@@ -140,10 +139,8 @@
 <!--<script type="text/javascript" src="{% static 'bower_components/jquery-ui/jquery-ui.min.js' %}"></script>-->
 
 <script type="text/javascript" src="{% static 'bower_components/angular/angular.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'bower_components/ng-tags-input/ng-tags-input.min.js' %}"></script>
-<!--
-<script type="text/javascript" src="{% static 'bower_components/angular-tags/dist/angular-tags-0.2.10.min.min.js' %}"></script>
--->
+<script type="text/javascript" src="{% static 'bower_components/angular-ui-sortable/sortable.min.js' %}"></script>
+
 <script type="text/javascript" src="{% static 'bower_components/handsontable/dist/handsontable.full.min.js' %}"></script>
 
 

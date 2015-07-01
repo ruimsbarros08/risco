@@ -1,6 +1,6 @@
 "use strict";
 
-var exposureApp = angular.module('exposureApp', ['ngTagsInput']).config(function($interpolateProvider){
+var exposureApp = angular.module('exposureApp', []).config(function($interpolateProvider){
     $interpolateProvider.startSymbol('[[').endSymbol(']]');
 });
 
