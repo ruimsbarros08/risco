@@ -328,7 +328,7 @@ $( document ).ready(function() {
 
 
                 //MAP DVF OPTIONS
-                losses_options = get_losses_options(regions, losses_data[i].total_scale);
+                losses_options = get_losses_options(regions, losses_data[i].total_scale ,'values');
                 losses_options.onEachRecord = function(layer, record){
                     layer.on('click', function () {
                         country = record.id;

@@ -29,6 +29,15 @@ DROP FOREIGN TABLE IF EXISTS foreign_hazard_map;
 
 DROP FOREIGN TABLE IF EXISTS foreign_output;
 
+DROP FOREIGN TABLE IF EXISTS foreign_ses_rupture;
+DROP FOREIGN TABLE IF EXISTS foreign_probabilistic_rupture;
+DROP FOREIGN TABLE IF EXISTS foreign_ses_collection;
+
+
+DROP FOREIGN TABLE IF EXISTS foreign_assoc_lt_rlz_trt_model;
+DROP FOREIGN TABLE IF EXISTS foreign_event_loss;
+DROP FOREIGN TABLE IF EXISTS foreign_event_loss_asset;
+
 
 CREATE FOREIGN TABLE foreign_output (
 	id integer,
@@ -85,7 +94,8 @@ SERVER priseoq OPTIONS (schema_name 'hzrdr', table_name 'gmf_data');
 
 CREATE FOREIGN TABLE foreign_gmf (
 	id integer,
-	output_id integer
+	output_id integer,
+	lt_realization_id integer
 )
 SERVER priseoq OPTIONS (schema_name 'hzrdr', table_name 'gmf');
 
@@ -208,6 +218,64 @@ CREATE FOREIGN TABLE foreign_loss_curve_data (
 )
 SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'loss_curve_data');
 
+-- EVENT BASED HAZARD
+
+CREATE FOREIGN TABLE foreign_ses_rupture (
+	id integer,
+	ses_id integer,
+	rupture_id integer
+)
+SERVER priseoq OPTIONS (schema_name 'hzrdr', table_name 'ses_rupture');
+
+
+CREATE FOREIGN TABLE foreign_ses_collection (
+	id integer,
+	output_id integer,
+	trt_model_id integer
+)
+SERVER priseoq OPTIONS (schema_name 'hzrdr', table_name 'ses_collection');
+
+
+CREATE FOREIGN TABLE foreign_probabilistic_rupture (
+	id integer,
+	ses_collection_id integer,
+	rake double precision,
+	magnitude double precision,
+	_hypocenter double precision[]
+)
+SERVER priseoq OPTIONS (schema_name 'hzrdr', table_name 'probabilistic_rupture');
+
+
+
+CREATE FOREIGN TABLE foreign_assoc_lt_rlz_trt_model (
+	id integer,
+	rlz_id integer,
+	trt_model_id integer,
+	gsim text
+)
+SERVER priseoq OPTIONS (schema_name 'hzrdr', table_name 'assoc_lt_rlz_trt_model');
+
+
+
+
+CREATE FOREIGN TABLE foreign_event_loss (
+	id integer,
+	output_id integer,
+	hazard_output_id integer,
+	loss_type character varying
+)
+SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'event_loss');
+
+
+
+CREATE FOREIGN TABLE foreign_event_loss_asset (
+	id integer,
+	event_loss_id integer,
+	rupture_id integer,
+	asset_id integer,
+	loss double precision
+)
+SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'event_loss_asset');
 
 
 

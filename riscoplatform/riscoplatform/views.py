@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from world.models import *
 from eng_models.models import *
+from jobs.models import *
 from django.http import HttpResponseRedirect, HttpResponse
 from django.db import connection
 from django.contrib.auth.models import User
@@ -9,9 +10,107 @@ from django.contrib.auth.decorators import login_required
 import json
 from riscoplatform.local_settings import *
 import requests
+from operator import attrgetter
+from django.contrib.auth import authenticate, login
+
+
+def register(request):
+	if request.method == 'POST':
+		form = forms.UserCreationForm(request.POST)
+		if form.is_valid():
+			new_user = form.save()
+			new_user = authenticate(username=request.POST['username'],
+									password=request.POST['password'])
+			login(request, new_user)
+			return redirect('welcome')
+	else:
+		form = forms.UserCreationForm()
+	return render(request, "registration/register.html", {
+		'form': form,
+	})
+
+@login_required
+def welcome(request):
+	return render(request, 'welcome.html')
+
+
 
 def home(request):
-	return render(request, 'home.html')
+
+	publications = []
+
+	source_models = Source_Model.objects.filter(source_model_contributor__contributor=request.user)
+	for model in source_models:
+		publications.append(model)
+
+	site_models = Site_Model.objects.filter(site_model_contributor__contributor=request.user)
+	for model in site_models:
+		publications.append(model)
+	
+	rupture_models = Rupture_Model.objects.filter(user=request.user)
+	for model in rupture_models:
+		publications.append(model)
+
+	exposure_models = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user)
+	for model in exposure_models:
+		publications.append(model)
+
+	fragility_models = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user)
+	for model in fragility_models:
+		publications.append(model)
+
+	consequence_models = Consequence_Model.objects.filter(consequence_model_contributor__contributor=request.user)
+	for model in consequence_models:
+		publications.append(model)
+
+	vulnerability_models = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user)
+	for model in vulnerability_models:
+		publications.append(model)
+
+	logic_tree_sm = Logic_Tree_SM.objects.filter(user=request.user)
+	for model in logic_tree_sm:
+		publications.append(model)
+
+	logic_tree_gmpe = Logic_Tree_GMPE.objects.filter(user=request.user)
+	for model in logic_tree_sm:
+		publications.append(model)
+
+
+
+	scenario_hazard = Scenario_Hazard.objects.filter(user=request.user)
+	for job in scenario_hazard:
+		publications.append(job)
+
+	scenario_damage = Scenario_Damage.objects.filter(user=request.user)
+	for job in scenario_damage:
+		publications.append(job)
+
+	scenario_risk = Scenario_Risk.objects.filter(user=request.user)
+	for job in scenario_risk:
+		publications.append(job)
+
+	classical_psha_hazard = Classical_PSHA_Hazard.objects.filter(user=request.user)
+	for job in classical_psha_hazard:
+		publications.append(job)
+
+	classical_psha_hazard = Classical_PSHA_Hazard.objects.filter(user=request.user)
+	for job in classical_psha_hazard:
+		publications.append(job)
+
+	classical_psha_risk = Classical_PSHA_Risk.objects.filter(user=request.user)
+	for job in classical_psha_risk:
+		publications.append(job)
+
+	event_based_hazard = Event_Based_Hazard.objects.filter(user=request.user)
+	for job in event_based_hazard:
+		publications.append(job)
+
+	event_based_risk = Event_Based_Risk.objects.filter(user=request.user)
+	for job in event_based_risk:
+		publications.append(job)
+	
+
+	return render(request, 'home.html', {'publications': sorted(publications,  key=attrgetter('date_created'), reverse=True) })
 
 #class UserUpdate(forms.UserChangeForm):
 #	class Meta:

@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="container">
+<div class="container-fluid">
 
 <div class="row">
 	<div class="col-md-6">
@@ -47,23 +47,7 @@
 			<br>
 
 		</div>
-		<!--
-		<div class="col-md-4">
-			<div class="well">
-				<div class="row">
-					<div class="col-md-12">
-						<h3>Settings</h3>
-						<p>Area type: {{ model.get_area_type_display }}</p>
-						<p>Area units: {{ model.get_area_unit_display }}</p>
-						<p>Costs: {{model.get_aggregation_display}}</p>
-						<p>Currency: {{model.get_currency_display}}</p>
-						<p>Deductible: {{ model.get_deductible_display }}</p>
-						<p>Insurance limit: {{ model.get_insurance_limit_display }}</p>
-					</div>
-				</div>
-			</div>
-		</div>
-		-->
+
 	</div>
 
 </div>
@@ -131,18 +115,7 @@
 							<button class="btn btn-danger btn-sm" ng-disabled='disableDelete' ng-click='deleteAssets()'> <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete assets</button>
 						</div>
 					</div>
-					<div class="row">
-						<div class="col-md-6">
-							<div class="alert alert-dismissible alert-success" ng-show='info'>
-								<button type="button" class="close" data-dismiss="alert">×</button>
-								[[ message ]] <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-							</div>
-							<div class="alert alert-dismissible alert-danger" ng-show='error_info'>
-								<button type="button" class="close" data-dismiss="alert">×</button>
-								[[ error_message ]] <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-							</div>
-						</div>
-					</div>
+
 				</div>
 				
 				<div class="col-md-12">
@@ -151,11 +124,11 @@
 				
 				<div class="col-md-6">
 					<h4>Costs</h4>
-					<canvas id="asset_chart" width="200" height="200"></canvas>
+					<canvas id="asset_chart" width="600" height="400"></canvas>
 				</div>
 				<div class="col-md-6">
 					<h4>Occupancies</h4>
-					<canvas id="asset_occ_chart" width="200" height="200"></canvas>
+					<canvas id="asset_occ_chart" width="600" height="400"></canvas>
 				</div>					
 			</div>
 

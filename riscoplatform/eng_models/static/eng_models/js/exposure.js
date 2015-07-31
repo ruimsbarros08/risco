@@ -1,10 +1,20 @@
 "use strict";
 
-var exposureApp = angular.module('exposureApp', []).config(function($interpolateProvider){
+var exposureApp = angular.module('exposureApp', ['ui-notification']).config(function($interpolateProvider, NotificationProvider){
     $interpolateProvider.startSymbol('[[').endSymbol(']]');
+        NotificationProvider.setOptions({
+            delay: 10000,
+            startTop: 20,
+            startRight: 10,
+            verticalSpacing: 20,
+            horizontalSpacing: 20,
+            positionX: 'left',
+            positionY: 'bottom'
+        });
+
 });
 
-exposureApp.controller('exposureCtrl', function($scope) {
+exposureApp.controller('exposureCtrl', function($scope, Notification) {
 
     $('label[for="location"]').hide();
 
@@ -66,8 +76,6 @@ exposureApp.controller('exposureCtrl', function($scope) {
     $scope.disableSave = true;
     $scope.disableDelete = true;
     $scope.disableAllTaxonomies = true;
-    $scope.info = false;
-    $scope.error_info = false;
 
     $scope.stack = false;
 
@@ -143,14 +151,10 @@ exposureApp.controller('exposureCtrl', function($scope) {
             data: JSON.stringify(uploadData)
         })
         .done(function(data) {
-            $scope.info = true;
-            $scope.error_info = false;
-            $scope.message = 'Successfully updated!'
             display_data(data);
+            Notification.success('Assets uploaded');
         }).fail(function() {
-            $scope.info = false;
-            $scope.error_info = true;
-            $scope.error_message = 'Error! Try again!';
+            Notification.error('Error on the upload');
         });
     }
 
@@ -162,14 +166,10 @@ exposureApp.controller('exposureCtrl', function($scope) {
             data: JSON.stringify(assets)
         })
         .done(function(data) {
-            $scope.info = true;
-            $scope.error_info = false;
-            $scope.message = 'Assets deleted!'
             display_data(data);
+            Notification.success('Assets deleted');
         }).fail(function() {
-            $scope.info = false;
-            $scope.error_info = true;
-            $scope.error_message = 'Error! Try again!';
+            Notification.error('Error');
         });
 
     }
@@ -279,10 +279,10 @@ exposureApp.controller('exposureCtrl', function($scope) {
             }
 
             asset_chart = new Chart(ctx).Bar(asset_chart_data, {responsive: true,
-                                                                maintainAspectRatio: false,});
+                                                                maintainAspectRatio: true,});
             
             asset_occ_chart = new Chart(ctx_occ).Bar(asset_occ_chart_data, {responsive: true,
-                                                                            maintainAspectRatio: false,});
+                                                                            maintainAspectRatio: true,});
 
         }
         else {

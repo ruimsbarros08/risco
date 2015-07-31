@@ -1,68 +1,118 @@
 {% extends "base.html" %}
+{% load humanize %}
+{% load custom_filters %}
 
 {% block content %}
 <div class="container">
 	<div class="row">
-		<div class="col-md-12">
-			
-			<h1>risco</h1>
 
-			<h3>The web interface for openquake users</h3>
+			{% for pub in publications %}
+					<div class="col-md-offset-3 col-md-6 col-md-offset-3">
+						<div class="well">
+							<div class="row">
+								<div class="col-md-10">
+									{% if pub|classname == 'Building_Taxonomy_Source'  %}
+										<h3> <a href="{% url 'detail_taxonomy' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Building Taxonomy Source</i></p>
+									{% endif %}
 
-			<div id="map" style="height:500px;"></div>
+									{% if pub|classname == 'Exposure_Model'  %}
+										<h3> <a href="{% url 'detail_exposure' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Exposure Model</i></p>
+									{% endif %}
 
-		</div>
+									{% if pub|classname == 'Site_Model'  %}
+										<h3> <a href="{% url 'detail_site' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Site Model</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Source_Model'  %}
+										<h3> <a href="{% url 'detail_source' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Source Model</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Rupture_Model'  %}
+										<h3> <a href="{% url 'index_rupture_model' %}">{{ pub.name }}</a> </h3>
+										<p><i>Rupture Model</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Fragility_Model'  %}
+										<h3> <a href="{% url 'detail_fragility' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Fragility Model</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Consequence_Model'  %}
+										<h3> <a href="{% url 'detail_consequence' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Consequence Model</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Vulnerability_Model'  %}
+										<h3> <a href="{% url 'detail_vulnerability' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Vulnerability Model</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Logic_Tree_SM'  %}
+										<h3> <a href="{% url 'detail_logic_tree_sm' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Source Model Logic Tree</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Logic_Tree_GMPE'  %}
+										<h3> <a href="{% url 'detail_logic_tree_gmpe' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>GMPE Logic Tree</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Scenario_Hazard'  %}
+										<h3> <a href="{% url 'results_scenario_hazard' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Scenario Hazard</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Scenario_Damage'  %}
+										<h3> <a href="{% url 'results_scenario_damage' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Scenario Damage</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Scenario_Risk'  %}
+										<h3> <a href="{% url 'results_scenario_risk' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Scenario Risk</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Classical_PSHA_Hazard'  %}
+										<h3> <a href="{% url 'results_psha_hazard' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Classical PSHA Hazard</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Classical_PSHA_Risk'  %}
+										<h3> <a href="{% url 'results_psha_risk' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Classical PSHA Risk</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Event_Based_Hazard'  %}
+										<h3> <a href="{% url 'results_event_based_hazard' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Event Based PSHA Hazard</i></p>
+									{% endif %}
+
+									{% if pub|classname == 'Event_Based_Risk'  %}
+										<h3> <a href="{% url 'results_event_based_risk' pub.id %}">{{ pub.name }}</a> </h3>
+										<p><i>Event Based PSHA Hazard</i></p>
+									{% endif %}
+
+
+									<p>{{ pub.description }}</p>
+								</div>
+								<div class="col-md-2">
+									{% if pub.date_created|naturalday == 'today' %}
+										{{ pub.date_created|naturaltime }}
+									{% else %}
+										{{ pub.date_created|naturalday }}
+									{% endif %}
+								</div>
+							</div>
+						</div>
+					</div>
+			{% endfor %}
+
+
 	</div>
 </div>
-
-<script type="text/javascript">
-(function($) {
-	$( document ).ready(function() {
-		var map = new L.Map('map');
-	    map.setView(new L.LatLng(40, -8),3);
-	    osm.addTo(map);
-		L.control.layers(baseMaps).addTo(map);
-
-
-	    var style = {
-	        //"color": "#00D",
-	        "weight": 0.1,
-	        "opacity": 0.3,
-	        "fillOpacity": 0.4
-	    };
-	    var hoverStyle = {
-	        "fillOpacity": 0.6
-	    };
-		
-		var geoJsonURL = 'http://localhost:8080/world/{z}/{x}/{y}.json';
-    	var geoJsonTileLayer = new L.TileLayer.GeoJSON(geoJsonURL, {
-            clipTiles: true,
-            unique: function (feature) {
-                return feature.id; 
-            }
-        }, {
-            style: style,
-            onEachFeature: function (feature, layer) {
-                layer.setStyle({'color': feature.properties.color})
-                layer.on('mouseover', function () {
-                    layer.setStyle(hoverStyle);
-                    //infoBox.update(layer.feature.properties);
-                });
-                layer.on('mouseout', function () {
-                    layer.setStyle(style);
-                    //infoBox.update();
-                });
-                layer.on('click', function () {
-                    updateChart(feature.properties.limit_states)
-                });
-            }
-        }
-    ).addTo(map);
-	
-
-
-	});
-})($)
-</script>
 
 {% endblock %}

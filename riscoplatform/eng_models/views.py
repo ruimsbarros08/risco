@@ -13,6 +13,8 @@ from django.db import connection
 from django.db import transaction
 from django.contrib.gis.geos import Point
 
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
+
 #from django.db.models import Q
 #from django.db.models import F
 import json
@@ -36,7 +38,14 @@ def pagination(list, n, page):
 def home(request):
 	return render(request, 'eng_models/home.html')
 
+def get_geojson_countries(features_list):
+	features = list(dict(type='Feature',
+						id=cell[0],
+						properties=dict(id=cell[0],
+										name=cell[2]),
+						geometry=json.loads(cell[1])) for cell in features_list)
 
+	return {'type': 'FeatureCollection', 'features': features}
 
 ############################
 ##     TAXONOMY SOURCE    ##
@@ -60,6 +69,14 @@ def detail_taxonomy(request, model_id):
 ##     EXPOSURE    ##
 #####################
 
+exposure_form_categories = {'general': ['name', 'description', 'deductible', 'insurance_limit', 'taxonomy_source', 'add_tax_source',
+										'tax_source_name', 'tax_source_desc', 'xml'],
+							'area': ['area_type', 'area_unit'],
+							'structural': ['struct_cost_type', 'struct_cost_currency'],
+							'nonstructural': ['non_struct_cost_type', 'non_struct_cost_currency'],
+							'contents': ['contents_cost_type', 'contents_cost_currency'],
+							'business_int': ['business_int_cost_type', 'business_int_cost_currency']}
+
 class ExposureForm(forms.ModelForm):
 	add_tax_source = forms.BooleanField(required=False)
 	tax_source_name = forms.CharField(required=False)
@@ -82,8 +99,54 @@ def index_exposure(request):
 	models = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
 	form = ExposureForm()
 	form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(building_taxonomy_source_contributor__contributor=request.user).order_by('-date_created')
-	page = request.GET.get('page')
-	return render(request, 'eng_models/index_exposure.html', {'models': pagination(models, 10, page), 'form': form})
+	# page = request.GET.get('page')
+	return render(request, 'eng_models/index_exposure.html', {'models': models, 'form': form, 'categories': exposure_form_categories})
+
+
+@login_required
+def ajax_exposure_models(request):
+	user_id = request.user.id
+	cursor = connection.cursor()
+
+	cursor.execute('SELECT list.country_id, ST_AsGeoJSON(world_country.geom_simp), list.country_name, list.sum \
+					FROM (SELECT world_country.id AS country_id, world_country.name AS country_name, count(eng_models_asset.id) AS sum \
+						FROM eng_models_exposure_model_contributor, \
+							eng_models_asset, world_adm_2, world_adm_1, world_country \
+						WHERE eng_models_exposure_model_contributor.contributor_id = %s \
+						AND eng_models_asset.model_id = eng_models_exposure_model_contributor.model_id \
+						AND eng_models_asset.adm_2_id = world_adm_2.id \
+						AND world_adm_2.adm_1_id = world_adm_1.id \
+						AND world_adm_1.country_id = world_country.id \
+						GROUP BY world_country.id) AS list, world_country \
+					WHERE list.country_id = world_country.id', [user_id])
+	data = cursor.fetchall()
+
+	features = list()
+
+	for country in data:
+		cursor.execute('SELECT eng_models_exposure_model.id, eng_models_exposure_model.name \
+						FROM eng_models_exposure_model, eng_models_asset, world_adm_2, world_adm_1 \
+						WHERE eng_models_asset.model_id = eng_models_exposure_model.id \
+						AND eng_models_asset.adm_2_id = world_adm_2.id \
+						AND world_adm_2.adm_1_id = world_adm_1.id \
+						AND world_adm_1.country_id = %s \
+						GROUP BY eng_models_exposure_model.id', [country[0]])
+
+		feature = dict(type='Feature',
+							id=country[0],
+							properties=dict(id=country[0],
+											name=country[2],
+											n_assets = country[3],
+											models = list(dict(id=model[0],
+																name=model[1]) for model in cursor.fetchall())),
+							geometry=json.loads(country[1]))
+
+		features.append(feature)
+
+	countries = {'type': 'FeatureCollection', 'features': features}
+
+	return HttpResponse(json.dumps({'countries': countries}), content_type="application/json")
+
 
 @login_required
 def detail_exposure(request, model_id):
@@ -529,15 +592,15 @@ def add_exposure_model(request):
 					exposure_parser.start(model)
 				except Exception as e:
 					model.delete()
-					return render(request, 'eng_models/index_exposure.html', {'form': form, 'parse_error': e})
+					return render(request, 'eng_models/index_exposure.html', {'form': form, 'parse_error': e, 'categories': exposure_form_categories})
 			Exposure_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
 			return redirect('detail_exposure', model_id=model.id)
 		else:
 			models = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
-			return render(request, 'eng_models/index_exposure.html', {'models': pagination(models, 10, 1), 'form': form})
+			return render(request, 'eng_models/index_exposure.html', {'models': pagination(models, 10, 1), 'form': form, 'categories': exposure_form_categories})
 	else:
 		form = ExposureForm()
-		return render(request, 'eng_models/index_exposure.html', {'form': form})
+		return render(request, 'eng_models/index_exposure.html', {'form': form, 'categories': exposure_form_categories})
 
 
 @login_required
@@ -745,12 +808,14 @@ def index_source(request):
 def detail_source(request, model_id):
 	model = get_object_or_404(Source_Model ,pk=model_id, source_model_contributor__contributor=request.user)
 	sources = Source.objects.filter(model_id=model_id)
-	page = request.GET.get('page')
+	# page = request.GET.get('page')
 	form = SourceForm()
-	return render(request, 'eng_models/detail_source.html', {'model': model, 'form': form, 'sources': pagination(sources, 10, page), 'source_categories': source_categories})
+	return render(request, 'eng_models/detail_source.html', {'model': model, 'form': form, 'sources': sources, 'source_categories': source_categories})
 
 @login_required
 def add_source(request, model_id):
+	model = get_object_or_404(Source_Model ,pk=model_id)
+	sources = Source.objects.filter(model_id=model_id)
 	if request.method == 'POST':
 		form = SourceForm(request.POST)
 		if form.is_valid():
@@ -759,11 +824,11 @@ def add_source(request, model_id):
 			source.save()
 			return redirect('detail_source', model_id=model_id)
 		else:
-			model = get_object_or_404(Source_Model ,pk=model_id)
-			return render(request, 'eng_models/detail_source.html', {'model': model ,'form': form, 'source_categories': source_categories})
+
+			return render(request, 'eng_models/detail_source.html', {'model': model, 'sources': sources ,'form': form, 'source_categories': source_categories})
 	else:
 		form = SourceForm()
-		return render(request, 'eng_models/detail_source.html', {'form': form, 'source_categories': source_categories})
+		return render(request, 'eng_models/detail_source.html', {'model': model, 'sources': sources, 'form': form, 'source_categories': source_categories})
 
 @login_required
 def add_source_model(request):
@@ -1386,13 +1451,64 @@ def add_logic_tree_gmpe(request):
 		return render(request, 'eng_models/index_logic_tree_gmpe.html', {'form': form})
 
 
-#@login_required
-#def logic_tree_gmpe_ajax(request, model_id):
-#	model = get_object_or_404(Logic_Tree_GMPE ,pk=model_id, user=request.user)
+@login_required
+def logic_tree_gmpe_ajax(request, model_id):
+	model = get_object_or_404(Logic_Tree_GMPE ,pk=model_id, user=request.user)
 
-#	levels = Logic_Tree_GMPE_Level.objects.filter(model=model)
+	if request.method == 'GET':
 
-#	for level in levels:
+		regions = [{'name': region[0], 'gmpes': [possible_gmpe for possible_gmpe in get_possible_gmpes(region[0]) ]} for region in TECTONIC_CHOICES]
+
+		levels = Logic_Tree_GMPE_Level.objects.filter(logic_tree=model).order_by('level')
+		levels = json.loads(serializers.serialize("json", levels))
+
+		for level in levels:
+
+			branches = Logic_Tree_GMPE_Branch.objects.filter(level_id = level['pk'])
+			branches = json.loads(serializers.serialize("json", branches))
+
+			level['gmpes'] = branches
+
+		return HttpResponse(json.dumps({'levels': levels, 'regions': regions}), content_type="application/json")
+
+	if request.method == 'POST':
+
+		data = json.loads(request.body)
+
+		i=0
+		new_level_ids = []
+		for level in data:
+			try:
+				new_level = Logic_Tree_GMPE_Level.objects.get(logic_tree=model, level = i, tectonic_region=level['fields']['tectonic_region'])
+			except MultipleObjectsReturned:
+				Logic_Tree_GMPE_Level.objects.filter(logic_tree=model, level = i, tectonic_region=level['fields']['tectonic_region']).delete()
+				new_level = Logic_Tree_GMPE_Level(logic_tree=model, tectonic_region=level['fields']['tectonic_region'], level = i)
+				new_level.save()
+			except ObjectDoesNotExist:
+				new_level = Logic_Tree_GMPE_Level(logic_tree=model, tectonic_region=level['fields']['tectonic_region'], level = i)
+				new_level.save()
+
+			new_level_ids.append(new_level.id)
+
+			for branch in level['gmpes']:
+				try:
+					new_branch = Logic_Tree_GMPE_Branch.objects.get(level=new_level, gmpe=branch['fields']['gmpe'])
+					new_branch.weight = branch['fields']['weight']
+				except MultipleObjectsReturned:
+					Logic_Tree_GMPE_Branch.objects.filter(level=new_level, gmpe=branch['fields']['gmpe']).delete()
+					new_branch = Logic_Tree_GMPE_Branch(level=new_level, gmpe=branch['fields']['gmpe'], weight=branch['fields']['weight'])
+				except ObjectDoesNotExist:
+					new_branch = Logic_Tree_GMPE_Branch(level=new_level, gmpe=branch['fields']['gmpe'], weight=branch['fields']['weight'])
+			
+				new_branch.save()
+			i+=1
+
+		levels_to_delete = Logic_Tree_GMPE_Level.objects.filter(logic_tree=model).exclude(id__in=new_level_ids)
+		levels_to_delete.delete()
+
+
+		return HttpResponse(json.dumps({'data':data, 'msg': 'Data saved'}), content_type="application/json")
+
 
 
 

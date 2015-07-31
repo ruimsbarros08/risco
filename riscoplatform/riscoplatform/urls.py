@@ -13,6 +13,8 @@ urlpatterns = patterns('',
     url(r'^level2$', 'riscoplatform.views.level2', name='level2'),
     url(r'^level3$', 'riscoplatform.views.level3', name='level3'),
 
+    url(r'^accounts/register/$',  'riscoplatform.views.register', name='register'),
+    url(r'^welcome/$',  'riscoplatform.views.welcome', name='welcome'),
     url(r'^accounts/$',  'riscoplatform.views.account', name='account'),
     url(r'^accounts/login/$',  'django.contrib.auth.views.login', name='login'),
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='logout'),

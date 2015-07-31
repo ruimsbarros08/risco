@@ -1,4 +1,14 @@
 
+PGA = 'PGA'
+PGV = 'PGV'
+MMI = 'MMI'
+SA = 'SA'
+IMT_CHOICES = (
+    (PGA, 'PGA'),
+    (PGV, 'PGV'),
+    (MMI, 'MMI'),
+    (SA, 'Sa'),
+    )
 
 ABRAHAMSON_AND_SILVA_2008       = 'AbrahamsonSilva2008'
 AKKAR_AND_BOMMER_2010           = 'AkkarBommer2010'
@@ -73,6 +83,40 @@ def gmpe_is_valid(gmpe):
             return True
     return False
 
+def get_possible_gmpes(region):
+    
+    if region == ACTIVE:
+        return [ABRAHAMSON_AND_SILVA_2008,
+                    AKKAR_AND_BOMMER_2010,
+                    AKKAR_AND_CAGNAN_2010,
+                    BOORE_AND_ATKINSON_2008,
+                    CAUZZI_AND_FACCIOLI_2008,
+                    CHIOU_AND_YOUNGS_2008,
+                    FACCIOLI_ET_AL_2010,
+                    SADIGH_ET_AL_1997,
+                    ZHAO_ET_AL_2006_ASC]
+    
+    elif region == SUBDUCTION:
+        return [ATKINSON_AND_BOORE_2003_INTER,
+                    LIN_AND_LEE_2008_INTER,
+                    YOUNGS_ET_AL_1997_INTER,
+                    ZHAO_ET_AL_2006_INTER]
+
+    elif region == STABLE:
+        return [ATKINSON_AND_BOORE_2006,
+                    CAMPBELL_2003,
+                    TORO_ET_AL_2002]
+
+    elif region == ACTIVE_INTERSLAB:
+        return [ATKINSON_AND_BOORE_2003_IN_SLAB,
+                    LIN_AND_LEE_2008_IN_SLAB,
+                    YOUNGS_ET_AL_1997_IN_SLAB,
+                    ZHAO_ET_AL_2006_IN_SLAB]
+
+    else:
+        return []
+
+  
 
 
 def gmpe_tectonic_region_is_compatible(gmpe, region):

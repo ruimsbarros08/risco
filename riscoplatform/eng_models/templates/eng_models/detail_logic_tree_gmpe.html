@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="container" ng-app="gmpeLogicTreeApp">
+<div class="container" ng-app="gmpeLogicTreeApp" ng-controller="gmpeLogicTreeCtrl">
 
 <div class="row">
 	<div class="col-md-6">
@@ -21,14 +21,17 @@
 			<h4>{{ model.description }}</h4>
 			<br>
 		</div>
-		<div class="well col-md-offset-4 col-md-4">
-			<button class="btn btn-success btn-sm"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save </button>
-			<button class="btn btn-warning btn-sm"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Discard changes </button>
-			<button class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete logic tree </button>
+		<div class="col-md-offset-4 col-md-4">
+			<button class="btn btn-success btn-sm" ng-click="save()"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save </button>
+			<br>
+			<div class="alert alert-dismissible alert-success" ng-show='hasMessage'>
+			<button type="button" class="close" data-dismiss="alert">×</button>
+			<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> [[ message ]]
+			</div>
 		</div>
 	</div>
 
-	<div class="row" ng-controller="gmpeLogicTreeCtrl">
+	<div class="row" >
 
 		<ul class="no-bullets" ui-sortable="sortableOptions" ng-model="levels" >
 		  	<li ng-repeat="level in levels" class="col-md-3">
@@ -39,14 +42,14 @@
 				  	</div>
 					<div class="panel-body" style="height:300px;">
 						<h4>
-				    		[[ level.tectonic_region ]]
+				    		[[ level.fields.tectonic_region ]]
 						</h4>
 						<div style="height: 200px; overflow-y: scroll">
 					    	<table class="table table-striped">
 					    		<tbody>
 						    		<tr ng-repeat="gmpe in level.gmpes">
-						    			<td>[[ gmpe.name ]]</td>
-						    			<td>[[ gmpe.weight ]]</td>
+						    			<td>[[ gmpe.fields.gmpe ]]</td>
+						    			<td>[[ gmpe.fields.weight ]]</td>
 						    			<!--<td></td>-->
 						    		</tr>
 						    			<!--
@@ -83,8 +86,8 @@
 					    	<table class="table table-striped">
 					    		<tbody>
 					    			<tr ng-repeat="gmpe in new_gmpes">
-						    			<td>[[ gmpe.name ]]</td>
-						    			<td>[[ gmpe.weight ]]</td>
+						    			<td>[[ gmpe.fields.gmpe ]]</td>
+						    			<td>[[ gmpe.fields.weight ]]</td>
 						    			<td> <button class="btn btn-xs btn-danger" ng-click="deleteGMPE(gmpe)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button> </td>
 					    			</tr>
 						    		<tr>

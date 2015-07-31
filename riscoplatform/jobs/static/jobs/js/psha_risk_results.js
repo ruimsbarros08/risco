@@ -1,12 +1,13 @@
- "use strict";
+"use strict";
 
-(function($) {
-$( document ).ready(function() {
+var riskResultsApp = angular.module('riskResultsApp', ['chart.js']).config(function($interpolateProvider){
+    // $interpolateProvider.startSymbol('[[').endSymbol(']]');
+});
 
+riskResultsApp.controller('riskResultsCtrl', function($scope) {
 
-    $( "#vulnerability-selector li:first-child" ).addClass( "active" );
-    $( "#myTabContent div:first-child" ).addClass( "tab-pane fade active in" );
-    
+    $('label[for="location"]').hide();
+
     var map = new L.Map('map', {
         fullscreenControl: true,
         fullscreenControlOptions: {
@@ -14,396 +15,308 @@ $( document ).ready(function() {
         }
     });
     map.setView(new L.LatLng(0, 0),2);
-    bw.addTo(map);
+    osm.addTo(map);
 
     var control = L.control.layers(baseLayers).addTo(map);
+    var legendControl = new L.Control.Legend();
+    var lossesLayer;
+    
+    var regions_control;
+    var taxonomies_control;
+    var poe_control;
+    var statistics_control;
+    var vulnerability_control;
+    var charts_control;
+
 
     var url = document.URL.split('/');
     var job_id = url[url.length -2];
 
+    var job;
 
     var level = 0;
-    var country;
+    var region;
     var taxonomy;
-    var taxonomies;
+    var poe;
+    var statistics = 'mean';
+    var vulnerability;
+    var insured = false;
 
-    $('#adm_back').attr("disabled", true);
+    $scope.disableAllTaxonomies = true;
 
 
-    var zoom_out_adm = function(){
-        //country = undefined;
-        level -= 1;
+    $scope.disableHome = true; 
+    $scope.disableUp = true; 
+    $scope.region1Disabled = true;
+    $scope.region2Disabled = true;
+
+    $scope.region_labels = [];
+    $scope.region_data = [];
+
+    $scope.taxonomies_labels = [];
+    $scope.taxonomies_data = [];
+
+    $scope.regionChart;
+
+    var getRegion = function(level){
         if (level == 0){
-            country = undefined;
+            return undefined;
         }
-        else if (level == 1){
-            country = $('#country').val();
+        if (level == 1){
+            return $scope.region0.id;
         }
-        else if (level == 2){
-            country = $('#level1').val();
+        if (level == 2){
+            return $scope.region1.id;
         }
+        if (level == 3){
+            return $scope.region2.id;
+        }
+    } 
 
-        get_data(country, level);   
+
+    $scope.selectRegion = function(l, r){
+        level = l;
+        region = r;
+        load_data(level, region, taxonomy, poe, statistics, vulnerability, insured);
     }
 
-    $('#adm_back').on('click', zoom_out_adm);
+    $scope.goHome = function(){
+        level = 0;
+        region = undefined;
+        load_data(level, region, taxonomy, poe, statistics, vulnerability, insured);
+    }
 
-    $('#country').on('change', function(){
-        if ( $(this).val() == 'undefined'){
-            zoom_out_adm();
-            return;
+    $scope.upOneLevel = function(){
+        level -= 1;
+        region = getRegion(level);
+        load_data(level, region, taxonomy, poe, statistics, vulnerability, insured);
+    }
+
+    $scope.setTaxonomy = function(tx){
+        taxonomy = tx;
+        load_data(level, region, taxonomy, poe, statistics, vulnerability, insured);
+        $scope.disableAllTaxonomies = false;
+    }
+
+    $scope.allTaxonomies = function(){
+        taxonomy = undefined;
+        load_data(level, region, taxonomy, poe, statistics, vulnerability, insured);
+        $scope.disableAllTaxonomies = true;
+        $scope.taxonomy = undefined;
+    }
+
+    $scope.setPoe = function(p){
+        poe = p;
+        load_data(level, region, taxonomy, poe, statistics, vulnerability, insured);
+    }
+
+    $scope.setQuantile = function(stat){
+        statistics = stat; 
+        load_data(level, region, taxonomy, poe, statistics, vulnerability, insured)
+    }
+
+    $scope.setVulnerability = function(vul){
+        vulnerability = vul; 
+        load_data(level, region, taxonomy, poe, statistics, vulnerability, insured)
+    }
+
+    var fill_regions_dropdowns = function(level, regions){
+
+        if (level == 0){
+
+            $scope.region1Disabled = true;
+            $scope.region2Disabled = true;
+
+            $scope.disableHome = true; 
+            $scope.disableUp = true; 
+
+            $scope.regions0 = regions;
+            $scope.regions1 = [];
+            $scope.regions2 = [];
+        }
+        if (level == 1){
+
+            $scope.region1Disabled = false;
+            $scope.region2Disabled = true;
+
+            $scope.disableHome = false; 
+            $scope.disableUp = false; 
+
+            $scope.regions1 = regions;
+            $scope.regions2 = [];
+        }
+        if (level == 2){
+            $scope.region2Disabled = false;
+            $scope.regions2 = regions;
+        }
+
+        $scope.$apply();
+    }
+
+
+
+    var load_data = function(level, region, taxonomy, poe, statistics, vulnerability, insured) {
+
+        if (level > 0 && region == undefined){
+            return
         }
         else {
-            level = 1;
+
+            $.ajax('/jobs/psha/risk/results_maps/'+job_id+'/?vulnerability='+vulnerability+'&level='+level+'&region='+region+'&statistics='+statistics+'&poe='+poe+'&taxonomy='+taxonomy+'&insured='+insured )
+            .done(function (data) {
+                display_data(data);
+            }).fail(function() {
+
+            });
         }
-        country = $(this).val();
-        get_data(country, level);
-    });
-
-    $('#level1').on('change', function(){
-        if ( $(this).val() == 'undefined'){
-            zoom_out_adm();
-            return;
-        }
-        else {
-            level = 2;
-        }
-        country = $(this).val();
-        get_data(country, level);
-    });
-
-    $('#taxonomy').on('change', function(){
-        taxonomy = $(this).val();
-        get_data(country, level);
-    });
-
-
-    var url = document.URL.split('/');
-    var job_id = url[url.length -2];
-    var regions;
-    var job;
-    var exposure_model;
-    var losses_data;
-    var lossesLayer;
-    var losses_options;
-
-    var chart_data = [];
-    var insured_chart_data = [];
-    var tax_chart_data = [];
-
-    var chart_options = {
-        //Number - The percentage of the chart that we cut out of the middle
-        percentageInnerCutout : 50, // This is 0 for Pie charts
-        //Number - Amount of animation steps
-        animationSteps : 100,
-        //String - Animation easing effect
-        animationEasing : "easeOutBounce",
-        //Boolean - Whether we animate the rotation of the Doughnut
-        animateRotate : true,
     };
 
 
-    var lossesGroup = new L.LayerGroup();
 
-    var clean_losses_layers = function(lossesGroup){
-        lossesGroup.eachLayer(function (layer) {
-            map.removeLayer(layer);
-            control.removeLayer(layer);
-        });
-    }
+    var display_data = function(data) {
 
-    var get_data = function(country, next_level){
-        level = next_level;
-        var adm_1;
-        var adm_0;
-        if (level == 1){
-            adm_0 = country;
-        }
-        else if (level == 2){
-            adm_1 = country;
-        }
-        $.ajax( '/jobs/psha/risk/results_maps/'+job_id+'/?adm_1='+adm_1+'&country='+adm_0+'&taxonomy='+taxonomy )
-        .done(function(data) {
-            display_data(data)
-        });
-    }
+            job = data.job[0].fields;
 
-    var get_locations = function(country){
-        $.ajax( '/jobs/psha/risk/results_locations/'+job_id+'/?country='+country+'&taxonomy='+taxonomy)
-        .done(function(data) {
-            display_locations(data);
-        });
-    }
+            //regions
+            fill_regions_dropdowns(level, data.losses_per_region)
 
-    var get_curves = function(country, lat, lon){
-        $.ajax( '/jobs/psha/risk/results_curves/'+job_id+'/?country='+country+'&lat='+lat+'&lon='+lon)
-        .done(function(data) {
-            display_curves(data);
-        });
-    }
+            if (regions_control == undefined){
+                regions_control = new RegionSelectControl().addTo(map);
+            }
 
-    $('#level1').attr("disabled", true);
-    $('#level2').attr("disabled", true);
-    var fill_regions_dropdowns = function(regions){
-        if (level == 0){
-            var $elem = $("#country");
-            $("#level1").empty();
-            $("#level2").empty();
-            $('#level2').attr("disabled", true);
-            $('#level1').attr("disabled", true);
-        }
-        else if (level == 1){
-            $("#country").val(country);
-            var $elem = $("#level1");
-            $("#level2").empty();
-            $('#level1').attr("disabled", false);
-            $('#level2').attr("disabled", true);
-        }
-        else if (level == 2){
-            $("#level1").val(country);
-            var $elem = $("#level2");
-            $('#level2').attr("disabled", false);
-        }
-        $elem.empty();
-        $elem.append('<option value="undefined">All</option>');
-        for (var i = 0; i < regions.features.length; i++){
-            $elem.append('<option value='+regions.features[i].properties.id+'>'+regions.features[i].properties.name+'</option>');
-        }
-    }
-
-    var fill_taxonomy_dropdown = function(taxs){
-        taxonomies = [];
-        $('#taxonomy').append("<option value='undefined'>All</option>");
-        for (var j = 0; j < taxs.length; j++){
-            $('#taxonomy').append('<option value='+taxs[j].id+'>'+taxs[j].name+'</option>');    
-            taxonomies.push( {id: taxs[j].id, name: taxs[j].name} )
-        }
-    }
-
-    var clean_charts = function(tab) {
-
-        $('#'+tab+'_insured').html('<div class="panel panel-default"> \
-                                      <div class="panel-heading">Insurance data (average):</div> \
-                                      <div class="panel-body"> \
-                                        <canvas id="'+tab+'_insured_chart" \
-                                                    width="200" height="200"></canvas> \
-                                      </div> \
-                                      <div class="panel-footer" id="'+tab+'_insured_chart_legend"><ul></ul> \
-                                    </div>');
-        $('#'+tab+'_region').html('<div class="panel panel-default"> \
-                                      <div class="panel-heading">Average losses per region:</div> \
-                                      <div class="panel-body"> \
-                                        <canvas id="'+tab+'_chart" \
-                                                    width="200" height="200"></canvas> \
-                                      </div> \
-                                      <div class="panel-footer" id="'+tab+'_chart_legend"><ul></ul> \
-                                    </div>');
-        $('#'+tab+'_taxonomy').html('<div class="panel panel-default"> \
-                                      <div class="panel-heading">Average losses per taxonomy:</div> \
-                                      <div class="panel-body"> \
-                                        <canvas id="'+tab+'_tax_chart" \
-                                                    width="200" height="200"></canvas></div> \
-                                        <div class="panel-footer" id="'+tab+'_tax_chart_legend"><ul></ul> \
-                                      </div> \
-                                    </div>');
-    }
-
-    var enable_back_button = function(){
-        if ( level == 0 ){
-            $('#adm_back').attr("disabled", true);
-        }
-        else {
-            $('#adm_back').attr("disabled", false);
-        }
-    }
-
-
-    var display_chart = function(type, data, units){
-
-        chart_data = [];
-        var ctx = $('#'+type+'_chart').get(0).getContext("2d");
-
-        for (var j = 0; j < data.values.length; j++ ){
-            var color = getRandomColor();
-            $('#'+data.name+'_chart_legend ul').append('<li class="no-bullets"> <span class="glyphicon glyphicon-stop" style="color:'+color+';" aria-hidden="true"></span> <b> '+
-                        data.values[j].name+'</b>: '+
-                        Humanize.intword(data.values[j].value, 'M', 1)+' +- '+
-                        Humanize.intword(data.values[j].stddev, 'M', 1)+' '+
-                        units+'</li>');
-            chart_data.push({value: data.values[j].value,
-                            label: data.values[j].name,
-                            color: color,
-                            highlight: "#EBD800",});
-        }
-
-        var chart = new Chart(ctx).Pie(chart_data, chart_options);
-        
-        $('#'+type+'_chart').on('click', function(evt){
-            try {  
-                var selectedLabel = chart.getSegmentsAtEvent(evt)[0].label;
-                for (var k = 0; k < regions.features.length; k++){
-                    if (selectedLabel == regions.features[k].properties.name){
-                        country = regions.features[k].id;
-                        $("#country").val(country);
-                        level = level+1;
-                        get_data(country, level);
-                    }
+            //taxonomies
+            if ( taxonomies_control == undefined ){
+                $scope.taxonomies = [];
+                for (var i=0; i<data.losses_per_taxonomy.length; i++){
+                    $scope.taxonomies.push({id:data.losses_per_taxonomy[i].id, name: data.losses_per_taxonomy[i].name});
                 }
+                taxonomies_control = new TaxonomySelectControl().addTo(map);
+            }
+
+            //poes
+            if ( poe_control == undefined ){
+                $scope.poes = [];
+                var poes_list = job.poes.split(',');
+                for (var i = 0; i< poes_list.length; i++){
+                    var new_poe = poes_list[i].replace("[", "").replace("]", "").trim();
+                    $scope.poes.push(new_poe);
+                }
+                $scope.poe = data.poe.toString();
+                poe_control = new PoeSelectControl().addTo(map);
+            }
+
+            //statistics
+            if ( statistics_control == undefined ){
+                $scope.quantiles = ['mean'];
+                var statistics_list = job.quantile_loss_curves.split(',');
+                for (var i = 0; i< statistics_list.length; i++){
+                    var new_quantile = statistics_list[i].replace("[", "").replace("]", "").trim();
+                    $scope.quantiles.push(new_quantile);
+                }
+                $scope.statistics = data.statistics.toString();
+                statistics_control = new StatisticsSelectControl().addTo(map);
+            }
+
+            //vulnerability
+            if ( vulnerability_control == undefined ){
+                $scope.vulnerabilities = data.vulnerabilities;
+                $scope.vulnerability = data.vulnerability;
+                vulnerability_control = new vulnerabilitySelectControl().addTo(map);
+            }
+
+            //charts
+            if ( charts_control == undefined ){
+                charts_control = new chartsControl().addTo(map);
+            }
+            
+            $scope.region_labels = [];
+            $scope.region_data = [];
+
+            $scope.taxonomies_labels = [];
+            $scope.taxonomies_data = [];
+
+            var max_value = 0;
+            for (var i=0; i < data.losses_per_region.length; i++){
+                if (data.losses_per_region[i].value > max_value){
+                    max_value = data.losses_per_region[i].value;
+                }
+
+                $scope.region_labels.push(data.losses_per_region[i].name);
+                $scope.region_data.push(data.losses_per_region[i].value);
+            }
+
+            $scope.onRegionChartClick = function(points, evt){
+                try {
+                    var selectedLabel = points[0].label;
+                    for (var k = 0; k < data.geojson.features.length; k++){
+                        if (selectedLabel == data.geojson.features[k].properties.name){
+                            region = data.geojson.features[k].id;
+                            level = level+1;
+                            $scope.selectRegion(level, region);
+                        }
+                    }
+
+                }
+                catch(err){
+                    console.log('Click on a slice')
+                }
+        
+            };
+
+
+            $scope.onTaxonomyChartClick = function(points, evt){
+                try {
+                    var selectedLabel = points[0].label;
+                    for (var k = 0; k < data.losses_per_taxonomy.length; k++){
+                        if (selectedLabel == data.losses_per_taxonomy[k].name){
+                            $scope.setTaxonomy(data.losses_per_taxonomy[k].id);
+                        }
+                    }
+
+                }
+                catch(err){
+                    console.log('Click on a slice')
+                }
+        
+            };
+
+            for (var i=0; i < data.losses_per_taxonomy.length; i++){
+                $scope.taxonomies_labels.push(data.losses_per_taxonomy[i].name);
+                $scope.taxonomies_data.push(data.losses_per_taxonomy[i].value);
+            }
+
+            try{
+                map.removeLayer( lossesLayer );
+                // legendControl.removeFrom( map );
             }
             catch(err){
-                console.log('Click on a slice')
             }
-        });
 
-    }
-
-
-    var locationsGroup = new L.LayerGroup();
-    control.addOverlay(locationsGroup, 'Locations');
-
-    var display_locations = function(data){
-        locationsGroup.clearLayers();
-
-        var locations = data.locations;
-        var bounds = [];
-
-        if (job.status == 'FINISHED'){
-            
-            for (var i = 0; i<locations.length; i++){
-
-                var marker = L.marker(L.latLng(locations[i].lat, locations[i].lon), {icon: blueIcon});
-                bounds.push([locations[i].lat, locations[i].lon]);
-                marker.bindPopup( '<b>Latitude: </b>'+locations[i].lat + '<br><b>Longitude:</b> '+locations[i].lon + '<br><b>Name:</b> '+locations[i].adm_2 );
-                locationsGroup.addLayer(marker);
-
-                marker.on('click', function(){
-
-                    locationsGroup.eachLayer(function (layer){
-                        layer.setIcon( blueIcon );
-                    });
-
-                    this.setIcon( redIcon );
+            //loss maps layer
+            var losses_options = get_losses_options(data.geojson, max_value, 'losses_per_region');
+            losses_options.onEachRecord = function(layer, record){
+                layer.on('click', function () {
+                    region = record.id;
+                    level = level+1;
+                    $scope.selectRegion(level, region);
                 });
-
             }
-            locationsGroup.addTo(map);
-            map.fitBounds(bounds);
+
+
+            lossesLayer = new L.ChoroplethDataLayer(data, losses_options);
+
+            lossesLayer.addTo(map);
+            map.fitBounds(lossesLayer.getBounds());
+            
+            legendControl.addTo(map);
+
+            $scope.$apply();
 
         }
 
-    }
-
-
-
-
-
-    var display_data = function(data){
-
-        enable_back_button();
-        clean_losses_layers(lossesGroup);
-
-        regions = data.geojson;
-        fill_regions_dropdowns(regions);
-
-        losses_data = data.losses;
-        job = data.job[0].fields;
-        exposure_model = data.exposure_model[0].fields;
-
-        if (job.status == 'FINISHED'){
-
-            var $active_tab = $("#myTabContent div.active");
-            
-            for (var i = 0; i<losses_data.length; i++){
-
-                var $tab_elem = $( "#"+losses_data[i].name );
-                $tab_elem.addClass( "tab-pane fade active in" );
-
-                if (taxonomies == undefined){
-                    fill_taxonomy_dropdown( losses_data[i].values_per_taxonomy );
-                }
-                
-                clean_charts(losses_data[i].name);
-
-                //UNITS
-                if ( losses_data[i].name == 'occupants_vulnerability' ){
-                    var units = 'fatalities';
-                }
-                else {
-                    var units = exposure_model.currency;
-                }
-                chart_options.tooltipTemplate = "<%= label %>: <%= Humanize.intword(value, 'M', 1) %> "+units;
-
-                //MAP DVF OPTIONS
-                losses_options = get_losses_options(regions, losses_data[i].max);
-                losses_options.onEachRecord = function(layer, record){
-                    layer.on('click', function () {
-                        country = record.id;
-                        var next_level = level+1;
-                        if (level != 2){
-                            get_data(country, next_level);
-                        }
-                        else {
-                            get_locations(country);
-                        }
-                    });
-                }
-
-                $tab_elem.removeClass( "active in" );
-
-                //ADD LAYERS
-
-                map.on('overlayadd', function (layer){
-                    var name_array = layer.name.split(' ');
-                    for (var i=0; i<losses_data.length;i++){
-                        if (name_array[0] == losses_data[i].name){
-                            var poe = parseFloat(name_array[2]);
-                            if (name_array.length > 3){
-                                var quantile = name_array[4];
-                            }
-
-                            for (var j=0; j<losses_data[i].values_per_region.length; j++){
-                                if (losses_data[i].values_per_region[j].poe == poe){
-                                    if (losses_data[i].values_per_region[j].quantile == quantile){
-
-                                        display_chart(losses_data[i].name, losses_data[i].values_per_region[j], 'EUR');
-                                    }
-                                }
-                            }                                                        
-                        }  
-                    }
-                });
-
-                for (var j=0; j<losses_data[i].values_per_region.length;j++){
-                    lossesLayer = new L.ChoroplethDataLayer(losses_data[i].values_per_region[j], losses_options);
-
-                    if (j==0){
-                        lossesLayer.addTo(map);
-                    }
-
-                    lossesGroup.addLayer(lossesLayer);
-                    if (losses_data[i].values_per_region[j].quantile){
-                        var layer_name = losses_data[i].name + ' Poe: ' + losses_data[i].values_per_region[j].poe + ' Quantile: ' + losses_data[i].values_per_region[j].quantile 
-                    }
-                    else {
-                        var layer_name = losses_data[i].name + ' Poe: ' + losses_data[i].values_per_region[j].poe + ' Mean'
-                    }
-                    
-                    control.addOverlay(lossesLayer ,layer_name);
-                    map.fitBounds(lossesLayer.getBounds());
-                    
-                }
-
-            }
-            $active_tab.addClass('active in');
-        }
-
-
-    }
-
-    get_data(country, level);
-
-
-
+    load_data(level, region, taxonomy, poe, statistics, vulnerability, insured);
 
 });
-})($); 
+
+
+

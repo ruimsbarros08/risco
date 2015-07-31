@@ -99,7 +99,7 @@ $( document ).ready(function() {
 
     var occur_rates_tags = $('#occur_rates-tags').tags({
         bootstrapVersion: 3,
-        tagSize: 'lg',
+        tagSize: 'sm',
         readOnly: false,
         popovers: false,
         promptText: 'Insert a float [0, 1] and press enter',

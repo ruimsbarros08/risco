@@ -15,6 +15,9 @@
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap-tags/dist/css/bootstrap-tags.css' %}" />
     
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/angular/angular-csp.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/angular-chart.js/dist/angular-chart.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/angular-ui-notification/dist/angular-ui-notification.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/angular-bootstrap/ui-bootstrap-csp.css' %}" />
     <!--
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/angular-tags/angular-tags-0.2.10.css' %}" />
     -->
@@ -83,12 +86,10 @@
                                     <li class="dropdown-header">PSHA</li>
                                     <li><a href="{% url 'index_psha_hazard' %}">HAZARD</a></li>
                                     <li><a href="{% url 'index_psha_risk' %}">RISK</a></li>
-                                    <li><a href="#">DAMAGE</a></li>
-                                    <li><a href="#">DISAGGREGATION</a></li>
                                     <li class="divider"></li>
                                     <li class="dropdown-header">EVENT BASED</li>
                                     <li><a href="{% url 'index_event_based_hazard' %}">HAZARD</a></li>
-                                    <li><a href="#">RISK</a></li>
+                                    <li><a href="{% url 'index_event_based_risk' %}">RISK</a></li>
                                 </ul>
                             </li>
                             <li class=""><a href="">DOCUMENTATION</a></li>
@@ -106,7 +107,7 @@
                             </li>
                         {% else %}
                         <li class=""><a href="{% url 'login' %}">Login</a></li>
-                        <li class=""><a href="#">Register</a></li>
+                        <li class=""><a href="{% url 'register' %}">Register</a></li>
                         {% endif %}
                         </ul>
 
@@ -131,15 +132,18 @@
 </div>
 
 <script type="text/javascript" src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
-<script type="text/javascript" src="http://cdn.jsdelivr.net/g/jquery.ui@1.10%28jquery.ui.core.min.js+jquery.ui.widget.min.js+jquery.ui.mouse.min.js+jquery.ui.sortable.min.js%29"></script>
+<script type="text/javascript" src="{% static 'bower_components/jquery-ui/jquery-ui.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/bootstrap-tags/dist/js/bootstrap-tags.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/bootstrap/js/transition.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/bootstrap/js/modal.js' %}"></script>
-<!--<script type="text/javascript" src="{% static 'bower_components/jquery-ui/jquery-ui.min.js' %}"></script>-->
 
 <script type="text/javascript" src="{% static 'bower_components/angular/angular.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/angular-ui-sortable/sortable.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/angular-ui-notification/dist/angular-ui-notification.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/angular-bootstrap/ui-bootstrap.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/angular-scroll/angular-scroll.min.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'bower_components/handsontable/dist/handsontable.full.min.js' %}"></script>
 
@@ -154,6 +158,7 @@
 <script type="text/javascript" src="{% static 'bower_components/chartjs/src/Chart.Radar.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/Chart.Scatter.js/Chart.Scatter.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/Chart.StackedBar.js/src/Chart.StackedBar.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/angular-chart.js/dist/angular-chart.min.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'bower_components/leaflet/dist/leaflet.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-draw/dist/leaflet.draw.js' %}"></script>

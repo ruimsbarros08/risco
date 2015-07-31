@@ -47,4 +47,12 @@ urlpatterns = patterns('',
     # url(r'^event_based/hazard/results_curves/(?P<job_id>\d+)/$', views.results_psha_hazard_curves_ajax, name='results_psha_hazard_curves_ajax'),
     url(r'^event_based/hazard/(?P<job_id>\d+)/start/$', views.start_event_based_hazard, name='start_event_based_hazard'),
 
+
+    url(r'^event_based/risk/$', views.index_event_based_risk, name='index_event_based_risk'),
+    url(r'^event_based/risk/add/$', views.add_event_based_risk, name='add_event_based_risk'),
+    url(r'^event_based/risk/results/(?P<job_id>\d+)/$', views.results_event_based_risk, name='results_event_based_risk'),
+    # url(r'^event_based/hazard/results_maps/(?P<job_id>\d+)/$', views.results_psha_hazard_maps_ajax, name='results_psha_hazard_maps_ajax'),
+    # url(r'^event_based/hazard/results_curves/(?P<job_id>\d+)/$', views.results_psha_hazard_curves_ajax, name='results_psha_hazard_curves_ajax'),
+    url(r'^event_based/risk/(?P<job_id>\d+)/start/$', views.start_event_based_risk, name='start_event_based_risk'),
+
 )

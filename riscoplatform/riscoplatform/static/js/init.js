@@ -163,9 +163,9 @@ function get_hazard_options(geojson){
 
 
 
-function get_losses_options(geojson, total){
+function get_losses_options(geojson, total, field){
     return  {
-            recordsField: 'values',
+            recordsField: field,
             locationMode: L.LocationModes.LOOKUP,
             locationLookup: geojson,
             codeField: 'id',
@@ -240,7 +240,21 @@ var baseLayers = {
     "ESRI World": Esri_WorldImageryLayer
 };
 
+var init_map = function () {
+    var map = new L.Map('map', {
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+            position: 'topleft'
+        },
+        minZoom: 2
+    });
+    map.setView(new L.LatLng(0, 0),2);
+    osm.addTo(map);
 
+    var control = L.control.layers(baseLayers).addTo(map);
+
+    return map;
+}
 
 //Forms 
 $( document ).ready(function() {
@@ -285,6 +299,64 @@ var RegionSelectControl = L.Control.extend({
         return container;
     }
 });
+
+var TaxonomySelectControl = L.Control.extend({
+    options: {
+        position: 'topright'
+    },
+
+    onAdd: function (map) {
+        var container = L.DomUtil.get('taxonomy-selector');
+        return container;
+    }
+});
+
+var PoeSelectControl = L.Control.extend({
+    options: {
+        position: 'topright'
+    },
+
+    onAdd: function (map) {
+        var container = L.DomUtil.get('poe-selector');
+        return container;
+    }
+});
+
+var StatisticsSelectControl = L.Control.extend({
+    options: {
+        position: 'topright'
+    },
+
+    onAdd: function (map) {
+        var container = L.DomUtil.get('quantile-selector');
+        return container;
+    }
+});
+
+var vulnerabilitySelectControl = L.Control.extend({
+    options: {
+        position: 'topright'
+    },
+
+    onAdd: function (map) {
+        var container = L.DomUtil.get('vulnerability-selector');
+        return container;
+    }
+});
+
+var chartsControl = L.Control.extend({
+    options: {
+        position: 'bottomleft',
+    },
+
+    onAdd: function (map) {
+        var container = L.DomUtil.get('charts');
+        return container;
+    }
+});
+
+
+
 
 
 

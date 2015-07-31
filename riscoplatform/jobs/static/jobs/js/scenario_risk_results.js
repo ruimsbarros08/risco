@@ -286,7 +286,7 @@ $( document ).ready(function() {
                 chart_options.tooltipTemplate = "<%= label %>: <%= Humanize.intword(value, 'M', 1) %> "+units;
 
                 //MAP DVF OPTIONS
-                losses_options = get_losses_options(regions, losses_data[i].total_scale);
+                losses_options = get_losses_options(regions, losses_data[i].total_scale, 'values');
                 losses_options.onEachRecord = function(layer, record){
                     layer.on('click', function () {
                         country = record.id;

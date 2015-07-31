@@ -43,6 +43,7 @@ urlpatterns = patterns('',
 
 
     url(r'^exposure/$', views.index_exposure, name='index_exposure'),
+    url(r'^exposure/countries/$', views.ajax_exposure_models, name='ajax_exposure_models'),
     url(r'^exposure/(?P<model_id>\d+)/$', views.detail_exposure, name='detail_exposure'),
     url(r'^exposure/(?P<model_id>\d+)/assets/$', views.ajax_assets, name='ajax_assets'),
     #url(r'^exposure/(?P<model_id>\d+)/heat_assets/$', views.ajax_heat_assets, name='ajax_heat_assets'),
@@ -57,6 +58,7 @@ urlpatterns = patterns('',
 
     url(r'^logictree_gmpe/$', views.index_logic_tree_gmpe, name='index_logic_tree_gmpe'),
     url(r'^logictree_gmpe/(?P<model_id>\d+)/$', views.detail_logic_tree_gmpe, name='detail_logic_tree_gmpe'),
+    url(r'^logictree_gmpe/(?P<model_id>\d+)/ajax/$', views.logic_tree_gmpe_ajax, name='logic_tree_gmpe_ajax'),
     url(r'^logictree_gmpe/add/$', views.add_logic_tree_gmpe, name='add_logic_tree_gmpe'),
 
 )
