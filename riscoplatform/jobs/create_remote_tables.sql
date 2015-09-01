@@ -278,6 +278,15 @@ CREATE FOREIGN TABLE foreign_event_loss_asset (
 SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'event_loss_asset');
 
 
+CREATE FOREIGN TABLE foreign_event_loss_data (
+	id integer,
+	event_loss_id integer,
+	rupture_id integer,
+	aggregate_loss double precision
+)
+SERVER priseoq OPTIONS (schema_name 'riskr', table_name 'event_loss_data');
+
+
 
 
 

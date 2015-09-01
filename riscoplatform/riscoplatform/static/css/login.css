@@ -1,0 +1,52 @@
+
+
+.background-fixed {
+    background-size: cover;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-attachment: fixed;
+
+
+}
+
+.inkwell {
+    -webkit-filter: brightness(0.45) contrast(1.05);
+    filter: brightness(0.45) contrast(1.05);
+}
+
+.ct {
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+
+
+.main-box {
+    position: absolute;
+    width: 100%;
+    top: 30%;
+    text-align: center;
+
+}
+
+.main-box h1{
+    color: white;
+    font-size: 120px;
+}
+
+.main-box p{
+    color: white;
+    font-size: 30px;
+}
+
+.login-anchor {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1;
+}
+
+.img-fit {
+    max-width:30%;
+    max-height:30%;
+}

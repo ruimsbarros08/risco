@@ -29,6 +29,7 @@ def register(request):
 		'form': form,
 	})
 
+
 @login_required
 def welcome(request):
 	return render(request, 'welcome.html')
@@ -36,81 +37,85 @@ def welcome(request):
 
 
 def home(request):
+	if request.user.is_authenticated():
 
-	publications = []
+		publications = []
 
-	source_models = Source_Model.objects.filter(source_model_contributor__contributor=request.user)
-	for model in source_models:
-		publications.append(model)
+		source_models = Source_Model.objects.filter(source_model_contributor__contributor=request.user)
+		for model in source_models:
+			publications.append(model)
 
-	site_models = Site_Model.objects.filter(site_model_contributor__contributor=request.user)
-	for model in site_models:
-		publications.append(model)
+		site_models = Site_Model.objects.filter(site_model_contributor__contributor=request.user)
+		for model in site_models:
+			publications.append(model)
+		
+		rupture_models = Rupture_Model.objects.filter(user=request.user)
+		for model in rupture_models:
+			publications.append(model)
+
+		exposure_models = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user)
+		for model in exposure_models:
+			publications.append(model)
+
+		fragility_models = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user)
+		for model in fragility_models:
+			publications.append(model)
+
+		consequence_models = Consequence_Model.objects.filter(consequence_model_contributor__contributor=request.user)
+		for model in consequence_models:
+			publications.append(model)
+
+		vulnerability_models = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user)
+		for model in vulnerability_models:
+			publications.append(model)
+
+		logic_tree_sm = Logic_Tree_SM.objects.filter(user=request.user)
+		for model in logic_tree_sm:
+			publications.append(model)
+
+		logic_tree_gmpe = Logic_Tree_GMPE.objects.filter(user=request.user)
+		for model in logic_tree_sm:
+			publications.append(model)
+
+
+
+		scenario_hazard = Scenario_Hazard.objects.filter(user=request.user)
+		for job in scenario_hazard:
+			publications.append(job)
+
+		scenario_damage = Scenario_Damage.objects.filter(user=request.user)
+		for job in scenario_damage:
+			publications.append(job)
+
+		scenario_risk = Scenario_Risk.objects.filter(user=request.user)
+		for job in scenario_risk:
+			publications.append(job)
+
+		classical_psha_hazard = Classical_PSHA_Hazard.objects.filter(user=request.user)
+		for job in classical_psha_hazard:
+			publications.append(job)
+
+		classical_psha_hazard = Classical_PSHA_Hazard.objects.filter(user=request.user).exclude(id__in=[job.id for job in Event_Based_Hazard.objects.all()])
+		for job in classical_psha_hazard:
+			publications.append(job)
+
+		classical_psha_risk = Classical_PSHA_Risk.objects.filter(user=request.user).exclude(id__in=[job.id for job in Event_Based_Risk.objects.all()])
+		for job in classical_psha_risk:
+			publications.append(job)
+
+		event_based_hazard = Event_Based_Hazard.objects.filter(user=request.user)
+		for job in event_based_hazard:
+			publications.append(job)
+
+		event_based_risk = Event_Based_Risk.objects.filter(user=request.user)
+		for job in event_based_risk:
+			publications.append(job)
 	
-	rupture_models = Rupture_Model.objects.filter(user=request.user)
-	for model in rupture_models:
-		publications.append(model)
-
-	exposure_models = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user)
-	for model in exposure_models:
-		publications.append(model)
-
-	fragility_models = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user)
-	for model in fragility_models:
-		publications.append(model)
-
-	consequence_models = Consequence_Model.objects.filter(consequence_model_contributor__contributor=request.user)
-	for model in consequence_models:
-		publications.append(model)
-
-	vulnerability_models = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user)
-	for model in vulnerability_models:
-		publications.append(model)
-
-	logic_tree_sm = Logic_Tree_SM.objects.filter(user=request.user)
-	for model in logic_tree_sm:
-		publications.append(model)
-
-	logic_tree_gmpe = Logic_Tree_GMPE.objects.filter(user=request.user)
-	for model in logic_tree_sm:
-		publications.append(model)
+		return render(request, 'home.html', {'publications': sorted(publications,  key=attrgetter('date_created'), reverse=True) })
 
 
-
-	scenario_hazard = Scenario_Hazard.objects.filter(user=request.user)
-	for job in scenario_hazard:
-		publications.append(job)
-
-	scenario_damage = Scenario_Damage.objects.filter(user=request.user)
-	for job in scenario_damage:
-		publications.append(job)
-
-	scenario_risk = Scenario_Risk.objects.filter(user=request.user)
-	for job in scenario_risk:
-		publications.append(job)
-
-	classical_psha_hazard = Classical_PSHA_Hazard.objects.filter(user=request.user)
-	for job in classical_psha_hazard:
-		publications.append(job)
-
-	classical_psha_hazard = Classical_PSHA_Hazard.objects.filter(user=request.user)
-	for job in classical_psha_hazard:
-		publications.append(job)
-
-	classical_psha_risk = Classical_PSHA_Risk.objects.filter(user=request.user)
-	for job in classical_psha_risk:
-		publications.append(job)
-
-	event_based_hazard = Event_Based_Hazard.objects.filter(user=request.user)
-	for job in event_based_hazard:
-		publications.append(job)
-
-	event_based_risk = Event_Based_Risk.objects.filter(user=request.user)
-	for job in event_based_risk:
-		publications.append(job)
-	
-
-	return render(request, 'home.html', {'publications': sorted(publications,  key=attrgetter('date_created'), reverse=True) })
+	else:
+		return render(request, 'index.html')
 
 #class UserUpdate(forms.UserChangeForm):
 #	class Meta:
@@ -146,30 +151,32 @@ def account_settings(request):
 	pass
 
 
-def world_geojson(request, z, x, y):
-	geometries = requests.get(TILESTACHE_HOST+'world/'+str(z)+'/'+str(x)+'/'+str(y)+'.json')
-	geom_dict = json.loads(geometries.text)
-	return HttpResponse(json.dumps(geom_dict), content_type="application/json")
+# def world_geojson(request, z, x, y):
+# 	geometries = requests.get(TILESTACHE_HOST+'world/'+str(z)+'/'+str(x)+'/'+str(y)+'.json')
+# 	geom_dict = json.loads(geometries.text)
+# 	return HttpResponse(json.dumps(geom_dict), content_type="application/json")
 
-def countries(request):
-	cursor = connection.cursor()
-	cursor.execute('select id, name from world_country order by name')
-	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
+# def countries(request):
+# 	cursor = connection.cursor()
+# 	cursor.execute('select id, name from world_country order by name')
+# 	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
 
-def level1(request):
-	country = request.GET.get('country')
-	cursor = connection.cursor()
-	cursor.execute('select id, name from world_adm_1 where country_id = %s order by name', [country])
-	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
+# def level1(request):
+# 	country = request.GET.get('country')
+# 	cursor = connection.cursor()
+# 	cursor.execute('select id, name from world_adm_1 where country_id = %s order by name', [country])
+# 	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
 
-def level2(request):
-	level1 = request.GET.get('level1')
-	cursor = connection.cursor()
-	cursor.execute('select distinct id_2, name_2 from world_world where id_1 = %s order by name_2', [level1])
-	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
+# def level2(request):
+# 	level1 = request.GET.get('level1')
+# 	cursor = connection.cursor()
+# 	cursor.execute('select distinct id_2, name_2 from world_world where id_1 = %s order by name_2', [level1])
+# 	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
 
-def level3(request):
-	level2 = request.GET.get('level2')
-	cursor = connection.cursor()
-	cursor.execute('select distinct id_3, name_3 from world_world where id_2 = %s order by name_3', [level2])
-	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
+# def level3(request):
+# 	level2 = request.GET.get('level2')
+# 	cursor = connection.cursor()
+# 	cursor.execute('select distinct id_3, name_3 from world_world where id_2 = %s order by name_3', [level2])
+# 	return HttpResponse(json.dumps(cursor.fetchall()), content_type="application/json")
+
+

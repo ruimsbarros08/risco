@@ -216,6 +216,14 @@ class Scenario_Risk_Results(models.Model):
 	insured_mean                = models.FloatField(null=True)
 	insured_stddev              = models.FloatField(null=True)   
 
+EXPOSURE = 'EXPOSURE'
+GRID = 'GRID'
+LOCATIONS = 'LOCATIONS'
+LOCATIONS_CHOICES = (
+    (EXPOSURE, 'Exposure model'),
+    (GRID, 'Grid'),
+    (LOCATIONS, 'Locations'),
+    )
 
 
 class Classical_PSHA_Hazard(models.Model):
@@ -228,8 +236,11 @@ class Classical_PSHA_Hazard(models.Model):
 	random_seed                 = models.IntegerField(default=3)
 	
 	#region
-	region                      = models.PolygonField(srid=4326)
-	grid_spacing                = models.FloatField(default=1)
+	locations_type				= models.CharField(max_length=20, choices=LOCATIONS_CHOICES, default=EXPOSURE)
+	exposure_model              = models.ForeignKey(Exposure_Model, null=True, blank=True)
+	locations                   = models.MultiPointField(srid=4326, null=True, blank=True)
+	region                      = models.PolygonField(srid=4326, null=True, blank=True)
+	grid_spacing                = models.FloatField(default=1, null=True, blank=True)
 
 	n_lt_samples                = models.IntegerField()
 	
@@ -250,13 +261,12 @@ class Classical_PSHA_Hazard(models.Model):
 	gmpe_logic_tree             = models.ForeignKey(Logic_Tree_GMPE)
 	
 	investigation_time          = models.IntegerField()
-	#pga                         = models.BooleanField(default=True)
-	#sa_periods                  = FloatArrayField(null=True)
+
 	imt_l                       = JsonField()
 	truncation_level            = models.FloatField()
 	max_distance                = models.FloatField(default=200)
 
-	quantile_hazard_curves      = FloatArrayField(null=True)
+	quantile_hazard_curves      = FloatArrayField(null=True, blank=True)
 	poes                        = FloatArrayField(null=True)
 
 	ini_file                    = models.FileField(upload_to='uploads/psha/hazard/', null=True, blank=True)
@@ -315,7 +325,7 @@ class Classical_PSHA_Risk(models.Model):
 
 	hazard                      = models.ForeignKey(Classical_PSHA_Hazard, null=True, blank=True)
 	asset_hazard_distance       = models.FloatField()
-	lrem_steps_per_interval     = models.IntegerField(null=True)
+	lrem_steps_per_interval     = models.IntegerField(null=True, blank=True)
 	asset_correlation           = models.FloatField()
 	insured_losses              = models.BooleanField(default=False)            
 
@@ -339,7 +349,22 @@ class Classical_PSHA_Risk(models.Model):
 class Classical_PSHA_Risk_Vulnerability(models.Model):
 	job                         = models.ForeignKey(Classical_PSHA_Risk)
 	vulnerability_model         = models.ForeignKey(Vulnerability_Model)
+	
+	it_loss_values_agg			= FloatArrayField(null=True)
+	at_loss_rates_agg			= FloatArrayField(null=True)
+	periods_agg 				= FloatArrayField(null=True)
+	default_periods_agg			= FloatArrayField(null=True)
+	it_loss_values_table_agg	= FloatArrayField(null=True)
+	aal_agg 					= models.FloatField(null=True)
+	tce_agg 					= FloatArrayField(null=True)
 
+	it_loss_values_occ			= FloatArrayField(null=True)
+	at_loss_rates_occ			= FloatArrayField(null=True)
+	periods_occ					= FloatArrayField(null=True)
+	default_periods_occ			= FloatArrayField(null=True)
+	it_loss_values_table_occ	= FloatArrayField(null=True)
+	aal_occ 					= models.FloatField(null=True)
+	tce_occ 					= FloatArrayField(null=True)
 
 class Classical_PSHA_Risk_Loss_Curves(models.Model):
 	vulnerability_model         = models.ForeignKey(Classical_PSHA_Risk_Vulnerability)
@@ -353,7 +378,7 @@ class Classical_PSHA_Risk_Loss_Curves(models.Model):
 	average_loss_ratio          = models.FloatField()
 	stddev_loss_ratio           = models.FloatField(null=True)
 	asset_value                 = models.FloatField()
-	insured                     = models.NullBooleanField(default=False)            
+	insured                     = models.BooleanField(default=False)            
 
 
 
@@ -367,7 +392,7 @@ class Classical_PSHA_Risk_Loss_Maps(models.Model):
 	poe                         = models.FloatField()
 	mean                        = models.FloatField()
 	stddev                      = models.FloatField(null=True)
-	insured                     = models.NullBooleanField(default=False)            
+	insured                     = models.BooleanField(default=False)            
 
 
 
@@ -387,7 +412,7 @@ class Event_Based_Hazard_SES_Rupture(models.Model):
 	output_id 					= models.IntegerField()
 	ses_id                      = models.IntegerField()
 	rupture_id                  = models.IntegerField()
-	rupture_oq                  = models.IntegerField()
+	# rupture_oq                  = models.IntegerField()
 	weight 						= models.FloatField()
 
 
@@ -398,10 +423,39 @@ class Event_Based_Risk(Classical_PSHA_Risk):
 
 
 
-class Event_Loss_Table(models.Model):
-	rupture                     = models.ForeignKey(Event_Based_Hazard_SES_Rupture)
-	job_vulnerability           = models.ForeignKey(Classical_PSHA_Risk_Vulnerability)
-	asset                       = models.ForeignKey(Asset)
-	loss                        = models.FloatField()
+# class Event_Loss_Table(models.Model):
+# 	rupture                     = models.ForeignKey(Event_Based_Hazard_SES_Rupture)
+# 	job_vulnerability           = models.ForeignKey(Classical_PSHA_Risk_Vulnerability)
+# 	asset                       = models.ForeignKey(Asset)
+# 	loss                        = models.FloatField()
+
+
+# class Ses_to_Risk(models.Model):
+# 	ses_collection_id 			= models.IntegerField()
+# 	ses_output_id		 		= models.IntegerField()
+# 	gmf_id						= models.IntegerField()
+# 	hzrdr_job_id 				= models.IntegerField()
+# 	riskr_job_id 				= models.IntegerField()
+# 	weight 						= models.FloatField()
+
+
+# class Risk(models.Model):
+# 	rupture_id 					= models.IntegerField()
+# 	loss 						= models.FloatField()
+# 	hazard_output_id 			= models.IntegerField()
+# 	job_vulnerability           = models.ForeignKey(Classical_PSHA_Risk_Vulnerability)
+#  	asset                       = models.ForeignKey(Asset)
+
+
+# class Loss(models.Model):
+# 	ses_id 						= models.IntegerField()
+# 	loss_total 					= models.FloatField()
+# 	hazard_output_id 			= models.IntegerField()
+# 	job_vulnerability           = models.ForeignKey(Classical_PSHA_Risk_Vulnerability)
+#  	asset                       = models.ForeignKey(Asset)
+# 	weight 						= models.FloatField()
+
+
+
 
 

@@ -24,55 +24,7 @@
 	<div class="row">
 		
 		<div class="col-md-10">
-			<div id='map' style="height:700px;"></div><br>
-
-			<div id="region-selector" style="width:100px;">
-				<select ng-model="region0" ng-options="region.name for region in regions0" class="form-control input-sm" ng-change='selectRegion(1, region0.id)'>
-					<option style="display:none" value="">Country</option>
-				</select>
-                
-                <select ng-model="region1" ng-options="region.name for region in regions1" class="form-control input-sm" ng-change='selectRegion(2, region1.id)' ng-disabled='region1Disabled'>
-                	<option style="display:none" value="">Level 1</option>
-                </select>
-                
-                <select ng-model="region2" ng-options="region.name for region in regions2" class="form-control input-sm" ng-change='selectRegion(3, region2.id)' ng-disabled='region2Disabled'>
-                	<option style="display:none" value="">Level 2</option>
-                </select>
-            	
-            	<button class="btn btn-sm" ng-click='goHome()' ng-disabled='disableHome'><span class="glyphicon glyphicon-home" aria-hidden="true"></span></button>
-            	
-            	<button class="btn btn-sm" ng-click='upOneLevel()' ng-disabled='disableUp'><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></button>
-            </div>
-
-			<div id="taxonomy-selector" style="display: inline; width:100px;">
-				<select style="width:100%;" ng-model='taxonomy' ng-options="taxonomy.name for taxonomy in taxonomies" class="form-control input-sm" ng-change='setTaxonomy(taxonomy.id)'>
-					<option style="display:none" value="">Taxonomy</option>
-				</select>
-                
-                <button class="btn btn-sm" ng-click='allTaxonomies()' ng-disabled='disableAllTaxonomies'>All</button>
-            </div>
-
-			<div id="poe-selector" style="width:100px;">
-				<select style="width:100%;" ng-model='poe' ng-options="poe for poe in poes" class="form-control input-sm" ng-change='setPoe(poe)'>
-					<option style="display:none" value="">Poe</option>
-				</select>
-            </div>
-
-			<div id="quantile-selector" style="width:100px;">
-				<select style="width:100%;" ng-model='statistics' ng-options="quantile for quantile in quantiles" class="form-control input-sm" ng-change='setQuantile(statistics)'>
-					<option style="display:none" value="">Statistics</option>
-				</select>
-            </div>
-
-			<div id="vulnerability-selector" style="width:100px;">
-				<select style="width:100%;" ng-model='vulnerability' ng-options="vulnerability for vulnerability in vulnerabilities" class="form-control input-sm" ng-change='setVulnerability(vulnerability)'>
-					<option style="display:none" value="">Loss type</option>
-				</select>
-            </div>
-            <div id="charts" style="background-color: rgba(255, 255, 255, 0.5);">
-				<canvas id="regions_chart" class="chart chart-doughnut" data="region_data" labels="region_labels" legend="true"></canvas>
-				<canvas id="taxonomies_chart" class="chart chart-doughnut" data="taxonomies_data" labels="taxonomies_labels" legend="true" ng-show="disableAllTaxonomies"></canvas>
-            </div>
+			{% include "psha_risk.html" %}
 
 		</div>
 
@@ -160,19 +112,50 @@
 		</div>
 	</div>
 
-
-	{% if job.status == 'FINISHED' %}
 	<div class="row">
-<!-- 		<div class="col-md-3">
-			<canvas id="regions_chart" class="chart chart-doughnut" data="region_data" labels="region_labels" legend="true"></canvas>
+		<div class="col-md-offset-2 col-md-4">
+			<h3>Aggregate Exceedance Probability (AEP)</h3>
+			<canvas id="agg_chart" width="100" height="50vh;"></canvas>
+			<table class="table table-hover table-striped">
+				<thead>
+					<tr>
+						<th>Return Period (Years)</th>
+						<th>Loss [[ currency ]]</th>
+						<th>TCE loss [[ currency ]]</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="value in pml.default_periods_agg track by $index">
+						<td>[[ pml.default_periods_agg[ pml.default_periods_agg.length -1 - $index ] ]]</td>
+						<td>[[ pml.it_loss_values_table_agg[$index] ]]</td>
+						<td>[[ pml.tce_agg[$index] ]]</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><b>AAL Aggregated:</b> [[ pml.aal_agg ]] [[ currency ]] </p>
 		</div>
-		<div class="col-md-3">
-			<canvas id="taxonomies_chart" class="chart chart-doughnut" data="taxonomies_data" labels="taxonomies_labels" legend="true"></canvas>
-		</div> -->
-
-
+		<div class="col-md-4">
+			<h3>Occurrence Exceedance Probability (OEP)</h3>
+			<canvas id="occ_chart" width="100" height="50vh;"></canvas>
+			<table class="table table-hover table-striped">
+				<thead>
+					<tr>
+						<th>Return Period (Years)</th>
+						<th>Loss [[ currency ]]</th>
+						<th>TCE loss [[ currency ]]</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="value in pml.default_periods_occ track by $index">
+						<td>[[ pml.default_periods_occ[ pml.default_periods_occ.length -1 - $index ] ]]</td>
+						<td>[[ pml.it_loss_values_table_occ[$index] ]]</td>
+						<td>[[ pml.tce_occ[$index] ]]</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><b>AAL Occurrences:</b> [[ pml.aal_occ ]] [[ currency ]] </p>
+		</div>
 	</div>
-	{% endif %}
 
 
 </div>

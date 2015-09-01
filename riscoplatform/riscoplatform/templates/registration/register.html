@@ -1,31 +1,79 @@
+<!doctype html>
+<html lang="en" >
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="utf-8"> 
+    <title>RISCO</title>
+
+    {% load staticfiles %}
+    {% load avatar_tags %}
+
+    <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap/dist/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap-theme-flatly/flatly.min.css' %}" />
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}" />
+
+</head>
+<body>
 
 
-{% extends "base.html" %}
 
-{% block title %}Create an account{% endblock %}
 
-{% block content %}
 
-<div class="container">
 
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
+<div class="container-fluid" >
+
+    <div class="rowrow background-fixed" style="height:100vh;">
+        <div class="col-md-offset-4 col-md-4" style="top: 30%;">
 
             <form class="form-horizontal" action="" method="post">
-            	<legend>Create an account</legend>
+                <legend>Create an account</legend>
                 
                 {% csrf_token %}
                 <fieldset>
-                	{% include 'form.html' %}
+                    {% include 'form.html' %}
 
-                    <input type="submit"  value="Create the account" />
+                    <div class="form-group">
+                        <div class="col-lg-offset-2 col-lg-10">
+                            <button class="btn btn-primary" type="submit" value="create" style="width:100%;">CREATE</button>
+                        </div>
+                    </div>
+
                 </fieldset>
             </form>
 
         </div>
     </div>
+
 </div>
 
 
-  </form>
-{% endblock %}
+
+
+
+
+
+
+
+<script type="text/javascript" src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/jquery-ui/jquery-ui.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/bootstrap-tags/dist/js/bootstrap-tags.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/bootstrap/js/transition.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/bootstrap/js/modal.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'bower_components/jquery.nicescroll/dist/jquery.nicescroll.min.js' %}"></script>
+
+<script type="text/javascript">
+    $(document).ready(function() {  
+        $("html").niceScroll();
+    });
+</script>
+
+
+
+</body>
+</html>
+
+

@@ -5,6 +5,9 @@ tilestache/tmp/
 tilestache.wsgi
 riscoplatform/riscoplatform/local_settings.py
 riscoplatform/world/datasources/
+#riscoplatform/riscoplatform/static/video/
+
+*.mp4
 
 
 # Compiled source #

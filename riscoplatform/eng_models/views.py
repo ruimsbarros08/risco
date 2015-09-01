@@ -663,14 +663,14 @@ def detail_site_ajax(request, model_id):
 					where eng_models_site.model_id = %s \
 					and eng_models_site.cell_id = world_fishnet.id \
 					group by world_fishnet.id', [model_id])
-					#and st_intersects(world_fishnet.cell, eng_models_site.location)\
 
-	cells = cursor.fetchall()
 	features = [dict(type='Feature', id=cell[4], properties=dict(color='#FF0000', vs30="{0:.4f}".format(cell[1]),
 																z1pt0="{0:.4f}".format(cell[2]),
 																z2pt5="{0:.4f}".format(cell[3])),
-				geometry=json.loads(cell[0])) for cell in cells]
-	return HttpResponse(json.dumps({'type': 'FeatureCollection', 'features': features}), content_type="application/json")
+				geometry=json.loads(cell[0])) for cell in cursor.fetchall()]
+	geojson = {'type': 'FeatureCollection', 'features': features}
+
+	return HttpResponse(json.dumps(geojson), content_type="application/json")
 
 @login_required
 def add_site_model(request):

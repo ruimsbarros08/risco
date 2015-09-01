@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load humanize %}
 {% load custom_filters %}
+{% load avatar_tags %}
+
 
 {% block content %}
 <div class="container">
@@ -11,6 +13,9 @@
 						<div class="well">
 							<div class="row">
 								<div class="col-md-10">
+
+									
+
 									{% if pub|classname == 'Building_Taxonomy_Source'  %}
 										<h3> <a href="{% url 'detail_taxonomy' pub.id %}">{{ pub.name }}</a> </h3>
 										<p><i>Building Taxonomy Source</i></p>
@@ -93,7 +98,7 @@
 
 									{% if pub|classname == 'Event_Based_Risk'  %}
 										<h3> <a href="{% url 'results_event_based_risk' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Event Based PSHA Hazard</i></p>
+										<p><i>Event Based PSHA Risk</i></p>
 									{% endif %}
 
 

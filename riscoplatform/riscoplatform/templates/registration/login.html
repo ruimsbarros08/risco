@@ -1,11 +1,32 @@
-{% extends "base.html" %}
+<!doctype html>
+<html lang="en" >
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="utf-8"> 
+    <title>RISCO</title>
 
-{% block content %}
+    {% load staticfiles %}
+    {% load avatar_tags %}
 
-<div class="container">
+    <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap/dist/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap-theme-flatly/flatly.min.css' %}" />
 
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}" />
+
+</head>
+<body>
+
+
+
+
+
+
+<div class="container-fluid" >
+
+
+    <div class="row background-fixed" style="height:100vh;">
+        <div class="col-md-4 col-md-offset-4" style="top: 30%;">
             
             {% if form.errors %}
                 <div class="alert alert-dismissible alert-danger">
@@ -34,8 +55,8 @@
 
 
                     <div class="form-group">
-                        <div class="col-lg-5 col-lg-offset-2">
-                            <button class="btn btn-primary" type="submit" value="login">LOGIN</button>
+                        <div class="col-lg-offset-2 col-lg-10">
+                            <button class="btn btn-primary" type="submit" value="login" style="width:100%;">LOGIN</button>
                         </div>
                     </div>
 
@@ -45,6 +66,37 @@
 
         </div>
     </div>
+
+
 </div>
 
-{% endblock %}
+
+
+
+
+
+
+
+
+<script type="text/javascript" src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/jquery-ui/jquery-ui.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/bootstrap-tags/dist/js/bootstrap-tags.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/bootstrap/js/transition.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/bootstrap/js/modal.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'bower_components/jquery.nicescroll/dist/jquery.nicescroll.min.js' %}"></script>
+
+<script type="text/javascript">
+    $(document).ready(function() {  
+        $("html").niceScroll();
+    });
+</script>
+
+
+
+</body>
+</html>
+
+
+

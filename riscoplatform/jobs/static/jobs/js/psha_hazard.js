@@ -6,11 +6,12 @@ $( document ).ready(function() {
     //hide-show    
     $( "label[for='region']" ).hide( "fast");
     $( "label[for='imt_l']" ).hide( "fast");
+    $( "label[for='locations']" ).hide( "fast");
 
     $( "#id_site_model" ).attr('disabled', true);
     
     $('#id_sites_type').on('change', function() {
-        if (this.value == 'VARIABLE_CONDITIONS'){
+        if (this.value == 'DEFAULT_CONDITIONS'){
             $( "#id_vs30" ).attr('disabled', false);
             $( "#id_vs30type" ).attr('disabled', false);
             $( "#id_z1pt0" ).attr('disabled', false);
@@ -26,6 +27,30 @@ $( document ).ready(function() {
 
             $( "#id_site_model" ).attr('disabled', false);
 
+        }
+    });
+
+
+    $( "#id_grid_spacing" ).attr('disabled', true);
+    $('#id_locations_type').on('change', function() {
+        drawnItems.clearLayers();
+        if (this.value == 'EXPOSURE'){
+            $( "#id_grid_spacing" ).attr('disabled', true);
+            $( "#id_exposure_model" ).attr('disabled', false);
+            $('.leaflet-draw-draw-marker').hide();
+            $('.leaflet-draw-draw-polygon').hide();
+        }
+        else if (this.value == 'GRID') {
+            $( "#id_grid_spacing" ).attr('disabled', false);
+            $( "#id_exposure_model" ).attr('disabled', true);
+            $('.leaflet-draw-draw-marker').hide();
+            $('.leaflet-draw-draw-polygon').show();
+        }
+        else if (this.value == 'LOCATIONS') {
+            $( "#id_grid_spacing" ).attr('disabled', true);
+            $( "#id_exposure_model" ).attr('disabled', true);
+            $('.leaflet-draw-draw-marker').show();
+            $('.leaflet-draw-draw-polygon').hide();
         }
     });
 
@@ -143,36 +168,54 @@ $( document ).ready(function() {
         }
     });
     map.setView(new L.LatLng(0, 0),2);
-    bw.addTo(map);
+    osm.addTo(map);
 
     var control = L.control.layers(baseLayers).addTo(map);
+
+    L.control.coordinates({
+        position:"bottomleft",
+        decimals:4,
+        decimalSeperator:",",
+        labelTemplateLat:"Latitude: {y}",
+        labelTemplateLng:"Longitude: {x}"
+    }).addTo(map);
+
+    var listTowkt = function(locations){
+        var coords = [];
+        for (var i = 0; i < locations.length; i++) {
+            coords.push(locations[i][0] + " " + locations[i][1]);
+        };
+
+        return "MULTIPOINT(" + coords.join(",") + ")";
+    }
+
 
     // Initialize the FeatureGroup to store editable layers
     var drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
+    var locations = [];
 
-    var polygonOptions = {
-                showArea: true,
-            };
-
-    // Initialise the draw control and pass it the FeatureGroup of editable layers
     var drawControl = new L.Control.Draw({
         edit: {
             featureGroup: drawnItems,
-            //edit: false,
-            //remove: false
         },
         draw: {
             polyline: false,
-            polygon: polygonOptions,
+            polygon: {
+                showArea: true,
+            },
             rectangle: false,
             circle: false,
-            marker: false
+            marker: {
+                repeatMode: true,
+            }
         }
     });
     map.addControl(drawControl);
 
+    $('.leaflet-draw-draw-marker').hide();
+    $('.leaflet-draw-draw-polygon').hide();
 
     map.on('draw:created', function (e) {
         var type = e.layerType,
@@ -182,6 +225,16 @@ $( document ).ready(function() {
             $('.leaflet-draw-draw-polygon').hide();
             $("#id_region").attr('value', toWKT(layer));
         }
+        else {
+
+            var lng = layer.getLatLng().lng;
+            var lat = layer.getLatLng().lat;
+            layer.bindPopup('<b>Latitude: </b>'+lat+'<br><b>Longitude: </b>'+lng);
+            locations.push([lng, lat]);
+            var wkt = listTowkt(locations);
+
+            $("#id_locations").attr('value', wkt);
+        }
 
         drawnItems.addLayer(layer);
     });
@@ -190,27 +243,65 @@ $( document ).ready(function() {
     map.on('draw:edited', function (e) {
         var layers = e.layers;
         layers.eachLayer(function (layer) {
-
             if (layer instanceof L.Polygon){
                 $("#id_region").attr('value', toWKT(layer));
             }
         });
+
+        locations = []
+        var markers = drawnItems.getLayers();
+
+        for (var i = 0; i< markers.length;i++){
+            if (markers[i] instanceof L.Polygon == false) {
+
+                var lng = markers[i].getLatLng().lng;
+                var lat = markers[i].getLatLng().lat;
+                locations.push([lng, lat]);
+            }
+            
+        }
+        if (locations.length > 0){
+            var wkt = listTowkt(locations);
+            $("#id_locations").attr('value', wkt);
+        }
+        else {
+            $("#id_locations").attr('value', null);
+        }
+
     });
 
     map.on('draw:deleted', function (e) {
         var layers = e.layers;
+        locations = []
         layers.eachLayer(function (layer) {
 
             if (layer instanceof L.Polygon){
                 $('.leaflet-draw-draw-polygon').show();
                 $("#id_region").attr('value', '');
             }
+
         });
+
+        locations = []
+        var markers = drawnItems.getLayers();
+
+        for (var i = 0; i< markers.length;i++){
+            if (markers[i] instanceof L.Polygon == false) {
+
+                var lng = markers[i].getLatLng().lng;
+                var lat = markers[i].getLatLng().lat;
+                locations.push([lng, lat]);
+            }
+            
+        }
+        if (locations.length > 0){
+            var wkt = listTowkt(locations);
+            $("#id_locations").attr('value', wkt);
+        }
+        else {
+            $("#id_locations").attr('value', null);
+        }
     });
-
-
-
-
 
 
 

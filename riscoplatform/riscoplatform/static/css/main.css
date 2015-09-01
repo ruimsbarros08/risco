@@ -72,17 +72,23 @@ textarea { resize: none; }
 
 
 .currentRow {
-    background-color : #F9F9FB !important;
+	background-color : #F9F9FB !important;
 }
 
 .selectedRow {
-    color : #FFFFBF !important;
+	color : #FFFFBF !important;
 }
 
 
 
-
-
+/*marker clusters*/
+.cluster {
+	width: 40px;
+	height: 40px;
+	background-color: greenyellow;
+	text-align: center;
+	font-size: 24px;
+}
 
 
 

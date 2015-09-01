@@ -1,0 +1,74 @@
+<div id='map' style="height:700px;"></div><br>
+
+<div id="region-selector" style="width:100px;">
+	<select ng-model="region0" ng-options="region as region.name for region in regions0" class="form-control input-sm" ng-change='selectRegion(1, region0.id)' ng-disabled="region0Disabled">
+		<option style="display:none" value="">Country</option>
+	</select>
+    
+    <select ng-model="region1" ng-options="region as region.name for region in regions1" class="form-control input-sm" ng-change='selectRegion(2, region1.id)' ng-disabled='region1Disabled'>
+    	<option style="display:none" value="">Level 1</option>
+    </select>
+    
+    <select ng-model="region2" ng-options="region as region.name for region in regions2" class="form-control input-sm" ng-change='selectRegion(3, region2.id)' ng-disabled='region2Disabled'>
+    	<option style="display:none" value="">Level 2</option>
+    </select>
+	
+	<button class="btn btn-sm" ng-click='goHome()' ng-disabled='disableHome'><span class="glyphicon glyphicon-home" aria-hidden="true"></span></button>
+	
+	<button class="btn btn-sm" ng-click='upOneLevel()' ng-disabled='disableUp'><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></button>
+</div>
+
+<div id="taxonomy-selector" style="display: inline; width:100px;">
+	<select style="width:100%;" ng-model='taxonomy' ng-options="taxonomy.name for taxonomy in taxonomies" class="form-control input-sm" ng-change='setTaxonomy(taxonomy.id)' ng-disabled="taxonomiesDisabled">
+		<option style="display:none" value="">Taxonomy</option>
+	</select>
+    
+    <button class="btn btn-sm" ng-click='allTaxonomies()' ng-disabled='disableAllTaxonomies'>All</button>
+</div>
+
+<div id="poe-selector" style="width:100px;">
+	<select style="width:100%;" ng-model='poe' ng-options="poe for poe in poes" class="form-control input-sm" ng-change='setPoe(poe)' ng-disabled="poesDisabled">
+		<option style="display:none" value="">Poe</option>
+	</select>
+</div>
+
+<div id="quantile-selector" style="width:100px;">
+	<select style="width:100%;" ng-model='statistics' ng-options="quantile for quantile in quantiles" class="form-control input-sm" ng-change='setQuantile(statistics)' ng-disabled="statisticsDisabled">
+		<option style="display:none" value="">Statistics</option>
+	</select>
+</div>
+
+<div id="vulnerability-selector" style="width:100px;">
+	<select style="width:100%;" ng-model='vulnerability' ng-options="vulnerability for vulnerability in vulnerabilities" class="form-control input-sm" ng-change='setVulnerability(vulnerability)' ng-disabled="vulnerabilityDisabled">
+		<option style="display:none" value="">Loss type</option>
+	</select>
+</div>
+<div id="insurance-selector" style="width:100px;" ng-show="insured_available">
+	<select style="width:100%;" ng-model='insured' ng-options="ins.value as ins.name for ins in insurance_opts" class="form-control input-sm" ng-change='setInsurance(insured)' ng-disabled="insuranceDisabled">
+	</select>
+</div>
+
+<div id="charts" style="background-color: rgba(255, 255, 255, 0.5);">
+    <div ng-show="!disableLossCurve">
+    	<h4>Currency: [[ currency ]]</h4>
+    	<h5>Losses per region</h5>
+		<canvas id="regions_chart" class="chart chart-doughnut" data="region_data" labels="region_labels" legend="false" click='onRegionChartClick' options='charts_options'></canvas>
+    </div>
+	<div ng-show="disableAllTaxonomies" >
+    	<h5>Losses per Taxonomy</h5>
+		<canvas id="taxonomies_chart" class="chart chart-doughnut" data="taxonomies_data" labels="taxonomies_labels" legend="false" click="onTaxonomyChartClick" options='charts_options'></canvas>
+	</div>
+	<div ng-show="disableLossCurve">
+		<h5>Loss curve</h5>
+		<canvas id="loss_curve" width="100" height="100"></canvas>
+	</div>
+</div>
+
+<div id="marker-popup" hidden>
+	<h3>[[ asset.name ]]</h3>
+	<p><b>Value:</b> [[ asset.asset_value ]]</p>
+	<p><b>Loss:</b> [[ asset.loss ]]</p>
+	<p><b>Average loss ratio:</b> [[ asset.average_loss_ratio ]]</p>
+	<p><b>Std dev loss ratio:</b> [[ asset.stddev_loss_ratio ]]</p>
+</div>
+
