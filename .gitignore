@@ -2,6 +2,7 @@
 riscoplatform/uploads/
 
 riscoplatform/riscoplatform/local_settings.py
+riscoplatform/static/js/base_url.js
 riscoplatform/world/datasources/
 riscoplatform/static/video/
 
