@@ -78,7 +78,7 @@ $('#select').on('change', function() {
     var url = document.URL.split('/');
     var model_id = url[url.length -2];
 
-    $.ajax('/models/fragility/'+model_id+'/taxonomy/'+$(this).val() )
+    $.ajax(BASE_URL+'/models/fragility/'+model_id+'/taxonomy/'+$(this).val() )
     .done(function(data) {
 
         $('#imt').html(data.info[0].fields.imt);
@@ -144,7 +144,7 @@ $('#id_consequence_model').on('change', function(){
 
 var update_consequence = function(model_id){
     cons_shown = true;
-    $.ajax('/models/consequence/'+model_id+'/ajax/')
+    $.ajax(BASE_URL+'/models/consequence/'+model_id+'/ajax/')
     .done(function(data) {
         if (data.limit_states == null){
             cons_categories = [];

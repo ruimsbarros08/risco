@@ -26,7 +26,7 @@ $( document ).ready(function() {
         return '<h5>'+feature.id+' - '+feature.properties.name+'</h5>'
     }
 
-    $.ajax('/models/rupture/ajax' )
+    $.ajax(BASE_URL+'/models/rupture/ajax' )
     .done(function(data) {
 
         var pointSourceLayer = L.geoJson(data.pointSource, {

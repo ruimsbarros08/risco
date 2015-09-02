@@ -34,7 +34,7 @@ $( document ).ready(function() {
     var hazardLayer;
     var hazard_options;
 
-    $.ajax( '/jobs/scenario/hazard/results_ajax/'+hazard_job_id )
+    $.ajax( BASE_URL+'/jobs/scenario/hazard/results_ajax/'+hazard_job_id )
     .done(function(data) {
 
         cells = data.geojson;
@@ -125,7 +125,7 @@ $( document ).ready(function() {
     var get_data = function(country, next_level){
         level = next_level;
 
-        $.ajax( '/jobs/scenario/damage/results_ajax/'+job_id+'/?country='+country+'&taxonomy='+taxonomy )
+        $.ajax(BASE_URL+ '/jobs/scenario/damage/results_ajax/'+job_id+'/?country='+country+'&taxonomy='+taxonomy )
         .done(function(data) {
             display_data(data)
         });

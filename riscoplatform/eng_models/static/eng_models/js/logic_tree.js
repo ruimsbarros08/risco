@@ -27,7 +27,7 @@ var model_id = url[url.length -2];
 
 
 /*
-$.ajax('/models/logictree/'+model_id+'/ajax' )
+$.ajax(BASE_URL+'/models/logictree/'+model_id+'/ajax' )
     .done(function(data) {
         var treeData = data.tree;
         root = treeData[0];

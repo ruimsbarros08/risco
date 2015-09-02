@@ -40,7 +40,7 @@ $( document ).ready(function() {
     }
 
 
-    $.ajax('/models/consequence/'+model_id+'/ajax/')
+    $.ajax(BASE_URL+'/models/consequence/'+model_id+'/ajax/')
     .done(function(data) {
         if (data.limit_states == null){
             categories = [];

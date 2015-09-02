@@ -32,7 +32,7 @@ exposureIndexApp.controller('exposureIndexCtrl', function($scope) {
 
     var load_countries = function() {
 
-        $.ajax('/models/exposure/countries/')
+        $.ajax(BASE_URL+'/models/exposure/countries/')
         .done(function (data) {
 
             L.geoJson(data.countries, {

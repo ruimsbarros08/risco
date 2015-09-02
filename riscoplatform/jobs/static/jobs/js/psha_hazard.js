@@ -144,7 +144,7 @@ $( document ).ready(function() {
         var vul_id = $( '#id_'+type ).val();
 
         if (vul_id){
-            $.ajax( '/models/vulnerability/'+vul_id+'/imt/' )
+            $.ajax( BASE_URL+'/models/vulnerability/'+vul_id+'/imt/' )
                 .done(function(data) {
 
                 $('#id_imt_l').val( JSON.stringify(data) );

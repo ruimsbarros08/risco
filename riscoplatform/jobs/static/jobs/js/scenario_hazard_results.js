@@ -36,7 +36,7 @@ $( document ).ready(function() {
 
     var job;
 
-    $.ajax( '/jobs/scenario/hazard/results_ajax/'+job_id )
+    $.ajax( BASE_URL+'/jobs/scenario/hazard/results_ajax/'+job_id )
     .done(function(data) {
 
         job = data.job[0].fields;

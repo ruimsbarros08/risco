@@ -146,7 +146,7 @@ exposureApp.controller('exposureCtrl', function($scope, Notification) {
             }
         } 
 
-        $.ajax('/models/exposure/'+model_id+'/assets/', {
+        $.ajax(BASE_URL+'/models/exposure/'+model_id+'/assets/', {
             method: "POST",
             data: JSON.stringify(uploadData)
         })
@@ -161,7 +161,7 @@ exposureApp.controller('exposureCtrl', function($scope, Notification) {
     $scope.deleteAssets = function(){
         var assets = assetsTags.getTags();
 
-        $.ajax('/models/exposure/'+model_id+'/assets/', {
+        $.ajax(BASE_URL+'/models/exposure/'+model_id+'/assets/', {
             method: "DELETE",
             data: JSON.stringify(assets)
         })
@@ -767,7 +767,7 @@ exposureApp.controller('exposureCtrl', function($scope, Notification) {
             return
         }
         else {
-            $.ajax('/models/exposure/'+model_id+'/assets/?'+'level='+level+'&region='+region+'&taxonomy='+taxonomy )
+            $.ajax(BASE_URL+'/models/exposure/'+model_id+'/assets/?'+'level='+level+'&region='+region+'&taxonomy='+taxonomy )
             .done(function (data) {
                 display_data(data);
             }).fail(function() {

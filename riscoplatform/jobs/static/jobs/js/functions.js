@@ -2,7 +2,7 @@
 
 var get_hazard = function(hazard_job_id){
 
-    $.ajax( '/jobs/scenario/hazard/results_ajax/'+hazard_job_id )
+    $.ajax(BASE_URL+'/jobs/scenario/hazard/results_ajax/'+hazard_job_id )
     .done(function(data) {
         for (var i = 0; i<data.hazard.length;i++) {
 

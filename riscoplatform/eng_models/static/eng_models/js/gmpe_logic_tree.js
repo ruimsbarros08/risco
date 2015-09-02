@@ -50,13 +50,13 @@ gmpeLogicTreeApp.factory('GMPEltLevels', function($http) {
 
 	var myService = {
 	    get: function() {
-		    var promise = $http.get('/models/logictree_gmpe/'+model_id+'/ajax/').then(function (response) {
+		    var promise = $http.get(BASE_URL+'/models/logictree_gmpe/'+model_id+'/ajax/').then(function (response) {
 		        return response.data;
 		    });
 		    return promise;
 	    },
 	    post: function(data) {
-		    var promise = $http.post('/models/logictree_gmpe/'+model_id+'/ajax/', data).then(function (response) {
+		    var promise = $http.post(BASE_URL+'/models/logictree_gmpe/'+model_id+'/ajax/', data).then(function (response) {
 		        return response.data;
 		    });
 		    return promise;

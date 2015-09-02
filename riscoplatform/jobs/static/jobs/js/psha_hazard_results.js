@@ -25,7 +25,7 @@ $( document ).ready(function() {
 
     var clicked_cells = [];
 
-    $.ajax( '/jobs/psha/hazard/results_maps/'+job_id )
+    $.ajax( BASE_URL+'/jobs/psha/hazard/results_maps/'+job_id )
     .done(function(data) {
 
         cells = data.geojson;
@@ -77,7 +77,7 @@ $( document ).ready(function() {
 
     var get_curves = function(cell){
 
-        $.ajax( '/jobs/psha/hazard/results_curves/'+job_id+'?cell='+cell )
+        $.ajax(BASE_URL+ '/jobs/psha/hazard/results_curves/'+job_id+'?cell='+cell )
         .done(function(data) {
 
             var new_markers = L.featureGroup();

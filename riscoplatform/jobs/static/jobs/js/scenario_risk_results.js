@@ -43,7 +43,7 @@ $( document ).ready(function() {
     var hazardLayer;
     var hazard_options;
 
-    $.ajax( '/jobs/scenario/hazard/results_ajax/'+hazard_job_id )
+    $.ajax( BASE_URL+'/jobs/scenario/hazard/results_ajax/'+hazard_job_id )
     .done(function(data) {
 
         cells = data.geojson;
@@ -167,7 +167,7 @@ $( document ).ready(function() {
         else if (level == 2){
             adm_1 = country;
         }
-        $.ajax( '/jobs/scenario/risk/results_ajax/'+job_id+'/?adm_1='+adm_1+'&country='+adm_0+'&taxonomy='+taxonomy )
+        $.ajax(BASE_URL+ '/jobs/scenario/risk/results_ajax/'+job_id+'/?adm_1='+adm_1+'&country='+adm_0+'&taxonomy='+taxonomy )
         .done(function(data) {
             display_data(data)
         });

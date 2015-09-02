@@ -169,7 +169,7 @@ riskResultsApp.controller('riskResultsCtrl', function($scope) {
         }
         else {
 
-            $.ajax('/jobs/psha/risk/results_maps/'+job_id+'/?vulnerability='+vulnerability+'&level='+level+'&region='+region+'&statistics='+statistics+'&poe='+poe+'&taxonomy='+taxonomy+'&insured='+insured )
+            $.ajax(BASE_URL+'/jobs/psha/risk/results_maps/'+job_id+'/?vulnerability='+vulnerability+'&level='+level+'&region='+region+'&statistics='+statistics+'&poe='+poe+'&taxonomy='+taxonomy+'&insured='+insured )
             .done(function (data) {
                 display_data(data);
             }).fail(function() {
@@ -180,7 +180,7 @@ riskResultsApp.controller('riskResultsCtrl', function($scope) {
 
     var load_curves = function(asset, marker){
 
-        $.ajax('/jobs/psha/risk/results_curves/'+job_id+'/?vulnerability='+vulnerability+'&asset='+asset+'&statistics='+statistics+'&insured='+insured )
+        $.ajax(BASE_URL+'/jobs/psha/risk/results_curves/'+job_id+'/?vulnerability='+vulnerability+'&asset='+asset+'&statistics='+statistics+'&insured='+insured )
         .done(function (data) {
 
             $scope.asset = data;

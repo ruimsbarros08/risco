@@ -362,7 +362,7 @@ $( document ).ready(function() {
                 '</ul>'
     }
     
-    $.ajax('/models/sources/'+model_id+'/ajax' )
+    $.ajax(BASE_URL+'/models/sources/'+model_id+'/ajax' )
     .done(function(data) {
 
         var bounds = [];
