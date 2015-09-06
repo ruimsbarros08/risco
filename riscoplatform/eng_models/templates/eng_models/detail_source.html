@@ -30,20 +30,20 @@
 
 				{% if sources %}
 
-				<div class="row" style="height:90vh; overflow-y: auto;">
+				<div class="row" style="height:70vh; overflow-y: auto;">
 
+					<table class="table table-striped table-hover">
+						<tbody>
+							
 					{% for source in sources %}
-					<div class="col-md-12">
-						<div class="well">
-							<div class="row">
-								<div class="col-md-8">
-									<h4>{{ source.name }}</h4>
-								</div>
-							</div>
-						</div>
-					</div>
+					<tr>
+						<td>{{ source.name }}</td>
+						<td><button class="btn btn-xs"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span></button></td>
+					</tr>
 					{% endfor %}
 
+						</tbody>
+					</table>
 
 				</div>
 
@@ -61,11 +61,12 @@
 		</div>
 
 		<div class="col-md-10">
-			<div id="map" style="height:90vh;"></div><br>
+			<div id="map" style="height:70vh;"></div><br>
 		</div>
 
 	</div>
 </div>
+<br>
 {% if user == model.author %}
 <div class="container" id="addSource">
 	<div class="row">
@@ -111,6 +112,7 @@
 
 					  	<div class="tab-pane fade " id="geometry">
 
+					  	<p> Draw your geometry on the map above </p>
 					  	{% for field in form %}
 					  		{% if field.name in source_categories.geometry %}
 
@@ -189,10 +191,15 @@
                         		</div>
 	                        </div>
 
-
-
 						</div>
 
+						{% for error in form.non_field_errors %}
+						<div class="form-group has-error">
+						    <div class="col-lg-10 col-lg-offset-2">
+						        <span class="help-block">{{ error|safe }}</span>
+						    </div>
+						</div>
+						{% endfor %}
 
 					</div>
 				<div class="form-group">

@@ -720,17 +720,55 @@ class SourceForm(forms.ModelForm):
 
 	def clean(self):
 		form_data = self.cleaned_data
+		print form_data
 
-		if 'b' in form_data:
-			if form_data['b'] < 0:
-				self._errors["b"] = "This parameter must be a float greater than 0"
-				del form_data['b']
+
+		if form_data['mag_freq_dist_type'] == 'INC':
+			if form_data['occur_rates'] != []:
+				occur_rates = []
+				for e in form_data['occur_rates']:
+					value = float(e.replace('[', '').replace(']', '').replace('"', ''))
+					if value not in occur_rates:
+						occur_rates.append(value)
+				form_data['occur_rates'] = occur_rates
+			else:
+				self.add_error(None, 'If you choose Incremental for Magnitude Frequency Distribution you must define the occur rates')
+
+			if 'bin_width' not in form_data:
+				self._errors["bin_width"] = "If you chooseIncremental for Magnitude Frequency Distribution you must define thi parameter"
+
+			if 'min_mag' not in form_data:
+				self._errors["min_mag"] = "If you chooseIncremental for Magnitude Frequency Distribution you must define thi parameter"
+
+
+		else:
+			if 'b' in form_data:
+				if form_data['b'] < 0:
+					self._errors["b"] = "This parameter must be a float greater than 0"
+					del form_data['b']
+			else:
+				self._errors["b"] = "If you choose Truncated Guttenberg Richer for Magnitude Frequency Distribution you must define thi parameter"
+
+			if 'a' not in form_data:
+				self._errors["a"] = "If you choose Truncated Guttenberg Richer for Magnitude Frequency Distribution you must define thi parameter"
+
+			if 'max_mag' not in form_data:
+				self._errors["max_mag"] = "If you choose Truncated Guttenberg Richer for Magnitude Frequency Distribution you must define thi parameter"
+
+			if 'max_mag' in form_data and 'min_mag' in form_data:
+				if form_data['max_mag'] <= form_data['min_mag']:
+					self._errors["max_mag"] = "Max magnitude value must be higher than min magnitude"
+					self._errors["min_mag"] = "Max magnitude value must be higher than min magnitude"
+					del form_data['max_mag']
+					del form_data['min_mag']
+
+
 
 		if form_data['source_type'] != 'SIMPLE_FAULT':
-			if 'nodal_plane_dist' in form_data:
+			if form_data['nodal_plane_dist'] != []:
 				nodal_plane_dist = [[]]
 				for e in form_data['nodal_plane_dist']:
-					value = float(e.replace('[', '').replace(']', ''))
+					value = float(e.replace('[', '').replace(']', '').replace('"', ''))
 					if len(nodal_plane_dist[-1]) != 4:  
 						pass
 					else:
@@ -742,15 +780,14 @@ class SourceForm(forms.ModelForm):
 					prob_sum += e[0]
 
 				if prob_sum != 1:
-					self.add_error(None, 'The sum of the probabilisties must be equal to 1')
+					self.add_error(None, 'The sum of the probabilities must be equal to 1')
 
+				form_data['nodal_plane_dist'] = nodal_plane_dist
 
-			form_data['nodal_plane_dist'] = nodal_plane_dist
-
-			if 'hypo_depth_dist' in form_data:
+			if form_data['hypo_depth_dist'] != []:
 				hypo_depth_dist = [[]]
 				for e in form_data['hypo_depth_dist']:
-					value = float(e.replace('[', '').replace(']', ''))
+					value = float(e.replace('[', '').replace(']', '').replace('"', ''))
 					if len(hypo_depth_dist[-1]) != 2:  
 						pass
 					else:
@@ -760,7 +797,7 @@ class SourceForm(forms.ModelForm):
 				prob_sum = 0
 				for e in hypo_depth_dist:
 					if 'lower_depth' in form_data and 'upper_depth' in form_data:
-						if e[1] < form_data['lower_depth'] or e[1] > form_data['upper_depth']:
+						if e[1] > form_data['lower_depth'] or e[1] < form_data['upper_depth']:
 							self._errors["lower_depth"] = "All hypocenter depths specified must be between the lower and the upper depth"
 							self._errors["upper_depth"] = "All hypocenter depths specified must be between the lower and the upper depth"
 					prob_sum += e[0]
@@ -770,6 +807,17 @@ class SourceForm(forms.ModelForm):
 
 				form_data['hypo_depth_dist'] = hypo_depth_dist
 
+		if form_data['source_type'] == 'SIMPLE_FAULT':
+			if form_data['fault'] == None:
+				self.add_error(None, 'You must draw a geometry')
+
+		elif form_data['source_type'] == 'AREA':
+			if form_data['area']== None:
+				self.add_error(None, 'You must draw a geometry')
+
+		else:
+			if form_data['point']==None:
+				self.add_error(None, 'You must draw a geometry')
 
 
 		if 'lower_depth' in form_data and 'upper_depth' in form_data:
@@ -778,12 +826,7 @@ class SourceForm(forms.ModelForm):
 				self._errors["upper_depth"] = "Lower depth value must be higher than upper depth"
 				del form_data['lower_depth']
 				del form_data['upper_depth']
-		if 'max_mag' in form_data and 'min_mag' in form_data:
-			if form_data['max_mag'] <= form_data['min_mag']:
-				self._errors["max_mag"] = "Max magnitude value must be higher than min magnitude"
-				self._errors["min_mag"] = "Max magnitude value must be higher than min magnitude"
-				del form_data['max_mag']
-				del form_data['min_mag']
+
 		return form_data
 
 	class Meta:

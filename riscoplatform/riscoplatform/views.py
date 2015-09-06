@@ -13,24 +13,24 @@ import requests
 from operator import attrgetter
 from django.contrib.auth import authenticate, login
 from django.db.models import Q
-from django.contrib.auth.forms import UserChangeForm
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django import forms
 
 
-def register(request):
-	if request.method == 'POST':
-		form = forms.UserCreationForm(request.POST)
-		if form.is_valid():
-			new_user = form.save()
-			new_user = authenticate(username=request.POST['username'],
-									password=request.POST['password'])
-			login(request, new_user)
-			return redirect('welcome')
-	else:
-		form = forms.UserCreationForm()
-	return render(request, "registration/register.html", {
-		'form': form,
-	})
+# def register(request):
+# 	if request.method == 'POST':
+# 		form = UserCreationForm(request.POST)
+# 		if form.is_valid():
+# 			new_user = form.save()
+# 			authenticate(username=new_user.username,
+# 						password=new_user.password)
+# 			login(request, new_user)
+# 			return redirect('welcome')
+# 	else:
+# 		form = UserCreationForm()
+# 	return render(request, "registration/register.html", {
+# 		'form': form,
+# 	})
 
 
 @login_required

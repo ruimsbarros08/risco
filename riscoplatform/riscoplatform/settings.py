@@ -88,7 +88,6 @@ MEDIA_URL = '/media/'
 LOGIN_REDIRECT_URL ='/'
 
 AVATAR_GRAVATAR_BACKUP = False
-AVATAR_STORAGE_DIR = 'uploads/avatars'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
