@@ -7,15 +7,11 @@ from django.conf.urls.static import static
 urlpatterns = patterns('',
     url(r'^$', 'riscoplatform.views.home', name='home'),
 
-    # url(r'^world/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)$', 'riscoplatform.views.world_geojson', name='world_geojson'),
-    # url(r'^countries$', 'riscoplatform.views.countries', name='countries'),
-    # url(r'^level1$', 'riscoplatform.views.level1', name='level1'),
-    # url(r'^level2$', 'riscoplatform.views.level2', name='level2'),
-    # url(r'^level3$', 'riscoplatform.views.level3', name='level3'),
-
     url(r'^accounts/register/$',  'riscoplatform.views.register', name='register'),
     url(r'^welcome/$',  'riscoplatform.views.welcome', name='welcome'),
     url(r'^accounts/$',  'riscoplatform.views.account', name='account'),
+    url(r'^accounts/settings/$',  'riscoplatform.views.account_settings', name='account_settings'),
+    url(r'^profile/(?P<user_id>\d+)/$',  'riscoplatform.views.profile', name='profile'),
     url(r'^accounts/login/$',  'django.contrib.auth.views.login', name='login'),
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='logout'),
 
@@ -25,5 +21,4 @@ urlpatterns = patterns('',
     url(r'^models/', include('eng_models.urls')),
     url(r'^jobs/', include('jobs.urls')),
 
-    #url(r'^__debug__/', include(debug_toolbar.urls)),
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

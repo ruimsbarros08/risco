@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load staticfiles %}
 
 {% block content %}
 
@@ -14,69 +15,126 @@
 	
 <div class="row">
 
-	<div class="col-md-12">	
-	<h2>Models</h2>
-	<br>
-	</div>
-
-	<div class="col-md-6">
-		<div class="panel panel-primary">
-	  		<div class="panel-heading">
-	    		<h3 class="panel-title"><a href="{% url 'index_source' %}"> Source models </a></h3>
-	  		</div>
-	  		<div class="panel-body">
-	  		<!--
-	  		{% load staticfiles %}
-			<img src="{% static 'eng_models/img/share.png' %}">
-			-->
-			</div>
+	<div class="col-md-4 item-box">
+		
+		<div class="background" style="background-image: url('{% static 'eng_models/img/buildings2.jpg' %}');"></div>
+		<div class="top">
+			<h4> Building Taxonomy Source </h4> 
+		</div>
+		<div class="bottom">
+			<a href="{% url 'index_taxonomy' %}"><button class="btn btn-xs btn-info">List Models</button></a>
 		</div>
 	</div>
 
-	<div class="col-md-6">
-		<div class="panel panel-primary">
-	  		<div class="panel-heading">
-	    		<h3 class="panel-title"><a href="{% url 'index_site' %}"> Site conditions</a></h3>
-	  		</div>
-	  		<div class="panel-body"></div>
+
+	<div class="col-md-4 item-box">
+		
+		<div class="background" style="background-image: url('{% static 'eng_models/img/share.png' %}');"></div>
+		<div class="top">
+			<h4> Source Models </h4> 
+		</div>
+		<div class="bottom">
+			<a href="{% url 'index_source' %}"><button class="btn btn-xs btn-info">List Models</button></a>
+			<a href="{% url 'add_source_model' %}"> <button class="btn btn-xs btn-success">New Model</button> </a>
 		</div>
 	</div>
 
-	<div class="col-md-6">
-		<div class="panel panel-primary">
-	  		<div class="panel-heading">
-	    		<h3 class="panel-title"><a href="{% url 'index_rupture_model' %}"> Rupture models</a></h3>
-	  		</div>
-	  		<div class="panel-body"></div>
+	<div class="col-md-4 item-box">
+		
+		<div class="background" style="background-image: url('{% static 'eng_models/img/site.jpg' %}');"></div>
+		<div class="top">
+			<h4> Site Models </h4> 
+		</div>
+		<div class="bottom">
+			<a href="{% url 'index_site' %}"><button class="btn btn-xs btn-info">List Models</button></a>
+			<a href="{% url 'add_site_model' %}"> <button class="btn btn-xs btn-success">New Model</button> </a>
 		</div>
 	</div>
 
-	<div class="col-md-6">
-		<div class="panel panel-primary">
-	  		<div class="panel-heading">
-	    		<h3 class="panel-title"><a href="{% url 'index_exposure' %}"> Exposure models</a></h3>
-	  		</div>
-	  		<div class="panel-body"></div>
+	<div class="col-md-4 item-box">
+		
+		<div class="background" style="background-image: url('{% static 'eng_models/img/rupture.jpg' %}');"></div>
+		<div class="top">
+			<h4> Rupture Models </h4> 
+		</div>
+		<div class="bottom">
+			<a href="{% url 'index_rupture_model' %}"><button class="btn btn-xs btn-info">List Models</button></a>
+			<a href="{% url 'index_rupture_model' %}"> <button class="btn btn-xs btn-success">New Model</button></a>
 		</div>
 	</div>
 
-	<div class="col-md-6">
-		<div class="panel panel-primary">
-	  		<div class="panel-heading">
-	    		<h3 class="panel-title"><a href="{% url 'index_fragility' %}">Fragility models</a></h3>
-	  		</div>
-	  		<div class="panel-body"></div>
+	<div class="col-md-4 item-box">
+		
+		<div class="background" style="background-image: url('{% static 'eng_models/img/exposure.png' %}');"></div>
+		<div class="top">
+			<h4> Exposure Models </h4> 
+		</div>
+		<div class="bottom">
+			<a href="{% url 'index_exposure' %}"><button class="btn btn-xs btn-info">List Models</button></a>
+			<a href="{% url 'add_exposure_model' %}"> <button class="btn btn-xs btn-success">New Model</button></a>
 		</div>
 	</div>
 
-	<div class="col-md-6">
-		<div class="panel panel-primary">
-	  		<div class="panel-heading">
-	    		<h3 class="panel-title">Vulnerability models</h3>
-	  		</div>
-	  		<div class="panel-body"></div>
+	<div class="col-md-4 item-box">
+		
+		<div class="background" style="background-image: url('{% static 'eng_models/img/fragility.png' %}');"></div>
+		<div class="top">
+			<h4> Fragility Models </h4> 
+		</div>
+		<div class="bottom">
+			<a href="{% url 'index_fragility' %}"><button class="btn btn-xs btn-info">List Models</button></a>
+			<a href="{% url 'add_fragility_model' %}"> <button class="btn btn-xs btn-success">New Model</button> </a>
 		</div>
 	</div>
+
+	<div class="col-md-4 item-box">
+		
+		<div class="background" style="background-image: url('{% static 'eng_models/img/consequence.png' %}');"></div>
+		<div class="top">
+			<h4> Consequence Models </h4> 
+		</div>
+		<div class="bottom">
+			<a href="{% url 'index_consequence' %}"><button class="btn btn-xs btn-info">List Models</button></a>
+			<a href="{% url 'add_consequence_model' %}"> <button class="btn btn-xs btn-success">New Model</button></a>
+		</div>
+	</div>
+
+	<div class="col-md-4 item-box">
+		
+		<div class="background" style="background-image: url('{% static 'eng_models/img/vulnerability.png' %}');"></div>
+		<div class="top">
+			<h4> Vulnerability Models </h4> 
+		</div>
+		<div class="bottom">
+			<a href="{% url 'index_vulnerability' %}"><button class="btn btn-xs btn-info">List Models</button></a>
+			<a href="{% url 'add_vulnerability_model' %}"> <button class="btn btn-xs btn-success">New Model</button></a>
+		</div>
+	</div>
+
+	<div class="col-md-4 item-box">
+		
+		<div class="background" style="background-image: url('{% static 'eng_models/img/logic_tree.png' %}');"></div>
+		<div class="top">
+			<h4> Source Models Logic Trees</h4> 
+		</div>
+		<div class="bottom">
+			<a href="{% url 'index_logic_tree_sm' %}"><button class="btn btn-xs btn-info">List Models</button></a>
+			<a href="{% url 'add_logic_tree_sm' %}"> <button class="btn btn-xs btn-success">New Logic Tree</button></a>
+		</div>
+	</div>
+
+	<div class="col-md-4 item-box">
+		
+		<div class="background" style="background-image: url('{% static 'eng_models/img/gmpe_lt.png' %}');"></div>
+		<div class="top">
+			<h4> GMPE Logic Trees </h4> 
+		</div>
+		<div class="bottom">
+			<a href="{% url 'index_logic_tree_gmpe' %}"><button class="btn btn-xs btn-info">List Models</button></a>
+			<a href="{% url 'add_logic_tree_gmpe' %}"> <button class="btn btn-xs btn-success">New Logic Tree</button> </a>
+		</div>
+	</div>
+
 
 
 </div>

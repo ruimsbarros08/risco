@@ -15,7 +15,7 @@ from django.contrib.gis.geos import Point
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 
-#from django.db.models import Q
+from django.db.models import Q
 #from django.db.models import F
 import json
 import requests
@@ -53,13 +53,13 @@ def get_geojson_countries(features_list):
 
 @login_required
 def index_taxonomy(request):
-	models = Building_Taxonomy_Source.objects.filter(building_taxonomy_source_contributor__contributor=request.user).order_by('-date_created')
+	models = Building_Taxonomy_Source.objects.filter(private=False).order_by('-date_created')
 	page = request.GET.get('page')
 	return render(request, 'eng_models/index_taxonomy.html', {'models': pagination(models, 10, page)})
 
 @login_required
 def detail_taxonomy(request, model_id):
-	model = get_object_or_404(Building_Taxonomy_Source ,pk=model_id, building_taxonomy_source_contributor__contributor=request.user)
+	model = get_object_or_404(Building_Taxonomy_Source ,pk=model_id)
 	taxonomies = Building_Taxonomy.objects.filter(source=model)
 	return render(request, 'eng_models/detail_taxonomy.html', {'model': model, 'taxonomies':taxonomies})
 
@@ -69,8 +69,8 @@ def detail_taxonomy(request, model_id):
 ##     EXPOSURE    ##
 #####################
 
-exposure_form_categories = {'general': ['name', 'description', 'deductible', 'insurance_limit', 'taxonomy_source', 'add_tax_source',
-										'tax_source_name', 'tax_source_desc', 'xml'],
+exposure_form_categories = {'general': ['name', 'description', 'private', 'deductible', 'insurance_limit', 'taxonomy_source', 'add_tax_source',
+										'tax_source_name', 'tax_source_desc', 'add_xml', 'xml'],
 							'area': ['area_type', 'area_unit'],
 							'structural': ['struct_cost_type', 'struct_cost_currency'],
 							'nonstructural': ['non_struct_cost_type', 'non_struct_cost_currency'],
@@ -79,11 +79,12 @@ exposure_form_categories = {'general': ['name', 'description', 'deductible', 'in
 
 class ExposureForm(forms.ModelForm):
 	add_tax_source = forms.BooleanField(required=False)
+	add_xml = forms.BooleanField(required=False)
 	tax_source_name = forms.CharField(required=False)
 	tax_source_desc = forms.CharField(required=False)
 	class Meta:
 		model = Exposure_Model
-		fields = ['name', 'description', 'taxonomy_source', 'area_type', 'area_unit', 'deductible', 'insurance_limit', 'struct_cost_type', 'struct_cost_currency', 'non_struct_cost_type', 'non_struct_cost_currency', 'contents_cost_type', 'contents_cost_currency', 'business_int_cost_type', 'business_int_cost_currency', 'xml']
+		fields = ['name', 'description', 'private', 'area_type', 'area_unit', 'deductible', 'insurance_limit', 'struct_cost_type', 'struct_cost_currency', 'non_struct_cost_type', 'non_struct_cost_currency', 'contents_cost_type', 'contents_cost_currency', 'business_int_cost_type', 'business_int_cost_currency', 'add_xml','xml', 'taxonomy_source']
      
 class AssetForm(forms.ModelForm):
 	class Meta:
@@ -96,29 +97,29 @@ class AssetForm(forms.ModelForm):
 			
 @login_required
 def index_exposure(request):
-	models = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
+	models = Exposure_Model.objects.filter(private=False).order_by('-date_created')
 	form = ExposureForm()
-	form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(building_taxonomy_source_contributor__contributor=request.user).order_by('-date_created')
+	form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(author=request.user).order_by('-date_created')
 	# page = request.GET.get('page')
 	return render(request, 'eng_models/index_exposure.html', {'models': models, 'form': form, 'categories': exposure_form_categories})
 
 
 @login_required
 def ajax_exposure_models(request):
-	user_id = request.user.id
+	# user_id = request.user.id
 	cursor = connection.cursor()
 
 	cursor.execute('SELECT list.country_id, ST_AsGeoJSON(world_country.geom_simp), list.country_name, list.sum \
 					FROM (SELECT world_country.id AS country_id, world_country.name AS country_name, count(eng_models_asset.id) AS sum \
-						FROM eng_models_exposure_model_contributor, \
+						FROM eng_models_exposure_model, \
 							eng_models_asset, world_adm_2, world_adm_1, world_country \
-						WHERE eng_models_exposure_model_contributor.contributor_id = %s \
-						AND eng_models_asset.model_id = eng_models_exposure_model_contributor.model_id \
+						WHERE eng_models_exposure_model.private = False \
+						AND eng_models_asset.model_id = eng_models_exposure_model.id \
 						AND eng_models_asset.adm_2_id = world_adm_2.id \
 						AND world_adm_2.adm_1_id = world_adm_1.id \
 						AND world_adm_1.country_id = world_country.id \
 						GROUP BY world_country.id) AS list, world_country \
-					WHERE list.country_id = world_country.id', [user_id])
+					WHERE list.country_id = world_country.id')
 	data = cursor.fetchall()
 
 	features = list()
@@ -150,7 +151,7 @@ def ajax_exposure_models(request):
 
 @login_required
 def detail_exposure(request, model_id):
-	model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
+	model = get_object_or_404(Exposure_Model ,pk=model_id)
 	form = AssetForm()
 	form.fields["taxonomy"].queryset = Building_Taxonomy.objects.filter(source=model.taxonomy_source)
 	return render(request, 'eng_models/detail_exposure.html', {'model': model, 'form': form})
@@ -159,7 +160,7 @@ def detail_exposure(request, model_id):
 @login_required
 def ajax_assets(request, model_id):
 
-	model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
+	model = get_object_or_404(Exposure_Model ,pk=model_id)
 	model_json = serializers.serialize("json", [model])
 	model_json = json.loads(model_json)
 
@@ -575,7 +576,7 @@ def ajax_assets(request, model_id):
 def add_exposure_model(request):
 	if request.method == 'POST':
 		form = ExposureForm(request.POST, request.FILES)
-		form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(building_taxonomy_source_contributor__contributor=request.user).order_by('-date_created')
+		form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(author=request.user).order_by('-date_created')
 		if form.is_valid():
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
@@ -583,30 +584,31 @@ def add_exposure_model(request):
 			if 'add_tax_source' in request.POST:
 				new_tax_source = Building_Taxonomy_Source(name=request.POST['tax_source_name'],
 															description=request.POST['tax_source_desc'],
-															date_created=timezone.now())
+															date_created=timezone.now(),
+															author=request.user)
 				new_tax_source.save()
-				Building_Taxonomy_Source_Contributor.objects.create(contributor=request.user, source=new_tax_source, date_joined=new_tax_source.date_created, author=True)
+				# Building_Taxonomy_Source_Contributor.objects.create(author=request.user, source=new_tax_source, date_joined=new_tax_source.date_created)
 				model.taxonomy_source = new_tax_source
 			if request.FILES:
 				try:
 					exposure_parser.start(model)
 				except Exception as e:
 					model.delete()
-					return render(request, 'eng_models/index_exposure.html', {'form': form, 'parse_error': e, 'categories': exposure_form_categories})
-			Exposure_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
+					return render(request, 'eng_models/new_exposure.html', {'form': form, 'parse_error': e, 'categories': exposure_form_categories})
+			# Exposure_Model_Contributor.objects.create(author=request.user, model=model, date_joined=model.date_created)
 			return redirect('detail_exposure', model_id=model.id)
 		else:
-			models = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
-			return render(request, 'eng_models/index_exposure.html', {'models': pagination(models, 10, 1), 'form': form, 'categories': exposure_form_categories})
+			# models = Exposure_Model.objects.filter(author=request.user).order_by('-date_created')
+			return render(request, 'eng_models/new_exposure.html', {'form': form, 'categories': exposure_form_categories})
 	else:
 		form = ExposureForm()
-		return render(request, 'eng_models/index_exposure.html', {'form': form, 'categories': exposure_form_categories})
+		return render(request, 'eng_models/new_exposure.html', {'form': form, 'categories': exposure_form_categories})
 
 
 @login_required
 def add_asset(request, model_id):
 	if request.method == 'POST':
-		model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
+		model = get_object_or_404(Exposure_Model ,pk=model_id)
 		form = AssetForm(request.POST)
 		form.fields["taxonomy"].queryset = Building_Taxonomy.objects.filter(source=model.taxonomy_source)
 		if form.is_valid():
@@ -615,14 +617,14 @@ def add_asset(request, model_id):
 			asset.save()
 			return redirect('detail_exposure', model_id=model_id)
 		else:
-			model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
+			model = get_object_or_404(Exposure_Model ,pk=model_id)
 			try:
 				asset_list = Asset.objects.filter(model_id=model_id)[1:50]
 			except:
 				asset_list = []
 			return render(request, 'eng_models/detail_exposure.html', {'model': model, 'form': form, 'assets': asset_list})
 	else:
-		model = get_object_or_404(Exposure_Model ,pk=model_id, exposure_model_contributor__contributor=request.user)
+		model = get_object_or_404(Exposure_Model ,pk=model_id)
 		form = AssetForm()
 		return render(request, 'eng_models/detail_exposure.html', {'model': model, 'form': form})
 
@@ -637,11 +639,11 @@ def add_asset(request, model_id):
 class SiteForm(forms.ModelForm):
 	class Meta:
 		model = Site_Model
-		fields = ['name', 'description', 'xml']
+		fields = ['name', 'description', 'private', 'xml']
 
 @login_required
 def index_site(request):
-	models = Site_Model.objects.filter(site_model_contributor__contributor=request.user).order_by('-date_created')
+	models = Site_Model.objects.filter(private=False).order_by('-date_created')
 	form = SiteForm()
 	page = request.GET.get('page')
 
@@ -649,7 +651,7 @@ def index_site(request):
 
 @login_required
 def detail_site(request, model_id):
-	model = get_object_or_404(Site_Model ,pk=model_id, site_model_contributor__contributor=request.user)
+	model = get_object_or_404(Site_Model ,pk=model_id)
 	site_list = Site.objects.filter(model_id=model_id)
 	#page = request.GET.get('page')
 	return render(request, 'eng_models/detail_site.html', {'model': model, 'sites': site_list})
@@ -679,21 +681,21 @@ def add_site_model(request):
 		if form.is_valid():
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
+			model.author = request.user
 			model.save()
-			Site_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
+			# Site_Model_Contributor.objects.create(author=request.user, model=model, date_joined=model.date_created)
 			if request.FILES:
 				try:
 					site_model_parser.start(model)
 				except Exception as e:
 					model.delete()
-					return render(request, 'eng_models/index_site.html', {'form': form, 'parse_error': e})
+					return render(request, 'eng_models/new_site.html', {'form': form, 'parse_error': e})
 			return redirect('detail_site', model_id=model.id)
 		else:
-			models = Site_Model.objects.filter(site_model_contributor__contributor=request.user).order_by('-date_created')
-			return render(request, 'eng_models/index_site.html', {'models': pagination(models, 10, 1), 'form': form})
+			return render(request, 'eng_models/new_site.html', {'form': form})
 	else:
 		form = SiteForm()
-		return render(request, 'eng_models/index_site.html', {'form': form})
+		return render(request, 'eng_models/new_site.html', {'form': form})
 
 
 
@@ -706,7 +708,7 @@ class SourceModelForm(forms.ModelForm):
 
 	class Meta:
 		model = Source_Model
-		fields = ['name', 'description', 'xml']
+		fields = ['name', 'description', 'private','xml']
 
 
 source_categories = {'general': ['name', 'tectonic_region', 'mag_scale_rel', 'rupt_aspect_ratio'],
@@ -798,7 +800,7 @@ class SourceForm(forms.ModelForm):
 		
 @login_required
 def index_source(request):
-	models = Source_Model.objects.filter(source_model_contributor__contributor=request.user).order_by('-date_created')
+	models = Source_Model.objects.filter(private=False).order_by('-date_created')
 	form = SourceModelForm()
 	page = request.GET.get('page')
 
@@ -806,7 +808,7 @@ def index_source(request):
 
 @login_required
 def detail_source(request, model_id):
-	model = get_object_or_404(Source_Model ,pk=model_id, source_model_contributor__contributor=request.user)
+	model = get_object_or_404(Source_Model ,pk=model_id)
 	sources = Source.objects.filter(model_id=model_id)
 	# page = request.GET.get('page')
 	form = SourceForm()
@@ -837,21 +839,22 @@ def add_source_model(request):
 		if form.is_valid():
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
+			model.author=request.user
 			model.save()
-			Source_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
+			# Source_Model_Contributor.objects.create(author=request.user, model=model, date_joined=model.date_created)
 			if request.FILES:
 				try:
 					source_parser.start(model)
 				except Exception as e:
 					model.delete()
-					return render(request, 'eng_models/index_source.html', {'form': form, 'parse_error': e})
+					return render(request, 'eng_models/new_source.html', {'form': form, 'parse_error': e})
 			return redirect('detail_source', model_id=model.id)
 		else:
-			models = Source_Model.objects.filter(source_model_contributor__contributor=request.user).order_by('-date_created')
-			return render(request, 'eng_models/index_source.html', {'models': pagination(models, 10, 1), 'form': form})
+			# models = Source_Model.objects.filter(source_model_contributor__contributor=request.user).order_by('-date_created')
+			return render(request, 'eng_models/new_source.html', {'form': form})
 	else:
 		form = SourceModelForm()
-		return render(request, 'eng_models/index_source.html', {'form': form})
+		return render(request, 'eng_models/new_source.html', {'form': form})
 
 def get_sources(model_id):
 	#model = Source_Model.objects.get(id=model_id)
@@ -920,7 +923,7 @@ def get_sources(model_id):
 
 @login_required
 def sources_ajax(request, model_id):
-	model = get_object_or_404(Source_Model ,pk=model_id, source_model_contributor__contributor=request.user)
+	model = get_object_or_404(Source_Model ,pk=model_id)
 	data = get_sources(model_id)
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -953,7 +956,7 @@ class RuptureForm(forms.ModelForm):
 
 @login_required
 def index_rupture_model(request):
-	models = Rupture_Model.objects.filter(user=request.user).order_by('-date_created')
+	models = Rupture_Model.objects.filter(private=False).order_by('-date_created')
 	form = RuptureForm()
 	return render(request, 'eng_models/index_rupture_model.html', {'models': models, 'form': form})
 
@@ -1004,7 +1007,7 @@ class FragilityForm(forms.ModelForm):
 	tax_source_desc = forms.CharField(required=False)
 	class Meta:
 		model = Fragility_Model
-		fields = ['name', 'description','limit_states', 'taxonomy_source', 'xml']
+		fields = ['name', 'description', 'private', 'limit_states', 'xml', 'taxonomy_source']
 		widgets = {
 			'limit_states': forms.TextInput(attrs={'placeholder': 'Ex: slight, moderate, extensive, complete...'}),
 		}
@@ -1017,34 +1020,36 @@ class CovertToVulnarabilityForm(forms.ModelForm):
 
 @login_required
 def index_fragility(request):
-	models = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
+	models = Fragility_Model.objects.filter(private=False).order_by('-date_created')
 	form = FragilityForm()
-	form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(building_taxonomy_source_contributor__contributor=request.user).order_by('-date_created')
+	form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(author=request.user).order_by('-date_created')
 	page = request.GET.get('page')
 
 	return render(request, 'eng_models/index_fragility.html', {'models': pagination(models, 10, page), 'form': form})
 
 @login_required
 def detail_fragility(request, model_id):
-	model = get_object_or_404(Fragility_Model ,pk=model_id, fragility_model_contributor__contributor=request.user)
+	model = get_object_or_404(Fragility_Model ,pk=model_id)
 	tax_list = Taxonomy_Fragility_Model.objects.filter(model_id=model_id)
 	convert_form = CovertToVulnarabilityForm()
-	convert_form.fields["consequence_model"].queryset = Consequence_Model.objects.filter(consequence_model_contributor__contributor=request.user).filter(limit_states__len=len(model.limit_states))
+	convert_form.fields["consequence_model"].queryset = Consequence_Model.objects.filter(author=request.user).filter(limit_states__len=len(model.limit_states))
 	return render(request, 'eng_models/detail_fragility.html', {'model': model, 'taxonomies': tax_list, 'form': convert_form})
 
 @login_required
 def add_fragility_model(request):
 	if request.method == 'POST':
 		form = FragilityForm(request.POST, request.FILES)
-		form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(building_taxonomy_source_contributor__contributor=request.user).order_by('-date_created')
+		form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(author=request.user).order_by('-date_created')
 		if form.is_valid():
 			model = form.save(commit=False)
+			model.author=request.user
 			if 'add_tax_source' in request.POST:
 				new_tax_source = Building_Taxonomy_Source(name=request.POST['tax_source_name'],
 															description=request.POST['tax_source_desc'],
-															date_created=timezone.now())
+															date_created=timezone.now(),
+															author=request.user)
 				new_tax_source.save()
-				Building_Taxonomy_Source_Contributor.objects.create(contributor=request.user, source=new_tax_source, date_joined=new_tax_source.date_created, author=True)
+				# Building_Taxonomy_Source_Contributor.objects.create(contributor=request.user, source=new_tax_source, date_joined=new_tax_source.date_created, author=True)
 				model.taxonomy_source = new_tax_source
 			model.date_created = timezone.now()
 			if request.FILES:
@@ -1053,25 +1058,25 @@ def add_fragility_model(request):
 					model.save()
 				except Exception as e:
 					#model.delete()
-					return render(request, 'eng_models/index_fragility.html', {'form': form, 'parse_error': e})
+					return render(request, 'eng_models/new_fragility.html', {'form': form, 'parse_error': e})
 			else:
 				model.save()
-			Fragility_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
+			# Fragility_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
 			return redirect('detail_fragility', model_id=model.id)
 		else:
-			models = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
-			return render(request, 'eng_models/index_fragility.html', {'models': pagination(models, 10, 1), 'form': form})
+			# models = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
+			return render(request, 'eng_models/new_fragility.html', {'form': form})
 	else:
 		form = FragilityForm()
-		return render(request, 'eng_models/index_fragility.html', {'form': form})
+		return render(request, 'eng_models/new_fragility.html', {'form': form})
 
 
 @login_required
 def convert_to_vulnerability(request, model_id):
 	if request.method == 'POST':
-		fragility_model = get_object_or_404(Fragility_Model ,pk=model_id, fragility_model_contributor__contributor=request.user)
+		fragility_model = get_object_or_404(Fragility_Model ,pk=model_id)
 		form = CovertToVulnarabilityForm(request.POST)
-		form.fields["consequence_model"].queryset = Consequence_Model.objects.filter(consequence_model_contributor__contributor=request.user).filter(limit_states__len=len(fragility_model.limit_states))
+		form.fields["consequence_model"].queryset = Consequence_Model.objects.filter(author=request.user).filter(limit_states__len=len(fragility_model.limit_states))
 		if form.is_valid():
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
@@ -1080,6 +1085,7 @@ def convert_to_vulnerability(request, model_id):
 			model.loss_category = 'economic_loss'
 			model.fragility_model = fragility_model
 			model.taxonomy_source = fragility_model.taxonomy_source
+			model.author=request.user
 
 			taxonomies_fragility = Taxonomy_Fragility_Model.objects.filter(model=fragility_model)
 			#model.imt = taxonomies_fragility[0].imt
@@ -1118,7 +1124,7 @@ def convert_to_vulnerability(request, model_id):
 																imt=tax.imt, sa_period = tax.sa_period)
 				vulnerability_function.save()
 
-			Vulnerability_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
+			# Vulnerability_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
 
 			return redirect('detail_vulnerability', model_id=model.id)
 		else:
@@ -1126,7 +1132,7 @@ def convert_to_vulnerability(request, model_id):
 			return render(request, 'eng_models/detail_fragility.html', {'model': fragility_model, 'taxonomies': tax_list, 'form': form})
 	else:
 		form = CovertToVulnarabilityForm()
-		model = get_object_or_404(Fragility_Model ,pk=model_id, fragility_model_contributor__contributor=request.user)
+		model = get_object_or_404(Fragility_Model ,pk=model_id)
 		tax_list = Taxonomy_Fragility_Model.objects.filter(model_id=model_id)
 		return render(request, 'eng_models/detail_fragility.html', {'model': model, 'taxonomies': tax_list, 'form': form})
 
@@ -1134,7 +1140,7 @@ def convert_to_vulnerability(request, model_id):
 
 @login_required
 def fragility_get_taxonomy(request, model_id, taxonomy_id):
-	model = get_object_or_404(Fragility_Model ,pk=model_id, fragility_model_contributor__contributor=request.user)
+	model = get_object_or_404(Fragility_Model ,pk=model_id)
 
 	info = Taxonomy_Fragility_Model.objects.raw('select * \
 											from eng_models_taxonomy_fragility_model \
@@ -1160,7 +1166,7 @@ def fragility_get_taxonomy(request, model_id, taxonomy_id):
 class ConsequenceForm(forms.ModelForm):
 	class Meta:
 		model = Consequence_Model
-		fields = ['name', 'description']
+		fields = ['name', 'description', 'private']
 
 class ConsequenceDetailForm(forms.ModelForm):
 	class Meta:
@@ -1174,14 +1180,14 @@ class ConsequenceDetailForm(forms.ModelForm):
 
 @login_required
 def index_consequence(request):
-	models = Consequence_Model.objects.filter(consequence_model_contributor__contributor=request.user).order_by('-date_created')
+	models = Consequence_Model.objects.filter(private=False).order_by('-date_created')
 	form = ConsequenceForm()
 	page = request.GET.get('page')
 	return render(request, 'eng_models/index_consequence.html', {'models': pagination(models, 10, page), 'form': form})
 
 @login_required
 def detail_consequence(request, model_id):
-	model = get_object_or_404(Consequence_Model ,pk=model_id, consequence_model_contributor__contributor=request.user)
+	model = get_object_or_404(Consequence_Model ,pk=model_id)
 	form = ConsequenceDetailForm()
 	return render(request, 'eng_models/detail_consequence.html', {'model': model, 'form': form})
 
@@ -1189,13 +1195,13 @@ def detail_consequence(request, model_id):
 @login_required
 def save_consequence_model(request, model_id):
 	if request.method == 'POST':
-		model = get_object_or_404(Consequence_Model ,pk=model_id, consequence_model_contributor__contributor=request.user)
+		model = get_object_or_404(Consequence_Model ,pk=model_id)
 		form = ConsequenceDetailForm(request.POST, instance=model)
 		if form.is_valid():
 			form.save()
 			return redirect('detail_consequence', model_id=model.id)
 		else:
-			model = get_object_or_404(Consequence_Model ,pk=model_id, consequence_model_contributor__contributor=request.user)
+			model = get_object_or_404(Consequence_Model ,pk=model_id)
 			return render(request, 'eng_models/detail_consequence.html', {'model': model, 'form': form, 'save_error': True})
 	else:
 		form = ConsequenceDetailForm()
@@ -1205,7 +1211,7 @@ def save_consequence_model(request, model_id):
 
 @login_required
 def consequence_ajax(request, model_id):
-	model = get_object_or_404(Consequence_Model ,pk=model_id, consequence_model_contributor__contributor=request.user)
+	model = get_object_or_404(Consequence_Model ,pk=model_id)
 	return HttpResponse(json.dumps({'limit_states': model.limit_states, 'values': model.values}), content_type="application/json")
 
 
@@ -1216,15 +1222,16 @@ def add_consequence_model(request):
 		if form.is_valid():
 			model = form.save(commit=False)
 			model.date_created = timezone.now()
+			model.author=request.user
 			model.save()
-			Consequence_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
+			# Consequence_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
 			return redirect('detail_consequence', model_id=model.id)
 		else:
-			models = Consequence_Model.objects.filter(consequence_model_contributor__contributor=request.user).order_by('-date_created')
-			return render(request, 'eng_models/index_consequence.html', {'models': pagination(models, 10, 1), 'form': form})
+			# models = Consequence_Model.objects.filter(consequence_model_contributor__contributor=request.user).order_by('-date_created')
+			return render(request, 'eng_models/new_consequence.html', {'form': form})
 	else:
 		form = ConsequenceForm()
-		return render(request, 'eng_models/index_consequence.html', {'form': form})
+		return render(request, 'eng_models/new_consequence.html', {'form': form})
 
 
 
@@ -1240,7 +1247,7 @@ class VulnerabilityForm(forms.ModelForm):
 	tax_source_desc = forms.CharField(required=False)
 	class Meta:
 		model = Vulnerability_Model
-		fields = ['name', 'description', 'type', 'iml', 'xml', 'taxonomy_source']
+		fields = ['name', 'description', 'private','type', 'iml', 'xml', 'taxonomy_source']
 
 class VulnerabilityFunctionForm(forms.ModelForm):
 	class Meta:
@@ -1249,16 +1256,16 @@ class VulnerabilityFunctionForm(forms.ModelForm):
 
 @login_required
 def index_vulnerability(request):
-	models = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).order_by('-date_created')
+	models = Vulnerability_Model.objects.filter(private=False).order_by('-date_created')
 	form = VulnerabilityForm()
-	form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(building_taxonomy_source_contributor__contributor=request.user).order_by('-date_created')
+	form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(author=request.user).order_by('-date_created')
 	page = request.GET.get('page')
 
 	return render(request, 'eng_models/index_vulnerability.html', {'models': pagination(models, 10, page), 'form': form})
 
 @login_required
 def detail_vulnerability(request, model_id):
-	model = get_object_or_404(Vulnerability_Model ,pk=model_id, vulnerability_model_contributor__contributor=request.user)
+	model = get_object_or_404(Vulnerability_Model ,pk=model_id)
 	tax_list = Vulnerability_Function.objects.filter(model=model)
 	form = VulnerabilityFunctionForm()
 	form.fields['taxonomy'].queryset = Building_Taxonomy.objects.filter(source = model.taxonomy_source).exclude(id__in = [e.taxonomy.id for e in tax_list])
@@ -1268,24 +1275,26 @@ def detail_vulnerability(request, model_id):
 def add_vulnerability_model(request):
 	if request.method == 'POST':
 		form = VulnerabilityForm(request.POST, request.FILES)
-		form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(building_taxonomy_source_contributor__contributor=request.user).order_by('-date_created')
+		form.fields["taxonomy_source"].queryset = Building_Taxonomy_Source.objects.filter(author=request.user).order_by('-date_created')
 		if form.is_valid():
 			model = form.save(commit=False)
 			if 'add_tax_source' in request.POST:
 				new_tax_source = Building_Taxonomy_Source(name=request.POST['tax_source_name'],
 															description=request.POST['tax_source_desc'],
-															date_created=timezone.now())
+															date_created=timezone.now(),
+															author=request.user)
 				new_tax_source.save()
-				Building_Taxonomy_Source_Contributor.objects.create(contributor=request.user, source=new_tax_source, date_joined=new_tax_source.date_created, author=True)
+				# Building_Taxonomy_Source_Contributor.objects.create(contributor=request.user, source=new_tax_source, date_joined=new_tax_source.date_created, author=True)
 				model.taxonomy_source = new_tax_source
 			model.date_created = timezone.now()
+			model.author=request.user
 			if request.FILES:
 				try:
 					vulnerability_parser.start(model)
 					model.save()
 				except Exception as e:
 					print e
-					return render(request, 'eng_models/index_vulnerability.html', {'form': form, 'parse_error': e})
+					return render(request, 'eng_models/new_vulnerability.html', {'form': form, 'parse_error': e})
 			else:
 				if model.type == 'structural_vulnerability' or model.type == 'nonstructural_vulnerability':
 					model.asset_category = 'buildings'
@@ -1297,21 +1306,21 @@ def add_vulnerability_model(request):
 					model.asset_category = 'population'
 					model.loss_category = 'fatalities'
 				model.save()
-			Vulnerability_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
+			# Vulnerability_Model_Contributor.objects.create(contributor=request.user, model=model, date_joined=model.date_created, author=True)
 			return redirect('detail_vulnerability', model_id=model.id)
 		else:
-			models = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).order_by('-date_created')
-			return render(request, 'eng_models/index_vulnerability.html', {'models': pagination(models, 10, 1), 'form': form})
+			# models = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).order_by('-date_created')
+			return render(request, 'eng_models/new_vulnerability.html', { 'form': form})
 	else:
 		form = VulnerabilityForm()
-		return render(request, 'eng_models/index_vulnerability.html', {'form': form})
+		return render(request, 'eng_models/new_vulnerability.html', {'form': form})
 
 
 
 @login_required
 def add_vulnerability_function(request, model_id):
 	if request.method == 'POST':
-		model = get_object_or_404(Vulnerability_Model ,pk=model_id, vulnerability_model_contributor__contributor=request.user)
+		model = get_object_or_404(Vulnerability_Model ,pk=model_id)
 		tax_list = Vulnerability_Function.objects.filter(model=model)
 		form = VulnerabilityFunctionForm(request.POST)
 		form.fields['taxonomy'].queryset = Building_Taxonomy.objects.filter(source = model.taxonomy_source).exclude(id__in = [e.taxonomy.id for e in tax_list])
@@ -1330,7 +1339,7 @@ def add_vulnerability_function(request, model_id):
 
 @login_required
 def vulnerability_get_taxonomy(request, model_id, taxonomy_id):
-	model = get_object_or_404(Vulnerability_Model ,pk=model_id, vulnerability_model_contributor__contributor=request.user)
+	model = get_object_or_404(Vulnerability_Model ,pk=model_id)
 	function = Vulnerability_Function.objects.get(model=model, taxonomy_id=taxonomy_id)
 	error = []
 	for loss, std_dev in zip(function.loss_ratio, function.coefficients_variation):
@@ -1340,7 +1349,7 @@ def vulnerability_get_taxonomy(request, model_id, taxonomy_id):
 
 @login_required
 def get_imt_from_vulnerability(request, model_id):
-	model = get_object_or_404(Vulnerability_Model ,pk=model_id, vulnerability_model_contributor__contributor=request.user)
+	model = get_object_or_404(Vulnerability_Model ,pk=model_id)
 	tax_list = Vulnerability_Function.objects.filter(model=model)
 
 	imt_l = {}
@@ -1361,12 +1370,12 @@ def get_imt_from_vulnerability(request, model_id):
 class LogicTreeSMForm(forms.ModelForm):
 	class Meta:
 		model = Logic_Tree_SM
-		fields = ['name', 'description', 'xml']
+		fields = ['name', 'description', 'private','xml']
 
 
 @login_required
 def index_logic_tree_sm(request):
-	models = Logic_Tree_SM.objects.filter(user=request.user).order_by('-date_created')
+	models = Logic_Tree_SM.objects.filter(private=False).order_by('-date_created')
 	form = LogicTreeSMForm()
 	page = request.GET.get('page')
 
@@ -1374,7 +1383,7 @@ def index_logic_tree_sm(request):
 
 @login_required
 def detail_logic_tree_sm(request, model_id):
-	model = get_object_or_404(Logic_Tree_SM ,pk=model_id, user=request.user)
+	model = get_object_or_404(Logic_Tree_SM ,pk=model_id)
 	return render(request, 'eng_models/detail_logic_tree_sm.html', {'model': model})
 
 @login_required
@@ -1392,14 +1401,14 @@ def add_logic_tree_sm(request):
 					sm_logic_tree_parser.start(model)
 				except Exception as e:
 					model.delete()
-					return render(request, 'eng_models/index_logic_tree_sm.html', {'form': form, 'parse_error': e})
+					return render(request, 'eng_models/new_logic_tree_sm.html', {'form': form, 'parse_error': e})
 			return redirect('detail_logic_tree_sm', model_id=model.id)
 		else:
 			models = Logic_Tree_SM.objects.filter(user=request.user).order_by('-date_created')
-			return render(request, 'eng_models/index_logic_tree_sm.html', {'models': pagination(models, 10, 1), 'form': form})
+			return render(request, 'eng_models/new_logic_tree_sm.html', {'models': pagination(models, 10, 1), 'form': form})
 	else:
 		form = LogicTreeSMForm()
-		return render(request, 'eng_models/index_logic_tree_sm.html', {'form': form})
+		return render(request, 'eng_models/new_logic_tree_sm.html', {'form': form})
 
 
 
@@ -1410,12 +1419,12 @@ def add_logic_tree_sm(request):
 class LogicTreeGMPEForm(forms.ModelForm):
 	class Meta:
 		model = Logic_Tree_GMPE
-		fields = ['name', 'description', 'xml']
+		fields = ['name', 'description', 'private','xml']
 
 
 @login_required
 def index_logic_tree_gmpe(request):
-	models = Logic_Tree_GMPE.objects.filter(user=request.user).order_by('-date_created')
+	models = Logic_Tree_GMPE.objects.filter(private=False).order_by('-date_created')
 	form = LogicTreeGMPEForm()
 	page = request.GET.get('page')
 
@@ -1423,7 +1432,7 @@ def index_logic_tree_gmpe(request):
 
 @login_required
 def detail_logic_tree_gmpe(request, model_id):
-	model = get_object_or_404(Logic_Tree_GMPE ,pk=model_id, user=request.user)
+	model = get_object_or_404(Logic_Tree_GMPE ,pk=model_id)
 	return render(request, 'eng_models/detail_logic_tree_gmpe.html', {'model': model})
 
 @login_required
@@ -1441,14 +1450,14 @@ def add_logic_tree_gmpe(request):
 					gmpe_logic_tree_parser.start(model)
 				except Exception as e:
 					model.delete()
-					return render(request, 'eng_models/index_logic_tree_gmpe.html', {'form': form, 'parse_error': e})
+					return render(request, 'eng_models/new_logic_tree_gmpe.html', {'form': form, 'parse_error': e})
 			return redirect('detail_logic_tree_gmpe', model_id=model.id)
 		else:
 			models = Logic_Tree_GMPE.objects.filter(user=request.user).order_by('-date_created')
-			return render(request, 'eng_models/index_logic_tree_gmpe.html', {'models': pagination(models, 10, 1), 'form': form})
+			return render(request, 'eng_models/new_logic_tree_gmpe.html', {'models': pagination(models, 10, 1), 'form': form})
 	else:
 		form = LogicTreeGMPEForm()
-		return render(request, 'eng_models/index_logic_tree_gmpe.html', {'form': form})
+		return render(request, 'eng_models/new_logic_tree_gmpe.html', {'form': form})
 
 
 @login_required

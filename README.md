@@ -61,7 +61,6 @@ risco web app - openquake in a web environment
     ```js
         var BASE_URL = '/your-prefix';
     ```
-    And restart Apache
     
 7. Run development servers (only for development):
     ```sh

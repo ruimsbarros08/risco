@@ -23,6 +23,7 @@ $( document ).ready(function() {
         );
     }
 
+
     var updateValue = function(category, value){
         for (var i = 0; i < categories.length; i++){
             if (categories[i] == category){

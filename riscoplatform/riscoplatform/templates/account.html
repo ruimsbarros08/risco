@@ -1,26 +1,19 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% load avatar_tags %}
+{% load humanize %}
+
 {% block content %}
-<!--
+
+
 <div class="container">
 	<div class="row">
-		<div class="col-md-6 col-md-offset-3">
-			
-		<form class="form-horizontal">
-			<fieldset>
-				<legend>Profile</legend>
-				{% csrf_token %}
-				{% include 'form.html' %}
-			</fieldset>
-		</form>
-
+		<div class="col-md-6">
+			<ul class="breadcrumb">
+			  	<li class="active">Account</li>
+			</ul>
 		</div>
 	</div>
-</div>
--->
-
-<div class="container">
 	<div class="row">
 		<div class="col-md-3">
 			<div>
@@ -35,7 +28,8 @@
 			</div>
 			<div>
 				<h3>{{ user.username }}</h3>
-				<p><a href="#"> Edit Profile <span class="glyphicon glyphicon-pencil" aria-hidden="true"> </a></p>
+				<h5 class="text-muted">{{ user.email }}</h5>
+				<p><a href="{% url 'account_settings' %}"> Edit Profile <span class="glyphicon glyphicon-pencil" aria-hidden="true"> </a></p>
 				<br>
 			</div>
 			<div>
@@ -48,25 +42,44 @@
 				  <li class="list-group-item"><span class="badge">{{ fragility_models.count }}</span><a href="{% url 'index_fragility' %}">Fragility </a></li>
 				  <li class="list-group-item"><span class="badge">{{ consequence_models.count }}</span><a href="{% url 'index_consequence' %}">Consequence </a></li>
 				  <li class="list-group-item"><span class="badge">{{ vulnerability_models.count }}</span><a href="{% url 'index_vulnerability' %}">Vulnerability </a></li>
-				  <li class="list-group-item"><span class="badge">{{ logic_trees.count }}</span><a href="{% url 'index_logic_tree' %}">Logic Trees </a></li>
+				  <li class="list-group-item"><span class="badge">{{ logic_trees_sm.count }}</span><a href="{% url 'index_logic_tree_sm' %}">Source Model Logic Trees </a></li>
+				  <li class="list-group-item"><span class="badge">{{ logic_trees_gmpe.count }}</span><a href="{% url 'index_logic_tree_gmpe' %}">GMPE Logic Trees </a></li>
 				</ul>
 			</div>
 			<div>
 				<h4>Jobs</h4>
 				<ul class="list-group">
-				  <li class="list-group-item"><span class="badge">#</span><a href="{% url 'index_scenario_hazard' %}">Scenario Hazard</a></li>
-				  <li class="list-group-item"><span class="badge">#</span><a href="#">Scenario Risk</a></li>
-				  <li class="list-group-item"><span class="badge">#</span><a href="{% url 'index_scenario_damage' %}">Scenario Damage</a></li>
-				  <li class="list-group-item"><span class="badge">#</span><a href="#">PSHA Hazard</a></li>
-				  <li class="list-group-item"><span class="badge">#</span><a href="#">PSHA Risk</a></li>
-				  <li class="list-group-item"><span class="badge">#</span><a href="#">Event Based Hazard</a></li>
-				  <li class="list-group-item"><span class="badge">#</span><a href="#">Event Based Hazard</a></li>
+				  <li class="list-group-item"><span class="badge">{{ scenario_hazard.count }}</span><a href="{% url 'index_scenario_hazard' %}">Scenario Hazard</a></li>
+				  <li class="list-group-item"><span class="badge">{{ scenario_damage.count }}</span><a href="{% url 'index_scenario_damage' %}">Scenario Damage</a></li>
+				  <li class="list-group-item"><span class="badge">{{ scenario_risk.count }}</span><a href="{% url 'index_scenario_risk' %}">Scenario Risk</a></li>
+
+				  <li class="list-group-item"><span class="badge">{{ classical_hazard.count }}</span><a href="{% url 'index_psha_hazard' %}">Classical PSHA Hazard</a></li>
+				  <li class="list-group-item"><span class="badge">{{ classical_risk.count }}</span><a href="{% url 'index_psha_risk' %}">Classical PSHA Risk</a></li>
+
+				  <li class="list-group-item"><span class="badge">{{ event_based_hazard.count }}</span><a href="{% url 'index_event_based_hazard' %}">Event Based PSHA Hazard</a></li>
+				  <li class="list-group-item"><span class="badge">{{ event_based_risk.count }}</span><a href="{% url 'index_event_based_risk' %}">Event Based PSHA Risk</a></li>
+
+
 				</ul>
 			</div>
 		</div>
 		<div class="col-md-9">
-			<h1>{{ user.first_name }} {{ user.last_name }}</h1>
-			<h3>{{ user.email }}</h3>
+
+			<div class="row">
+				<div class="col-md-12">
+					<h1>{{ user.first_name }} {{ user.last_name }}</h1>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-6">
+					{% include 'profile_lists.html' %}
+				</div>
+
+
+
+			</div>
+
 		</div>
 	</div>
 </div>

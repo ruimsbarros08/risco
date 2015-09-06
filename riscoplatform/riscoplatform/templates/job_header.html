@@ -1,0 +1,33 @@
+{% load avatar_tags %}
+{% load staticfiles %}
+
+	<div class="row">
+
+		<div class="col-md-12">
+			
+			<h3>{{ job.name }}
+				{% if user == job.user %}
+					<div class="btn-group">
+			  			<a href="#" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">  <span class="caret"></span></a>
+						<ul class="dropdown-menu">
+						    {% if job.private %}
+						    <li><a href="#"><span class="glyphicon glyphicon-globe" aria-hidden="true"></span> Make public </a></li>
+						    {% else %}
+						    <li><a href="#"><span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Make private </a></li>
+						    {% endif %}
+						    <li><a href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete job </a></li>
+						</ul>
+					</div>
+				{% endif %}
+			</h3>
+			<br>
+			<h4>{{ job.description }}</h4>
+			<br>
+			<p>Author: {% if user == job.user %} You {% else %} <a href="{% url 'profile' job.user.id %}">{{ job.user }}</a> {% endif %}
+			</p>
+
+			<br>
+
+		</div>
+
+	</div>

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% load humanize %}
+{% load avatar_tags %}
+{% load staticfiles %}
+
+
+{% block content %}
+
+<div class="container">
+
+	<div class="row">
+		<div class="col-md-6">
+			<ul class="breadcrumb">
+			  	<li> <a href="{% url 'jobs_home' %}">Jobs</a></li>
+			  	<li><a href="{% url 'index_scenario_damage' %}">Scenario Damage</a></li>
+			  	<li class="active">New</li>
+			</ul>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="col-md-6">
+			<div id='map' class="vertical-map"></div><br>
+		</div>
+		<div class="col-md-6">
+			<form class="form-horizontal" action="{% url 'add_scenario_damage' %}" method="post" enctype="multipart/form-data">
+				<fieldset>
+					<legend>Insert new job</legend>
+					{% csrf_token %}
+					{% include 'form.html' %}
+					<div class="form-group">
+					    <div class="col-lg-5 col-lg-offset-2">
+					        <input class="btn btn-primary" type="submit" value="Create job" />
+					    </div>
+					</div>
+			    </fieldset>
+			</form>
+		</div>
+
+	</div>
+</div>
+
+{% load staticfiles %}
+<script type="text/javascript" src="{% static 'jobs/js/scenario_damage.js' %}"></script>
+
+{% endblock %}

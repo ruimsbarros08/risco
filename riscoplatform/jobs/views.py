@@ -104,7 +104,8 @@ class ScenarioHazardForm(forms.ModelForm):
 
 @login_required	
 def index_scenario_hazard(request):
-	jobs = Scenario_Hazard.objects.filter(user=request.user).order_by('-date_created')
+	page = request.GET.get('page')
+	jobs = Scenario_Hazard.objects.filter(private=False).order_by('-date_created')
 	form = ScenarioHazardForm()
 	form.fields["site_model"].queryset = Site_Model.objects.filter(site_model_contributor__contributor=request.user).order_by('-date_created')
 	form.fields["rupture_model"].queryset = Rupture_Model.objects.filter(user=request.user)
@@ -116,7 +117,7 @@ def index_scenario_hazard(request):
 	form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
 	form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
 	
-	return render(request, 'jobs/index_scenario_hazard.html', {'jobs': jobs, 'form': form})
+	return render(request, 'jobs/index_scenario_hazard.html', {'jobs': pagination(jobs, 10, page), 'form': form})
 
 @login_required
 def add_scenario_hazard(request):
@@ -163,11 +164,11 @@ def add_scenario_hazard(request):
 			job.save()
 			return redirect('results_scenario_hazard', job.id)
 		else:
-			jobs = Scenario_Hazard.objects.filter(user=request.user).order_by('-date_created')
-			return render(request, 'jobs/index_scenario_hazard.html', {'jobs': jobs, 'form': form})
+			# jobs = Scenario_Hazard.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'jobs/new_scenario_hazard.html', {'form': form})
 	else:
 		form = ScenarioHazardForm()
-		return render(request, 'jobs/index_scenario_hazard.html', {'form': form})
+		return render(request, 'jobs/new_scenario_hazard.html', {'form': form})
 
 @login_required
 def results_scenario_hazard(request, job_id):
@@ -195,7 +196,7 @@ def get_geojson(features_list):
 
 @login_required
 def results_scenario_hazard_ajax(request, job_id):
-	job = Scenario_Hazard.objects.get(pk=job_id, user=request.user)
+	job = Scenario_Hazard.objects.get(pk=job_id)
 	
 	job_json = serializers.serialize("json", [job])
 	job_json = json.loads(job_json)
@@ -345,12 +346,13 @@ class ScenarioDamageForm(forms.ModelForm):
 
 @login_required	
 def index_scenario_damage(request):
-	jobs = Scenario_Damage.objects.filter(user=request.user).order_by('-date_created')
+	page = request.GET.get('page')
+	jobs = Scenario_Damage.objects.filter(private=False).order_by('-date_created')
 	form = ScenarioDamageForm()
 	form.fields["hazard_job"].queryset = Scenario_Hazard.objects.filter(user=request.user, status='FINISHED')
 	form.fields["fragility_model"].queryset = Fragility_Model.objects.filter(fragility_model_contributor__contributor=request.user).order_by('-date_created')
 	form.fields["exposure_model"].queryset = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
-	return render(request, 'jobs/index_scenario_damage.html', {'jobs': jobs, 'form': form})
+	return render(request, 'jobs/index_scenario_damage.html', {'jobs': pagination(jobs, 10, page), 'form': form})
 
 @login_required
 def add_scenario_damage(request):
@@ -367,11 +369,11 @@ def add_scenario_damage(request):
 			job.save()
 			return redirect('results_scenario_damage', job.id)
 		else:
-			jobs = Scenario_Damage.objects.filter(user=request.user).order_by('-date_created')
-			return render(request, 'jobs/index_scenario_damage.html', {'jobs': jobs, 'form': form})
+			# jobs = Scenario_Damage.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'jobs/new_scenario_damage.html', {'form': form})
 	else:
 		form = ScenarioDamageForm()
-		return render(request, 'jobs/index_scenario_damage.html', {'form': form})
+		return render(request, 'jobs/new_scenario_damage.html', {'form': form})
 
 @login_required
 def results_scenario_damage(request, job_id):
@@ -548,7 +550,8 @@ class ScenarioRiskForm(forms.ModelForm):
 
 @login_required	
 def index_scenario_risk(request):
-	jobs = Scenario_Risk.objects.filter(user=request.user).order_by('-date_created')
+	page = request.GET.get('page')
+	jobs = Scenario_Risk.objects.filter(private=False).order_by('-date_created')
 	form = ScenarioRiskForm()
 	form.fields["hazard_job"].queryset = Scenario_Hazard.objects.filter(user=request.user, status='FINISHED')
 	form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
@@ -557,7 +560,7 @@ def index_scenario_risk(request):
 	form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
 	form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
 	form.fields["exposure_model"].queryset = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
-	return render(request, 'jobs/index_scenario_risk.html', {'jobs': jobs, 'form': form})
+	return render(request, 'jobs/index_scenario_risk.html', {'jobs': pagination(jobs, 10, page), 'form': form})
 
 @login_required
 def add_scenario_risk(request):
@@ -589,11 +592,11 @@ def add_scenario_risk(request):
 
 			return redirect('results_scenario_risk', job.id)
 		else:
-			jobs = Scenario_Risk.objects.filter(user=request.user).order_by('-date_created')
-			return render(request, 'jobs/index_scenario_risk.html', {'jobs': jobs, 'form': form})
+			# jobs = Scenario_Risk.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'jobs/new_scenario_risk.html', {'form': form})
 	else:
 		form = ScenarioRiskForm()
-		return render(request, 'jobs/index_scenario_risk.html', {'form': form})
+		return render(request, 'jobs/new_scenario_risk.html', {'form': form})
 
 @login_required
 def results_scenario_risk(request, job_id):
@@ -1048,7 +1051,8 @@ class PSHAHazardForm(forms.ModelForm):
 
 @login_required	
 def index_psha_hazard(request):
-	jobs = Classical_PSHA_Hazard.objects.filter(user=request.user).order_by('-date_created').exclude(id__in=[job.id for job in Event_Based_Hazard.objects.all()])
+	page = request.GET.get('page')
+	jobs = Classical_PSHA_Hazard.objects.filter(private=False).order_by('-date_created').exclude(id__in=[job.id for job in Event_Based_Hazard.objects.all()])
 	form = PSHAHazardForm()
 
 	form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
@@ -1059,7 +1063,7 @@ def index_psha_hazard(request):
 	
 	form.fields["exposure_model"].queryset = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
 	
-	return render(request, 'jobs/index_psha_hazard.html', {'jobs': jobs, 'form': form, 'categories': psha_form_categories})
+	return render(request, 'jobs/index_psha_hazard.html', {'jobs': pagination(jobs, 10, page), 'form': form, 'categories': psha_form_categories})
 
 
 @login_required
@@ -1083,11 +1087,11 @@ def add_psha_hazard(request):
 
 			return redirect('results_psha_hazard', job.id)
 		else:
-			jobs = Classical_PSHA_Hazard.objects.filter(user=request.user).order_by('-date_created')
-			return render(request, 'jobs/index_psha_hazard.html', {'jobs': jobs, 'form': form, 'categories': psha_form_categories})
+			# jobs = Classical_PSHA_Hazard.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'jobs/new_psha_hazard.html', { 'form': form, 'categories': psha_form_categories})
 	else:
 		form = PSHAHazardForm()
-		return render(request, 'jobs/index_psha_hazard.html', {'form': form })
+		return render(request, 'jobs/new_psha_hazard.html', {'form': form, 'categories': psha_form_categories })
 
 @login_required
 def results_psha_hazard(request, job_id):
@@ -1251,7 +1255,8 @@ class PSHARiskForm(forms.ModelForm):
 
 @login_required	
 def index_psha_risk(request):
-	jobs = Classical_PSHA_Risk.objects.filter(user=request.user).order_by('-date_created').exclude(id__in=[job.id for job in Event_Based_Risk.objects.all()])
+	page = request.GET.get('page')
+	jobs = Classical_PSHA_Risk.objects.filter(private=False).order_by('-date_created').exclude(id__in=[job.id for job in Event_Based_Risk.objects.all()])
 	form = PSHARiskForm()
 
 	form.fields['hazard'].queryset = Classical_PSHA_Hazard.objects.filter(user=request.user, status='FINISHED').order_by('-date_created')
@@ -1262,7 +1267,7 @@ def index_psha_risk(request):
 	form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
 	form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
 	
-	return render(request, 'jobs/index_psha_risk.html', {'jobs': jobs, 'form': form, 'categories': psha_risk_form_categories})
+	return render(request, 'jobs/index_psha_risk.html', {'jobs': pagination( jobs, 10, page), 'form': form})
 
 @login_required
 def add_psha_risk(request):
@@ -1304,11 +1309,11 @@ def add_psha_risk(request):
 
 			return redirect('results_psha_risk', job.id)
 		else:
-			jobs = Classical_PSHA_Risk.objects.filter(user=request.user).order_by('-date_created')
-			return render(request, 'jobs/index_psha_risk.html', {'jobs': jobs, 'form': form, 'categories': psha_risk_form_categories})
+			# jobs = Classical_PSHA_Risk.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'jobs/new_psha_risk.html', {'form': form, 'categories': psha_risk_form_categories})
 	else:
 		form = PSHARiskForm()
-		return render(request, 'jobs/index_psha_risk.html', {'form': form, 'categories': psha_risk_form_categories})
+		return render(request, 'jobs/new_psha_risk.html', {'form': form, 'categories': psha_risk_form_categories})
 
 @login_required
 def results_psha_risk(request, job_id):
@@ -2083,7 +2088,7 @@ def results_psha_risk_curves_ajax(request, job_id):
 ###############################
 
 
-event_based_form_categories = {'general': ['name', 'description', 'description', 'investigation_time', 'truncation_level', 'max_distance', 'random_seed', 'imt_l'],
+event_based_form_categories = {'general': ['name', 'description', 'investigation_time', 'truncation_level', 'max_distance', 'random_seed', 'imt_l'],
 						'locations': ['locations_type', 'exposure_model', 'region', 'grid_spacing', 'locations'],
 						'rupture': ['rupture_mesh_spacing', 'width_of_mfd_bin', 'area_source_discretization'],
 						'sites': ['sites_type', 'site_model', 'vs30', 'vs30type', 'z1pt0', 'z2pt5'],
@@ -2119,7 +2124,8 @@ class EventBased_HazardForm(forms.ModelForm):
 
 @login_required	
 def index_event_based_hazard(request):
-	jobs = Event_Based_Hazard.objects.filter(user=request.user).order_by('-date_created')
+	page = request.GET.get('page')
+	jobs = Event_Based_Hazard.objects.filter(private=False).order_by('-date_created')
 	form = EventBased_HazardForm()
 	form.fields["structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='structural_vulnerability').order_by('-date_created')
 	form.fields["non_structural_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='nonstructural_vulnerability').order_by('-date_created')
@@ -2130,7 +2136,7 @@ def index_event_based_hazard(request):
 	form.fields["exposure_model"].queryset = Exposure_Model.objects.filter(exposure_model_contributor__contributor=request.user).order_by('-date_created')
 
 
-	return render(request, 'jobs/index_event_based_hazard.html', {'jobs': jobs, 'form': form, 'categories': event_based_form_categories})
+	return render(request, 'jobs/index_event_based_hazard.html', {'jobs': pagination( jobs, 10, page), 'form': form, 'categories': event_based_form_categories})
 
 
 @login_required
@@ -2155,11 +2161,11 @@ def add_event_based_hazard(request):
 
 			return redirect('results_event_based_hazard', job.id)
 		else:
-			jobs = Event_Based_Hazard.objects.filter(user=request.user).order_by('-date_created')
-			return render(request, 'jobs/index_event_based_hazard.html', {'jobs': jobs, 'form': form, 'categories': event_based_form_categories})
+			# jobs = Event_Based_Hazard.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'jobs/new_event_based_hazard.html', {'form': form, 'categories': event_based_form_categories})
 	else:
 		form = EventBased_HazardForm()
-		return render(request, 'jobs/index_event_based_hazard.html', {'form': form })
+		return render(request, 'jobs/new_event_based_hazard.html', {'form': form, 'categories': event_based_form_categories })
 
 @login_required
 def results_event_based_hazard(request, job_id):
@@ -2240,7 +2246,8 @@ class EventBased_RiskForm(forms.ModelForm):
 
 @login_required	
 def index_event_based_risk(request):
-	jobs = Event_Based_Risk.objects.filter(user=request.user).order_by('-date_created')
+	page = request.GET.get('page')
+	jobs = Event_Based_Risk.objects.filter(private=False).order_by('-date_created')
 	form = EventBased_RiskForm()
 
 	form.fields['hazard_event_based'].queryset = Event_Based_Hazard.objects.filter(user=request.user, status='FINISHED').order_by('-date_created')
@@ -2251,7 +2258,7 @@ def index_event_based_risk(request):
 	form.fields["business_int_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='business_interruption_vulnerability').order_by('-date_created')
 	form.fields["occupants_vulnerability"].queryset = Vulnerability_Model.objects.filter(vulnerability_model_contributor__contributor=request.user).filter(type='occupants_vulnerability').order_by('-date_created')
 	
-	return render(request, 'jobs/index_event_based_risk.html', {'jobs': jobs, 'form': form, 'categories': event_based_risk_form_categories})
+	return render(request, 'jobs/index_event_based_risk.html', {'jobs': pagination( jobs, 10, page), 'form': form, 'categories': event_based_risk_form_categories})
 
 @login_required
 def add_event_based_risk(request):
@@ -2293,11 +2300,11 @@ def add_event_based_risk(request):
 
 			return redirect('results_event_based_risk', job.id)
 		else:
-			jobs = Event_Based_Risk.objects.filter(user=request.user).order_by('-date_created')
-			return render(request, 'jobs/index_event_based_risk.html', {'jobs': jobs, 'form': form, 'categories': event_based_risk_form_categories})
+			# jobs = Event_Based_Risk.objects.filter(user=request.user).order_by('-date_created')
+			return render(request, 'jobs/new_event_based_risk.html', {'form': form, 'categories': event_based_risk_form_categories})
 	else:
 		form = PSHARiskForm()
-		return render(request, 'jobs/index_event_based_risk.html', {'form': form, 'categories': event_based_risk_form_categories})
+		return render(request, 'jobs/new_event_based_risk.html', {'form': form, 'categories': event_based_risk_form_categories})
 
 @login_required
 def results_event_based_risk(request, job_id):

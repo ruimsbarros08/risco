@@ -62,7 +62,7 @@ STATUS_CHOICES = (
 
 
 class Scenario_Hazard(models.Model):
-
+	private                     = models.BooleanField(default=False)
 	user 						= models.ForeignKey(User)
 	date_created 				= models.DateTimeField('date created')
 	name 						= models.CharField(max_length=200)
@@ -135,7 +135,7 @@ class Scenario_Hazard_Results_By_Cell(models.Model):
 
 
 class Scenario_Damage(models.Model):
-	
+	private                     = models.BooleanField(default=False)
 	user                        = models.ForeignKey(User)
 	date_created                = models.DateTimeField('date created')
 	name                        = models.CharField(max_length=200)
@@ -178,6 +178,7 @@ class Scenario_Risk(models.Model):
 		(TRANSIT, 'Transit'),
 		)
 
+	private                     = models.BooleanField(default=False)
 	user                        = models.ForeignKey(User)
 	date_created                = models.DateTimeField('date created')
 	name                        = models.CharField(max_length=200)
@@ -220,14 +221,14 @@ EXPOSURE = 'EXPOSURE'
 GRID = 'GRID'
 LOCATIONS = 'LOCATIONS'
 LOCATIONS_CHOICES = (
-    (EXPOSURE, 'Exposure model'),
-    (GRID, 'Grid'),
-    (LOCATIONS, 'Locations'),
-    )
+	(EXPOSURE, 'Exposure model'),
+	(GRID, 'Grid'),
+	(LOCATIONS, 'Locations'),
+	)
 
 
 class Classical_PSHA_Hazard(models.Model):
-
+	private                     = models.BooleanField(default=False)
 	user                        = models.ForeignKey(User)
 	date_created                = models.DateTimeField('date created')
 	name                        = models.CharField(max_length=200)
@@ -313,7 +314,7 @@ class Classical_PSHA_Hazard_Maps(models.Model):
 
 
 class Classical_PSHA_Risk(models.Model):
-
+	private                     = models.BooleanField(default=False)
 	user                        = models.ForeignKey(User)
 	date_created                = models.DateTimeField('date created')
 	name                        = models.CharField(max_length=200)

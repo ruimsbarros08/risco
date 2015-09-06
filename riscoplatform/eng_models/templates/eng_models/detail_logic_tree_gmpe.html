@@ -14,14 +14,10 @@
 	</div>
 </div>
 
+	{% include 'model_header.html' %}
+
 	<div class="row">
-		<div class="col-md-4">
-			<h3>{{ model.name }}</h3>
-			<br>
-			<h4>{{ model.description }}</h4>
-			<br>
-		</div>
-		<div class="col-md-offset-4 col-md-4">
+		<div class="col-md-12">
 			<button class="btn btn-success btn-sm" ng-click="save()"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save </button>
 			<br>
 			<div class="alert alert-dismissible alert-success" ng-show='hasMessage'>

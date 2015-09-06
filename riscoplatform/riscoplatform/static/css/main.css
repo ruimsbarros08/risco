@@ -33,9 +33,10 @@ body {
 
 form {
   background: #E3E3E3;
+  padding: 20px;
   border-radius: 5px;
-	padding: 20px;
 }
+
 
 textarea { resize: none; }
 
@@ -89,6 +90,124 @@ textarea { resize: none; }
 	text-align: center;
 	font-size: 24px;
 }
+
+
+
+
+
+
+.item-box {
+  height: 150px;
+  padding-right: 0px;
+  padding-left: 0px;
+  margin: 10px;
+  box-shadow: 0.5px 0.5px 0.5px 0.5px #616161;
+  border-radius: 3px;
+  overflow: hidden;
+  
+
+}
+
+.item-box .background{
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-position: center;
+  -webkit-background-size: 100%;
+  -moz-background-size: 100%;
+  -o-background-size: 100%;
+  -ms-background-size: 100%;
+  background-size: 100%;
+  z-index: -1;
+
+  -webkit-transition: all 0.2s ease;
+  -moz-transition: all 0.2s ease;
+  -o-transition: all 0.2s ease;
+  -ms-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+
+}
+
+.item-box .top{
+  position: absolute;
+  color: white;
+  width: 100%;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.8);
+
+}
+
+.item-box .top h4{
+  -webkit-font-size: 100%;
+  -moz-font-size: 100%;
+  -o-font-size: 100%;
+  -ms-font-size: 100%;
+  font-size: 100%;
+
+  -webkit-transition: all 0.2s ease;
+  -moz-transition: all 0.2s ease;
+  -o-transition: all 0.2s ease;
+  -ms-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+
+
+}
+
+.item-box .bottom{
+  position: absolute;
+  bottom: -30px;
+  color: white;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  height: 30px;
+
+  -webkit-transition: all 0.2s ease;
+  -moz-transition: all 0.2s ease;
+  -o-transition: all 0.2s ease;
+  -ms-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+
+}
+
+
+
+.item-box:hover .background {
+    -webkit-filter: grayscale(1) brightness(0.45) contrast(1.05);
+    filter: grayscale(1) brightness(0.45) contrast(1.05);
+    
+  -webkit-background-size: 120%;
+  -moz-background-size: 120%;
+  -o-background-size: 120%;
+  -ms-background-size: 120%;
+  background-size: 120%;
+
+}
+
+
+.item-box:hover .top h4{
+  -webkit-font-size: 120%;
+  -moz-font-size: 120%;
+  -o-font-size: 120%;
+  -ms-font-size: 120%;
+  font-size: 120%;
+
+}
+
+.item-box:hover .bottom {
+  -webkit-bottom: 0px;
+  -moz-bottom: 0px;
+  -o-bottom: 0px;
+  -ms-bottom: 0px;
+  bottom: 0px;
+
+}
+
+
+
+
+
+
+
 
 
 

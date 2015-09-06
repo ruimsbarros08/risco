@@ -59,7 +59,8 @@
                     </div>
                     <div class="collapse navbar-collapse" id="collapse-button">
                         <ul class="nav navbar-nav navbar-left">
-                            <li class="dropdown">
+                            <li><a href="{% url 'eng_models_home' %}">MODELS</a></li>
+<!--                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"> MODELS <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
                                     <li><a href="{% url 'index_source' %}">SOURCE</a></li>
@@ -74,8 +75,9 @@
                                     <li><a href="{% url 'index_logic_tree_sm' %}">SOURCE MODEL LOGIC TREES</a></li>
                                     <li><a href="{% url 'index_logic_tree_gmpe' %}">GMPE LOGIC TREES</a></li>
                                 </ul>
-                            </li>
-                            <li class="dropdown">
+                            </li> -->
+                            <li><a href="{% url 'jobs_home' %}">JOBS</a></li>
+<!--                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"> JOB MANAGER <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
                                     <li class="dropdown-header">SCENARIO</li>
@@ -92,7 +94,8 @@
                                     <li><a href="{% url 'index_event_based_risk' %}">RISK</a></li>
                                 </ul>
                             </li>
-                            <li class=""><a href="">DOCUMENTATION</a></li>
+                            <li class=""><a href="">DOCUMENTATION</a></li> -->
+
                         </ul>
 
                         <ul class="nav navbar-nav navbar-right">
@@ -163,7 +166,6 @@
 <script type="text/javascript" src="{% static 'bower_components/leaflet/dist/leaflet.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-draw/dist/leaflet.draw.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-tilelayer-geojson/TileLayer.GeoJSON.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/Leaflet.heat/dist/leaflet-heat.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-coordinates/dist/Leaflet.Coordinates-0.1.4.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet.markercluster/dist/leaflet.markercluster.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/leaflet-dvf/dist/leaflet-dvf.min.js' %}"></script>

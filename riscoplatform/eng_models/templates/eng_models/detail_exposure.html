@@ -14,43 +14,7 @@
 	</div>
 </div>
 	
-	<div class="row">
-
-		<div class="col-md-12">
-			
-			<h3>{{ model.name }}</h3>
-			<br>
-			<h4>{{ model.description }}</h4>
-			<br>
-			<p>Taxonomy source: <a href="{% url 'detail_taxonomy' model.taxonomy_source.id %}">{{ model.taxonomy_source }}</a></p>
-
-			<p>Authors:
-			{% for contributor in model.exposure_model_contributor_set.all %}
-				{% if contributor.author %}
-					<a href="#">{{ contributor.contributor.first_name }} {{ contributor.contributor.last_name }}</a>
-					{% if model.exposure_model_contributor_set.all|length > 1 %}
-						{% if not forloop.last %},{% else %} and {% endif %}
-					{% endif %}
-				{% endif %}
-			{% endfor %}
-			</p>
-			<p>Contributors:
-			{% for contributor in model.exposure_model_contributor_set.all %}
-				{% if not contributor.author %}
-					<a href="#">{{ contributor.contributor.first_name }} {{ contributor.contributor.last_name }}</a>
-					{% if model.exposure_model_contributor_set.all|length > 1 %}
-						{% if not forloop.last %},{% else %} and {% endif %}
-					{% endif %}
-				{% endif %}
-			{% endfor %}
-			</p>
-			<br>
-
-		</div>
-
-	</div>
-
-</div>
+	{% include 'model_header.html' %}
 
 <div class="container-fluid" ng-app='exposureApp'>
 
@@ -93,7 +57,9 @@
 				</div>
 				
 				<div class="col-md-2">
+					{% if user == model.author %}
 					<button style="width:100%;" class="btn btn-sm btn btn-success" ng-click='saveData()' ng-disabled="disableSave">Save <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
+					{% endif %}
 				</div>
 				<div class="col-md-12">
 					<br>
@@ -112,7 +78,9 @@
 							<div id="assets-tag-list" class="tag-list"></div>
 						</div>
 						<div class="col-md-2">
+							{% if user == model.author %}
 							<button class="btn btn-danger btn-sm" ng-disabled='disableDelete' ng-click='deleteAssets()'> <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete assets</button>
+							{% endif %}
 						</div>
 					</div>
 

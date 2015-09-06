@@ -1,0 +1,778 @@
+{% load staticfiles %}
+{% load avatar_tags %}
+{% load humanize %}
+
+					<ul class="nav nav-tabs" style="width:100%;">
+
+					  <li class="dropdown">
+					    <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+					      Models <span class="caret"></span>
+					    </a>
+					    <ul class="dropdown-menu">
+					      <li class="active"><a href="#source" data-toggle="tab">Source Models</a></li>
+					      <li><a href="#site" data-toggle="tab">Site Models</a></li>
+					      <li><a href="#rupture" data-toggle="tab">Rupture Models</a></li>
+					      <li><a href="#exposure" data-toggle="tab">Exposure Models</a></li>
+					      <li><a href="#fragility" data-toggle="tab">Fragility Models</a></li>
+					      <li><a href="#vulnerability" data-toggle="tab">Vulnerability Models</a></li>
+					      <li><a href="#logic_trees_sm" data-toggle="tab">SM Logic Trees</a></li>
+					      <li><a href="#logic_trees_gmpe" data-toggle="tab">GMPE Logic Trees</a></li>
+					    </ul>
+					  </li>
+
+					</ul>
+
+					<div id="myTabContent" class="tab-content">
+						<div class="tab-pane fade active in" id="source">
+							{% if source_models %}
+							<h3>Source Models</h3>
+							<table class="table table-striped table-hover">
+								<thead>
+									<tr>
+										<th>Created</th>
+										<th>Title</th>
+										<th>Owner</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for pub in source_models %}
+									<tr>
+										<td>
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+											
+										</td>
+										<td>
+											<a href="{% url 'detail_source' pub.id %}">{{ pub.name }}</a>
+										</td>
+										<td>
+											{% if user == pub.author  %}
+												You
+											{% else %}
+												<a href="#">{{ pub.author }}</a>
+											{% endif %}
+										</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+
+						</div>
+						<div class="tab-pane fade" id="site">
+							{% if site_models %}
+							<h3>Site Models</h3>
+							<table class="table table-striped table-hover">
+								<thead>
+									<tr>
+										<th>Created</th>
+										<th>Title</th>
+										<th>Owner</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for pub in site_models %}
+									<tr>
+										<td>
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+											
+										</td>
+										<td>
+											<a href="{% url 'detail_site' pub.id %}">{{ pub.name }}</a>
+										</td>
+										<td>
+											{% if user == pub.author  %}
+												You
+											{% else %}
+												<a href="#">{{ pub.author }}</a>
+											{% endif %}
+										</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+						</div>
+
+						<div class="tab-pane fade" id="rupture">
+							{% if rupture_models %}
+							<h3>Ruptures Models</h3>
+							<table class="table table-striped table-hover">
+								<thead>
+									<tr>
+										<th>Created</th>
+										<th>Title</th>
+										<th>Owner</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for pub in rupture_models %}
+									<tr>
+										<td>
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+											
+										</td>
+										<td>
+											<a href="{% url 'index_rupture_model' %}">{{ pub.name }}</a>
+										</td>
+										<td>
+											You
+										</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+						</div>
+
+						<div class="tab-pane fade" id="exposure">
+							{% if exposure_models %}
+							<h3>Exposure Models</h3>
+							<table class="table table-striped table-hover">
+								<thead>
+									<tr>
+										<th>Created</th>
+										<th>Title</th>
+										<th>Owner</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for pub in exposure_models %}
+									<tr>
+										<td>
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+											
+										</td>
+										<td>
+											<a href="{% url 'detail_exposure' pub.id %}">{{ pub.name }}</a>
+										</td>
+										<td>
+											{% if user == pub.author  %}
+												You
+											{% else %}
+												<a href="#">{{ pub.author }}</a>
+											{% endif %}
+										</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+						</div>
+
+						<div class="tab-pane fade" id="fragility">
+							{% if fragility_models %}
+							<h3>Fragility Models</h3>
+							<table class="table table-striped table-hover">
+								<thead>
+									<tr>
+										<th>Created</th>
+										<th>Title</th>
+										<th>Owner</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for pub in fragility_models %}
+									<tr>
+										<td>
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+											
+										</td>
+										<td>
+											<a href="{% url 'detail_fragility' pub.id %}">{{ pub.name }}</a>
+										</td>
+										<td>
+											{% if user == pub.author  %}
+												You
+											{% else %}
+												<a href="#">{{ pub.author }}</a>
+											{% endif %}
+										</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+						</div>
+
+						<div class="tab-pane fade" id="vulnerability">
+							{% if vulnerability_models %}
+							<h3>Vulnerability Models</h3>
+							<table class="table table-striped table-hover">
+								<thead>
+									<tr>
+										<th>Created</th>
+										<th>Title</th>
+										<th>Owner</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for pub in vulnerability_models %}
+									<tr>
+										<td>
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+											
+										</td>
+										<td>
+											<a href="{% url 'detail_vulnerability' pub.id %}">{{ pub.name }}</a>
+										</td>
+										<td>
+											{% if user == pub.author  %}
+												You
+											{% else %}
+												<a href="#">{{ pub.author }}</a>
+											{% endif %}
+										</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+						</div>
+
+						<div class="tab-pane fade" id="logic_trees_sm">
+							{% if logic_trees_sm %}
+							<h3>Source Model Logic Tree Models</h3>
+							<table class="table table-striped table-hover">
+								<thead>
+									<tr>
+										<th>Created</th>
+										<th>Title</th>
+										<th>Owner</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for pub in logic_trees_sm %}
+									<tr>
+										<td>
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+											
+										</td>
+										<td>
+											<a href="{% url 'detail_logic_tree_sm' pub.id %}">{{ pub.name }}</a>
+										</td>
+										<td>
+											You
+										</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+						</div>
+
+						<div class="tab-pane fade" id="logic_trees_gmpe">
+							{% if logic_trees_gmpe %}
+							<h3>GMPE Logic Tree Models</h3>
+							<table class="table table-striped table-hover">
+								<thead>
+									<tr>
+										<th>Created</th>
+										<th>Title</th>
+										<th>Owner</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for pub in logic_trees_gmpe %}
+									<tr>
+										<td>
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+											
+										</td>
+										<td>
+											<a href="{% url 'detail_logic_tree_gmpe' pub.id %}">{{ pub.name }}</a>
+										</td>
+										<td>
+											You
+										</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+						</div>
+
+					</div>
+				</div>
+
+
+				<div class="col-md-6">
+					<ul class="nav nav-tabs">
+
+					  <li class="dropdown">
+					    <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+					      Jobs <span class="caret"></span>
+					    </a>
+					    <ul class="dropdown-menu">
+					      <li class="active"><a href="#scenario_hazard" data-toggle="tab">Scenario Hazard</a></li>
+					      <li><a href="#scenario_damage" data-toggle="tab">Scenario Damage</a></li>
+					      <li><a href="#scenario_risk" data-toggle="tab">Scenario Risk</a></li>
+					      <li><a href="#classical_hazard" data-toggle="tab">Classical PSHA Hazard</a></li>
+					      <li><a href="#classical_risk" data-toggle="tab">Classical PSHA Risk</a></li>
+					      <li><a href="#eb_hazard" data-toggle="tab">Event Based PSHA Hazard</a></li>
+					      <li><a href="#eb_risk" data-toggle="tab">Event Based PSHA Risk</a></li>
+					    </ul>
+					  </li>
+
+					</ul>
+
+					<div id="myTabContent" class="tab-content">
+					  <div class="tab-pane fade active in" id="scenario_hazard">
+					  	{% if scenario_hazard %}
+						<h3>Scenario Hazard</h3>
+						<table class="table table-striped table-hover">
+							<thead>
+								<tr>
+									<th>Created</th>
+									<th>Title</th>
+									<th>Status</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for pub in scenario_hazard %}
+								<tr>
+									<td>
+										{% if pub.date_created|naturalday == 'today' %}
+											{{ pub.date_created|naturaltime }}
+										{% else %}
+											{{ pub.date_created|naturalday }}
+										{% endif %}
+										
+									</td>
+									<td>
+										<a href="{% url 'results_scenario_hazard' pub.id %}">{{ pub.name }}</a>
+									</td>
+									<td>
+										{{ pub.get_status_display }}
+									</td>
+									<td>
+										{% if pub.private %}
+										<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+										{% endif %}
+									</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+						{% else %}
+						<div class="alert alert-dismissible alert-info">
+						  	No data
+						</div>
+
+						{% endif %}
+
+					  </div>
+					  <div class="tab-pane fade" id="scenario_damage">
+					  	{% if scenario_damage %}
+					  	<h3>Scenario Damage</h3>
+						<table class="table table-striped table-hover">
+							<thead>
+								<tr>
+									<th>Created</th>
+									<th>Title</th>
+									<th>Status</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for pub in scenario_damage %}
+								<tr>
+									<td>
+										{% if pub.date_created|naturalday == 'today' %}
+											{{ pub.date_created|naturaltime }}
+										{% else %}
+											{{ pub.date_created|naturalday }}
+										{% endif %}
+										
+									</td>
+									<td>
+										<a href="{% url 'results_scenario_damage' pub.id %}">{{ pub.name }}</a>
+									</td>
+									<td>
+										{{ pub.get_status_display }}
+									</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+					  </div>
+
+					  <div class="tab-pane fade" id="scenario_risk">
+					  {% if scenario_risk %}
+					  <h3>Scenario Risk</h3>
+						<table class="table table-striped table-hover">
+							<thead>
+								<tr>
+									<th>Created</th>
+									<th>Title</th>
+									<th>Status</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for pub in scenario_risk %}
+								<tr>
+									<td>
+										{% if pub.date_created|naturalday == 'today' %}
+											{{ pub.date_created|naturaltime }}
+										{% else %}
+											{{ pub.date_created|naturalday }}
+										{% endif %}
+										
+									</td>
+									<td>
+										<a href="{% url 'results_scenario_risk' pub.id %}">{{ pub.name }}</a>
+									</td>
+									<td>
+										{{ pub.get_status_display }}
+									</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+					  </div>
+
+					  <div class="tab-pane fade" id="classical_hazard">
+					  {% if classical_hazard %}
+					  <h3>Classical PSHA Hazard</h3>
+						<table class="table table-striped table-hover">
+							<thead>
+								<tr>
+									<th>Created</th>
+									<th>Title</th>
+									<th>Status</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for pub in classical_hazard %}
+								<tr>
+									<td>
+										{% if pub.date_created|naturalday == 'today' %}
+											{{ pub.date_created|naturaltime }}
+										{% else %}
+											{{ pub.date_created|naturalday }}
+										{% endif %}
+										
+									</td>
+									<td>
+										<a href="{% url 'results_psha_hazard' pub.id %}">{{ pub.name }}</a>
+									</td>
+									<td>
+										{{ pub.get_status_display }}
+									</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+					  </div>
+
+					  <div class="tab-pane fade" id="classical_risk">
+					  {% if classical_risk %}
+					  <h3>Classical PSHA Risk</h3>
+						<table class="table table-striped table-hover">
+							<thead>
+								<tr>
+									<th>Created</th>
+									<th>Title</th>
+									<th>Status</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for pub in classical_risk %}
+								<tr>
+									<td>
+										{% if pub.date_created|naturalday == 'today' %}
+											{{ pub.date_created|naturaltime }}
+										{% else %}
+											{{ pub.date_created|naturalday }}
+										{% endif %}
+										
+									</td>
+									<td>
+										<a href="{% url 'results_psha_risk' pub.id %}">{{ pub.name }}</a>
+									</td>
+									<td>
+										{{ pub.get_status_display }}
+									</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+					  </div>
+
+
+					  <div class="tab-pane fade" id="eb_hazard">
+
+					  {% if event_based_hazard %}
+					  <h3>Event Based PSHA Hazard</h3>
+						<table class="table table-striped table-hover">
+							<thead>
+								<tr>
+									<th>Created</th>
+									<th>Title</th>
+									<th>Status</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for pub in event_based_hazard %}
+								<tr>
+									<td>
+										{% if pub.date_created|naturalday == 'today' %}
+											{{ pub.date_created|naturaltime }}
+										{% else %}
+											{{ pub.date_created|naturalday }}
+										{% endif %}
+										
+									</td>
+									<td>
+										<a href="{% url 'results_event_based_hazard' pub.id %}">{{ pub.name }}</a>
+									</td>
+									<td>
+										{{ pub.get_status_display }}
+									</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+					  </div>
+
+					  <div class="tab-pane fade" id="eb_risk">
+					  {% if event_based_risk %}
+					  <h3>Event Based PSHA Risk</h3>
+						<table class="table table-striped table-hover">
+							<thead>
+								<tr>
+									<th>Created</th>
+									<th>Title</th>
+									<th>Status</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for pub in event_based_risk %}
+								<tr>
+									<td>
+										{% if pub.date_created|naturalday == 'today' %}
+											{{ pub.date_created|naturaltime }}
+										{% else %}
+											{{ pub.date_created|naturalday }}
+										{% endif %}
+										
+									</td>
+									<td>
+										<a href="{% url 'results_event_based_risk' pub.id %}">{{ pub.name }}</a>
+									</td>
+									<td>
+										{{ pub.get_status_display }}
+									</td>
+										<td>
+											{% if pub.private %}
+											<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+											{% endif %}
+										</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+							{% else %}
+							<div class="alert alert-dismissible alert-info">
+							  	No data
+							</div>
+
+							{% endif %}
+
+					  </div>
+
+
+					</div>

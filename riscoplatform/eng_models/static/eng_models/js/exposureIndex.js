@@ -6,27 +6,6 @@ var exposureIndexApp = angular.module('exposureIndexApp', []).config(function($i
 
 exposureIndexApp.controller('exposureIndexCtrl', function($scope) {
 
-
-    $( "label[for='tax_source_name']" ).hide();
-    $( "#id_tax_source_name" ).hide();
-    $( "label[for='tax_source_desc']" ).hide();
-    $( "#id_tax_source_desc" ).hide();
-    $('#id_add_tax_source').change( function() {
-        if ($(this).is(":checked")){
-            $( "label[for='tax_source_name']" ).show( "fast");
-            $( "#id_tax_source_name" ).show( "fast");
-            $( "label[for='tax_source_desc']" ).show( "fast");
-            $( "#id_tax_source_desc" ).show( "fast");
-        }
-        else {
-            $( "label[for='tax_source_name']" ).hide( "fast");
-            $( "#id_tax_source_name" ).hide( "fast");
-            $( "label[for='tax_source_desc']" ).hide( "fast");
-            $( "#id_tax_source_desc" ).hide( "fast");
-        }
-    });
-
-
     var map = init_map();
     map.scrollWheelZoom.disable();
 

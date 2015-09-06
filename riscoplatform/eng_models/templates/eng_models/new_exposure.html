@@ -1,0 +1,191 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+
+	<div class="row">
+		<div class="col-md-6">
+			<ul class="breadcrumb">
+			  	<li> <a href="{% url 'eng_models_home' %}">Models</a></li>
+			  	<li> <a href="{% url 'index_exposure' %}">Exposure</a></li>
+			  	<li class="active">New</li>
+			</ul>
+		</div>
+	</div>
+
+	
+	<div class="row">
+		<div class="col-md-8 col-md-offset-2">
+			<form action="{% url 'add_exposure_model' %}" method="post" enctype="multipart/form-data" class="form-horizontal">
+				<fieldset>
+					<legend>Insert new model</legend>
+
+					{% csrf_token %}
+
+					{% for field in form %}
+				  		{% if field.name in categories.general %}
+
+				  			{% include 'form_field.html' %}
+
+						{% endif %}
+				    {% endfor %}
+
+					<ul id='cost_types' class="nav nav-tabs">
+					  	<li class="active"><a href="#area" data-toggle="tab" aria-expanded="true">Area</a></li>
+					  	<li class=""><a href="#structural" data-toggle="tab" aria-expanded="true">Structural</a></li>
+					  	<li class=""><a href="#nonstructural" data-toggle="tab" aria-expanded="true">Nonstructural</a></li>
+					  	<li class=""><a href="#contents" data-toggle="tab" aria-expanded="true">Contents</a></li>
+					  	<li class=""><a href="#business_int" data-toggle="tab" aria-expanded="true">Business interruption</a></li>
+					</ul>
+					<div id="myTabContent" class="tab-content">
+					  <div class="tab-pane fade active in" id="area">
+
+					  	{% for field in form %}
+					  		{% if field.name in categories.area %}
+
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+
+					  </div>
+
+					  <div class="tab-pane fade" id="structural">
+
+					  	{% for field in form %}
+					  		{% if field.name in categories.structural %}
+
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+
+					  </div>
+
+
+					  <div class="tab-pane fade" id="nonstructural">
+
+					  	{% for field in form %}
+					  		{% if field.name in categories.nonstructural %}
+							    
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+
+					  </div>
+
+					  <div class="tab-pane fade" id="contents">
+
+					  	{% for field in form %}
+					  		{% if field.name in categories.contents %}
+							    
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+
+					  </div>
+
+					  <div class="tab-pane fade" id="business_int">
+
+					  	{% for field in form %}
+					  		{% if field.name in categories.business_int %}
+							    
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+
+					  </div>
+
+					</div>
+					<div class="form-group">
+					    <div class="col-lg-5 col-lg-offset-2">
+					        <input class="btn btn-primary" type="submit" value="Create model" />
+					    </div>
+					</div>
+				</fieldset>
+			</form>
+		</div>
+	</div>
+
+	{% include 'parse_error.html' %}
+
+</div>
+
+<script type="text/javascript">
+
+	$( "label[for='xml']" ).hide();
+    $( "#id_xml" ).hide();
+    $('#id_add_xml').change( function() {
+        if ($(this).is(":checked")){
+
+			$( "label[for='xml']" ).show();
+		    $( "#id_xml" ).show();
+
+		    $( "#cost_types" ).hide();
+		    $( "#myTabContent" ).hide();
+
+            $( "label[for='deductible']" ).hide( "fast");
+            $( "#id_deductible" ).hide( "fast");
+            $( "label[for='insurance_limit']" ).hide( "fast");
+            $( "#id_insurance_limit" ).hide( "fast");
+        }
+        else {
+        	$( "label[for='xml']" ).hide();
+    		$( "#id_xml" ).hide();
+
+    		$( "#cost_types" ).show();
+		    $( "#myTabContent" ).show();
+            
+            $( "label[for='deductible']" ).show( "fast");
+            $( "#id_deductible" ).show( "fast");
+            $( "label[for='insurance_limit']" ).show( "fast");
+            $( "#id_insurance_limit" ).show( "fast");
+        }
+    });
+
+
+	
+	$( "label[for='tax_source_name']" ).hide();
+    $( "#id_tax_source_name" ).hide();
+    $( "label[for='tax_source_desc']" ).hide();
+    $( "#id_tax_source_desc" ).hide();
+
+
+
+    $('#id_add_tax_source').change(function() {
+        if ($(this).is(":checked")){
+
+
+            $( "label[for='taxonomy_source']" ).hide( "fast");
+            $( "#id_taxonomy_source" ).hide( "fast");
+
+            $( "label[for='tax_source_name']" ).show( "fast");
+            $( "#id_tax_source_name" ).show( "fast");
+            $( "label[for='tax_source_desc']" ).show( "fast");
+            $( "#id_tax_source_desc" ).show( "fast");
+        }
+        else {
+            $( "label[for='taxonomy_source']" ).show( "fast");
+            $( "#id_taxonomy_source" ).show( "fast");
+
+            $( "label[for='tax_source_name']" ).hide( "fast");
+            $( "#id_tax_source_name" ).hide( "fast");
+            $( "label[for='tax_source_desc']" ).hide( "fast");
+            $( "#id_tax_source_desc" ).hide( "fast");
+        }
+    } );
+
+
+
+
+
+</script>
+
+{% endblock %}
+

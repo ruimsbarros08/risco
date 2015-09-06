@@ -1,0 +1,73 @@
+					<div class="panel-group" id="accordion">
+					    <div class="panel panel-default">
+					      <div class="panel-heading">
+					        <h4 class="panel-title">
+					          <a data-toggle="collapse" data-parent="#accordion" href="#general">General parameters</a>
+					        </h4>
+					      </div>
+					      <div id="general" class="panel-collapse collapse in">
+							<ul class="list-group">
+								<li class="list-group-item">
+								<b>Random seed:</b> {{ job.random_seed }}
+							  	</li>
+
+							  	{% if job.hazard_event_based %}
+								<li class="list-group-item">
+								<b>Hazard:</b> <a href="{% url 'results_event_based_hazard' job.hazard_event_based.id %}">{{ job.hazard_event_based }}</a>
+							  	</li>
+							  	{% else %}
+								<li class="list-group-item">
+								<b>Hazard:</b> <a href="{% url 'results_psha_hazard' job.hazard.id %}">{{ job.hazard }}</a>
+							  	</li>
+							  	{% endif %}
+
+								<li class="list-group-item">
+								<b>Exposure model:</b> <a href="{% url 'detail_exposure' job.exposure_model.id %}">{{ job.exposure_model }}</a>
+							  	</li>
+
+							  	<li class="list-group-item">
+								<b>Asset hazard distance:</b> {{ job.asset_hazard_distance }} km
+							  	</li>
+
+							  	<li class="list-group-item">
+								<b>lrem steps per interval:</b> {{ job.lrem_steps_per_interval }}
+							  	</li>
+
+							  	{% if job.lrem_steps_per_interval %}
+							  	<li class="list-group-item">
+								<b>Asset correlation:</b> {{ job.asset_correlation }}
+							  	</li>
+							  	{% endif %}
+
+							  	{% if job.loss_curve_resolution %}
+								<li class="list-group-item">
+								<b>Loss curve resolution:</b> {{ job.loss_curve_resolution }}
+							  	</li>
+							  	{% endif %}
+
+							</ul>
+							</div>
+					    </div>
+
+
+					    <div class="panel panel-default">
+					      <div class="panel-heading">
+					        <h4 class="panel-title">
+					          <a data-toggle="collapse" data-parent="#accordion" href="#vulnerability">Vulnerability Models</a>
+					        </h4>
+					      </div>
+					      <div id="vulnerability" class="panel-collapse collapse">
+							<ul class="list-group">
+								{% for model in job.classical_psha_risk_vulnerability_set.all %}
+							  	<li class="list-group-item">
+							    <b>{{ model.vulnerability_model.get_type_display }}:</b> <a href="{% url 'detail_vulnerability' model.id %}"> {{ model.vulnerability_model }} </a>
+							  	</li>
+							  	{% endfor %}
+							</ul>
+					      </div>
+					    </div>
+
+
+
+
+					</div> 

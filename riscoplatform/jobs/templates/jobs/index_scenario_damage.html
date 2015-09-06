@@ -1,107 +1,108 @@
 {% extends "base.html" %}
 
 {% load humanize %}
+{% load avatar_tags %}
+{% load staticfiles %}
+
 
 {% block content %}
 
+
 <div class="container">
 
-<div class="row">
-	<div class="col-md-6">
-		<ul class="breadcrumb">
-		  	<li> <a href="{% url 'jobs_home' %}">Jobs</a></li>
-		  	<li class="active">Scenario Damage</li>
-		</ul>
+	<div class="row">
+		<div class="col-md-6">
+			<ul class="breadcrumb">
+			  	<li> <a href="{% url 'jobs_home' %}">Jobs</a></li>
+			  	<li class="active">Scenario Damage</li>
+			</ul>
+		</div>
 	</div>
-</div>
 
+	<div class="row">
+		<div class="col-md-offset-5 col-md-2">
+			<a href="{% url 'add_scenario_damage' %}"> <button class="btn btn-info" style="width: 100%;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Job </button></a>
+		</div>
+	</div>
 
 	<div class="row">
 		<div class="col-md-12">
-			<h2>Scenario based damage</h2><br>
-			<div id='map' class="vertical-map"></div><br>
-		</div>
-	</div>
 
-
-	<div class="row">
-		<div class="col-md-8">
-			<form class="form-horizontal" action="{% url 'add_scenario_damage' %}" method="post" enctype="multipart/form-data">
-				<fieldset>
-					<legend>Insert new job</legend>
-					{% csrf_token %}
-					{% include 'form.html' %}
-					<div class="form-group">
-					    <div class="col-lg-5 col-lg-offset-2">
-					        <input class="btn btn-primary" type="submit" value="Create job" />
-					    </div>
-					</div>
-			    </fieldset>
-			</form>
-			
-		</div>
-
-		<div class="col-md-4">
 			{% if jobs %}
 			<div class="row">
-			
-				<div id='jobs_list' class="col-md-12" style="height: 500px; overflow: auto;">
+				<div class="col-md-8 col-md-offset-2">
+					{% include 'pagination_jobs.html' %}
+				</div>
+				<div class="col-md-2"></div>
 
-					{% for job in jobs %}
-					<div class="col-md-12">
-						<div class="well">
-							<div class="row">
 
-								<div class="col-md-4">
-									<h4><a href="{% url 'results_scenario_damage' job.id %}">{{ job.name }}</a></h4>
-								</div>
-								<div class="col-md-4">
+				{% for job in jobs %}
+				<div class="col-md-6 col-md-offset-3">
+					<div class="well">
+						<div class="row">
+								<div class="col-md-12">
+
+									<p><a href="{% url 'profile' job.user.id %}"> {% if job.user|has_avatar %} {% avatar job.user 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' job.user.id %}"> {{ job.user.first_name }} {{ job.user.last_name }} </a></p>
+
+
+									<p class="text-muted">
+										{% if job.date_created|naturalday == 'today' %}
+											{{ job.date_created|naturaltime }}
+										{% else %}
+											{{ job.date_created|naturalday }}
+										{% endif %}
+									</p>
 
 									{% if job.status == 'CREATED' %}
-										<a href="{% url 'results_scenario_damage' job.id %}"> <button class="btn btn-primary btn-sm" style="width:100%;"> {{ job.get_status_display }} </button></a>
-
+									<p class="text-info">
+										Status: {{ job.get_status_display }}
+									</p>
 									{% elif job.status == 'STARTED' %}
-										<a href="{% url 'results_scenario_damage' job.id %}"><button class="btn btn-warning btn-sm" style="width:100%;">{{ job.get_status_display }}</button> </a>
+									<p class="text-warning">
+										Status: {{ job.get_status_display }}
+									</p>
 									{% elif job.status == 'ERROR' %}
-										<a href="{% url 'results_scenario_damage' job.id %}"> <button class="btn btn-danger btn-sm" style="width:100%;">{{ job.get_status_display }}</button> </a>
+									<p class="text-error">
+										Status: {{ job.get_status_display }}
+									</p>
 									{% elif job.status == 'FINISHED' %}
-										<a href="{% url 'results_scenario_damage' job.id %}"> <button class="btn btn-success btn-sm" style="width:100%;">{{ job.get_status_display }}</button> </a>
+									<p class="text-success">
+										Status: {{ job.get_status_display }}
+									</p>
 									{% endif %}
 
+
+									<h3> <a href="{% url 'results_scenario_damage' job.id %}">{{ job.name }}</a> </h3>
+									<p>{{ job.description }}</p>
+
+
 								</div>
-								<div class="col-md-4">
-									{{ job.date_created|naturalday }}
-								</div>
-							</div>
 						</div>
 					</div>
-					{% endfor %}
-
 				</div>
-			</div>
+				{% endfor %}
 
+
+				<div class="col-md-8 col-md-offset-2">
+					{% include 'pagination_jobs.html' %}
+				</div>
+				<div class="col-md-2"></div>
+			</div>
 
 			{% else %}
 				<br>
 				<div class="row">
-					<div class="col-md-12">
+					<div class="col-md-8 col-md-offset-2">
 						<div class="alert alert-dismissable alert-info">
 						<button type="button" class="close" data-dismiss="alert">×</button>
-					    	<p>No jobs are available. Please add the first</p>
+					    	<p>No models are available. Please add the first</p>
 					    </div>
 					</div>
 				</div>
 			{% endif %}
-
 		</div>
-
 	</div>
 
 </div>
-
-{% load staticfiles %}
-
-<script type="text/javascript" src="{% static 'jobs/js/scenario_damage.js' %}"></script>
-
 
 {% endblock %}

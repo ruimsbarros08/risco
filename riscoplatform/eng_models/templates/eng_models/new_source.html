@@ -1,0 +1,41 @@
+
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+	
+	<div class="row">
+		<div class="col-md-6">
+			<ul class="breadcrumb">
+			  	<li> <a href="{% url 'eng_models_home' %}">Models</a></li>
+			  	<li><a href="{% url 'index_source' %}"> Source </a></li>
+			  	<li class="active"> New </li>
+			</ul>
+		</div>
+	</div>
+		
+	<div class="row">
+		<div class="col-md-8 col-md-offset-2">
+			<form action="{% url 'add_source_model' %}" method="post" enctype="multipart/form-data" class="form-horizontal">
+				<fieldset>
+					<legend>Insert new model</legend>
+
+					{% csrf_token %}
+					{% include 'form.html' %}
+					<div class="form-group">
+					    <div class="col-lg-5 col-lg-offset-2">
+					        <input class="btn btn-primary" type="submit" value="Create model" />
+					    </div>
+					</div>
+				</fieldset>
+			</form>
+		</div>
+	</div>
+
+	{% include 'parse_error.html' %}
+
+</div>
+
+{% endblock %}

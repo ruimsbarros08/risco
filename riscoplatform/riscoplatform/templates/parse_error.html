@@ -1,0 +1,11 @@
+	{% if parse_error %}
+	<br>
+	<div class="row">
+		<div class="col-md-8 col-md-offset-2">
+			<div class="alert alert-dismissible alert-danger">
+			  	<p>Error: Your file is not a valid xml input file for Openquake </p>
+			  	<p> {{ parse_error }} </p>
+			</div>
+		</div>
+	</div>
+	{% endif %}

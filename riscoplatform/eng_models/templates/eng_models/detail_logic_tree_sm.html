@@ -14,20 +14,7 @@
 	</div>
 </div>
 
-	<div class="row">
-		<div class="col-md-12">
-			<h3>{{ model.name }}</h3>
-			<br>
-			<h4>{{ model.description }}</h4>
-			<br>
-
-			<!--<div id="tree" class="vertical-map"></div>-->
-			<div id="tree" class="logic-tree"></div><br>
-
-			<div id="map" class="vertical-map"></div><br>
-		</div>
-
-	</div>
+{% include 'model_header.html' %}
 
 
 </div>
@@ -35,7 +22,7 @@
 
 {% load staticfiles %}
 
-<script type="text/javascript" src="{% static 'eng_models/js/logic_tree.js' %}"></script>
+<!-- <script type="text/javascript" src="{% static 'eng_models/js/logic_tree.js' %}"></script> -->
 
 
 {% endblock %}

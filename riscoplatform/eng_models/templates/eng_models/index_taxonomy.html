@@ -3,6 +3,8 @@
 {% block content %}
 {% load staticfiles%}
 {% load humanize %}
+{% load avatar_tags %}
+
 
 
 <div class="container">
@@ -13,13 +15,6 @@
 			  	<li><a href="{% url 'eng_models_home' %}">Models</a></li>
 			  	<li class="active">Taxonomy Sources</li>
 			</ul>
-		</div>
-	</div>
-		
-	<div class="row">
-		<div class="col-md-12">
-			<h2>Taxonomy Sources</h2>
-			<br>
 		</div>
 	</div>
 
@@ -40,38 +35,27 @@
 					<div class="well">
 						<div class="row">
 
-							<div class="col-md-10">
-								<h4><a href="{% url 'detail_taxonomy' model.id %}">{{ model.name }}</a></h4>
+							<div class="col-md-12">
+
+
+								<p><a href="{% url 'profile' model.author.id %}"> {% if model.author|has_avatar %} {% avatar model.author 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' model.author.id %}"> {{ model.author.first_name }} {{ model.author.last_name }} </a></p>
+
+								{% if model.contributors.all %}<p>{{ model.contributors.all|length }} {% if model.contributors.all|length == 1 %} contributor: {% else %} contributors: {% endif %} {% for con in model.contributors.all %} <a href="{% url 'profile' con.id %}"> {% if con|has_avatar %} {% avatar con 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}" > {% endif %} </a> {% endfor %}</p>{% endif %}
+								
+								<p class="text-muted">
+									{% if model.date_created|naturalday == 'today' %}
+										{{ model.date_created|naturaltime }}
+									{% else %}
+										{{ model.date_created|naturalday }}
+									{% endif %}
+								</p>
+								<h3> <a href="{% url 'detail_taxonomy' model.id %}">{{ model.name }}</a> </h3>
 								<p>{{ model.description }}</p>
-								<p>Authors:
-								{% for contributor in model.building_taxonomy_source_contributor_set.all %}
-									{% if contributor.author %}
-										<a href="#">{{ contributor.contributor.first_name }} {{ contributor.contributor.last_name }}</a>
-										{% if model.building_taxonomy_source_contributor_set.all|length > 1 %}
-											{% if not forloop.last %},{% else %} and {% endif %}
-										{% endif %}
-									{% endif %}
-								{% endfor %}
-								</p>
-								<p>Contributors:
-								{% for contributor in model.building_taxonomy_source_contributor_set.all %}
-									{% if not contributor.author %}
-										<a href="#">{{ contributor.contributor.first_name }} {{ contributor.contributor.last_name }}</a>
-										{% if model.building_taxonomy_source_contributor_set.all|length > 1 %}
-											{% if not forloop.last %},{% else %} and {% endif %}
-										{% endif %}
-									{% endif %}
-								{% endfor %}
-								</p>
-								<a href="#"><div class="btn btn-primary btn-sm">Download XML</div></a>
-							</div>
-							<div class="col-md-2">
-								{{ model.date_created|naturalday }}
+
 							</div>
 						</div>
 					</div>
 				</div>
-				<div class="col-md-2"></div>
 				{% endfor %}
 
 

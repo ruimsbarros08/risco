@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load avatar_tags %}
+{% load humanize %}
+
+{% block content %}
+
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<ul class="breadcrumb">
+			  	<li class="">Profile</li>
+			  	<li class="active"> {{ profile }} </li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-3">
+			<div>
+				{% if profile|has_avatar %}
+					{% avatar profile 200 %}
+				{% else %}
+					<img style="height:200px;" src="{% static 'img/default-avatar.jpg' %}">
+				{% endif %}
+			</div>
+			<div>
+			</div>
+			<div>
+				<h3>{{ profile.username }}</h3>
+			</div>
+			<div>
+				<h4>Models</h4>
+				<ul class="list-group">
+				  <li class="list-group-item"><span class="badge">{{ source_models.count }}</span><a href="{% url 'index_source' %}"> Source </a></li>
+				  <li class="list-group-item"><span class="badge">{{ site_models.count }}</span><a href="{% url 'index_site' %}">Site conditions </a></li>
+				  <li class="list-group-item"><span class="badge">{{ rupture_models.count }}</span><a href="{% url 'index_rupture_model' %}">Rupture</a></li>
+				  <li class="list-group-item"><span class="badge">{{ exposure_models.count }}</span><a href="{% url 'index_exposure' %}">Exposure </a></li>
+				  <li class="list-group-item"><span class="badge">{{ fragility_models.count }}</span><a href="{% url 'index_fragility' %}">Fragility </a></li>
+				  <li class="list-group-item"><span class="badge">{{ consequence_models.count }}</span><a href="{% url 'index_consequence' %}">Consequence </a></li>
+				  <li class="list-group-item"><span class="badge">{{ vulnerability_models.count }}</span><a href="{% url 'index_vulnerability' %}">Vulnerability </a></li>
+				  <li class="list-group-item"><span class="badge">{{ logic_trees_sm.count }}</span><a href="{% url 'index_logic_tree_sm' %}">Source Model Logic Trees </a></li>
+				  <li class="list-group-item"><span class="badge">{{ logic_trees_gmpe.count }}</span><a href="{% url 'index_logic_tree_gmpe' %}">GMPE Logic Trees </a></li>
+				</ul>
+			</div>
+			<div>
+				<h4>Jobs</h4>
+				<ul class="list-group">
+				  <li class="list-group-item"><span class="badge">{{ scenario_hazard.count }}</span><a href="{% url 'index_scenario_hazard' %}">Scenario Hazard</a></li>
+				  <li class="list-group-item"><span class="badge">{{ scenario_damage.count }}</span><a href="{% url 'index_scenario_damage' %}">Scenario Damage</a></li>
+				  <li class="list-group-item"><span class="badge">{{ scenario_risk.count }}</span><a href="{% url 'index_scenario_risk' %}">Scenario Risk</a></li>
+
+				  <li class="list-group-item"><span class="badge">{{ classical_hazard.count }}</span><a href="{% url 'index_psha_hazard' %}">Classical PSHA Hazard</a></li>
+				  <li class="list-group-item"><span class="badge">{{ classical_risk.count }}</span><a href="{% url 'index_psha_risk' %}">Classical PSHA Risk</a></li>
+
+				  <li class="list-group-item"><span class="badge">{{ event_based_hazard.count }}</span><a href="{% url 'index_event_based_hazard' %}">Event Based PSHA Hazard</a></li>
+				  <li class="list-group-item"><span class="badge">{{ event_based_risk.count }}</span><a href="{% url 'index_event_based_risk' %}">Event Based PSHA Risk</a></li>
+
+
+				</ul>
+			</div>
+		</div>
+		<div class="col-md-9">
+
+			<div class="row">
+				<div class="col-md-12">
+					<h1>{{ profile.first_name }} {{ profile.last_name }}</h1>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-6">
+					{% include 'profile_lists.html' %}
+				</div>
+
+
+
+			</div>
+
+		</div>
+	</div>
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,152 @@
+					<div class="panel-group" id="accordion">
+					    <div class="panel panel-default">
+					      <div class="panel-heading">
+					        <h4 class="panel-title">
+					          <a data-toggle="collapse" data-parent="#accordion" href="#general">General parameters</a>
+					        </h4>
+					      </div>
+					      <div id="general" class="panel-collapse collapse in">
+							<ul class="list-group">
+							  	<li class="list-group-item">
+							  	<b>Investigation time:</b> {{ job.investigation_time }} years
+							  	</li>
+							  	{% if job.ses_per_logic_tree_path %}
+							  	<li class="list-group-item">
+							  	<b>Number of SES per LT path:</b> {{ job.ses_per_logic_tree_path }} 
+							  	</li>
+							  	{% endif %}
+							  	<li class="list-group-item">
+							  	<b>Truncation level:</b> {{ job.truncation_level }} 
+							  	</li>
+							  	<li class="list-group-item">
+							  	<b>Maximum distance:</b> {{ job.max_distance }} km
+							  	</li>
+							  	<li class="list-group-item">
+							  	<b>Random seed:</b> {{ job.random_seed }} 
+							  	</li>
+							</ul>
+							</div>
+					    </div>
+
+
+					{% if job.locations_type == 'GRID' %}
+					    <div class="panel panel-default">
+					      <div class="panel-heading">
+					        <h4 class="panel-title">
+					          <a data-toggle="collapse" data-parent="#accordion" href="#locations">Locations</a>
+					        </h4>
+					      </div>
+					      <div id="locations" class="panel-collapse collapse">
+							<ul class="list-group">
+							  	<li class="list-group-item">
+							    <b>Grid spacing:</b> {{ job.grid_spacing }} km
+							  	</li>
+							</ul>
+					      </div>
+					    </div>
+					{% elif job.locations_type == 'EXPOSURE' %}
+					    <div class="panel panel-default">
+					      <div class="panel-heading">
+					        <h4 class="panel-title">
+					          <a data-toggle="collapse" data-parent="#accordion" href="#locations">Locations</a>
+					        </h4>
+					      </div>
+					      <div id="locations" class="panel-collapse collapse">
+							<ul class="list-group">
+							  	<li class="list-group-item">
+							    <b>Exposure Model:</b>  <a href="{% url 'detail_exposure' job.exposure_model.id %}">{{ job.exposure_model }}</a> 
+							  	</li>
+							</ul>
+					      </div>
+					    </div>
+					{% endif %}
+
+					    <div class="panel panel-default">
+					      <div class="panel-heading">
+					        <h4 class="panel-title">
+					          <a data-toggle="collapse" data-parent="#accordion" href="#rupture">Rupture</a>
+					        </h4>
+					      </div>
+					      <div id="rupture" class="panel-collapse collapse">
+							<ul class="list-group">
+							  	<li class="list-group-item">
+							    <b>Rupture mesh spacing:</b> {{ job.rupture_mesh_spacing }} km
+							  	</li>
+							  	<li class="list-group-item">
+							    <b>Width of MFD bin:</b> {{ job.width_of_mfd_bin }} km
+							  	</li>
+							  	<li class="list-group-item">
+							    <b>Area source discretization:</b> {{ job.area_source_discretization }} km
+							  	</li>
+							</ul>
+					      </div>
+					    </div>
+
+
+					    <div class="panel panel-default">
+					      <div class="panel-heading">
+					        <h4 class="panel-title">
+					          <a data-toggle="collapse" data-parent="#accordion" href="#site">Site conditions</a>
+					        </h4>
+					      </div>
+					      <div id="site" class="panel-collapse collapse">
+
+								<ul class="list-group">
+
+
+								  	{% if job.sites_type == 'VARIABLE_CONDITIONS' %}
+								  	<li class="list-group-item">
+									<b>Site model:</b> <a href="{% url 'detail_site' job.site_model.id %}">{{ job.site_model }} </a> 
+								  	</li>
+									{% else %}
+									<li class="list-group-item">
+									<b>vs30:</b> {{ job.vs30 }} m/s
+								  	</li>
+
+								  	<li class="list-group-item">
+									<b>vs30type:</b> {{ job.vs30type }}
+								  	</li>
+								    
+								    <li class="list-group-item">
+									<b>z1pt0:</b> {{ job.z1pt0 }} m/s
+								  	</li>
+								    
+								    <li class="list-group-item">
+									<b>z2pt5:</b> {{ job.z2pt5 }} m/s
+								  	</li>
+									{% endif %}
+
+								</ul>
+					      </div>
+					    </div>
+
+
+					    <div class="panel panel-default">
+					      <div class="panel-heading">
+					        <h4 class="panel-title">
+					          <a data-toggle="collapse" data-parent="#accordion" href="#logic_trees">Logic Trees</a>
+					        </h4>
+					      </div>
+					      <div id="logic_trees" class="panel-collapse collapse">
+
+								<ul class="list-group">
+
+								  	<li class="list-group-item">
+									<b>Number of logic trees samples:</b> {{ job.n_lt_samples }}
+								  	</li>
+
+								  	<li class="list-group-item">
+								  		<b>GMPE logic tree:</b> <a href="{% url 'detail_logic_tree_gmpe' job.gmpe_logic_tree.id %}">{{ job.gmpe_logic_tree }}</a>
+								  	</li>
+
+								  	<li class="list-group-item">
+								  		<b>Source Model logic tree:</b> <a href="{% url 'detail_logic_tree_sm' job.sm_logic_tree.id %}">{{ job.sm_logic_tree }}</a>
+								  	</li>
+
+
+								</ul>
+					      </div>
+					    </div>
+
+
+					</div> 

@@ -1,0 +1,212 @@
+
+{% extends "base.html" %}
+
+{% load humanize %}
+{% load avatar_tags %}
+{% load staticfiles %}
+
+
+{% block content %}
+
+<div class="container">
+
+	<div class="row">
+		<div class="col-md-6">
+			<ul class="breadcrumb">
+			  	<li> <a href="{% url 'jobs_home' %}">Jobs</a></li>
+			  	<li><a href="{% url 'index_scenario_hazard' %}">Classical PSHA Hazard</a></li>
+			  	<li class="active">New</li>
+			</ul>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="col-md-6">
+			<div id='map' class="vertical-map"></div><br>
+		</div>
+		<div class="col-md-6">
+			<form class="form-horizontal" action="{% url 'add_event_based_hazard' %}" method="post" enctype="multipart/form-data">
+				<fieldset>
+					<legend>Insert new job</legend>
+
+					{% csrf_token %}
+					
+					<ul class="nav nav-tabs">
+					  <li class="active"><a href="#general" data-toggle="tab" aria-expanded="true">General</a></li>
+					  <li class=""><a href="#locations" data-toggle="tab" aria-expanded="true">Locations</a></li>
+					  <li class=""><a href="#rupture" data-toggle="tab" aria-expanded="true">Rupture Forecast</a></li>
+					  <li class=""><a href="#sites" data-toggle="tab" aria-expanded="false">Site conditions</a></li>
+					  <li class=""><a href="#logic_trees" data-toggle="tab" aria-expanded="false">Logic Trees</a></li>
+					  <li class=""><a href="#imts" data-toggle="tab" aria-expanded="false">Intensity Measures</a></li>
+					  <li class=""><a href="#outputs" data-toggle="tab" aria-expanded="false">Outputs</a></li>
+					</ul>
+					<div id="myTabContent" class="tab-content">
+					  <div class="tab-pane fade active in" id="general">
+
+					  	{% for field in form %}
+					  		{% if field.name in categories.general %}
+
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+
+					  </div>
+
+					  <div class="tab-pane fade" id="locations">
+
+					  	{% for field in form %}
+					  		{% if field.name in categories.locations %}
+
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+
+					  </div>
+
+					  <div class="tab-pane fade" id="rupture">
+
+					  	{% for field in form %}
+					  		{% if field.name in categories.rupture %}
+
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+
+					  </div>
+
+
+					  <div class="tab-pane fade" id="sites">
+
+					  	{% for field in form %}
+					  		{% if field.name in categories.sites %}
+							    
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+
+					    </div>
+
+
+					  <div class="tab-pane fade" id="logic_trees">
+					  	{% for field in form %}
+					  		{% if field.name in categories.logic_trees %}
+							    
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+					  </div>
+
+					  <div class="tab-pane fade" id="imts">
+					  	<div class="form-group">
+					  		<div class="col-lg-11 col-lg-offset-1">
+					  			<h4>Choose from models</h4>
+					  		</div>
+					  	</div>
+					  	{% for field in form %}
+					  		{% if field.name in categories.imts %}
+							    
+
+							    {% if field.errors %}
+								<div class="form-group has-error">
+								{% else %}
+								<div class="form-group">
+								{% endif %}
+								    <label for="{{ field.name }}" class="col-lg-2 control-label">{{ field.label }}</label>
+								    <div class="col-lg-9">
+								        {{ field }}
+								        {% if field.errors %}
+								            <span class="help-block">{{ field.errors }}</span>
+								        {% endif %}
+								    </div>
+								    <div class="col-lg-1">
+								        <button id="{{ field.name }}_add_imt_l" class="btn btn-primary btn-sm" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+								    </div>
+
+								</div>
+
+
+							{% endif %}
+					    {% endfor %}
+
+
+					  	<div class="form-group">
+					  		<div class="col-lg-11 col-lg-offset-1">
+					  			<h4>Manually</h4>
+					  		</div>
+					  	</div>
+
+						<div class="form-group" id="imt-l-selection">
+                            <label for="im" class="col-lg-2 control-label"> Intensity Measures </label>
+                            <div class="col-lg-2">
+                                <select id="im" name="im" class="form-control">
+                                    <option value="PGA">PGA</option>
+                                    <option value="SA">SA</option>
+                                    <option value="PGV">PGV</option>
+                                    <option value="MMI">MMI</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2">
+                                <input id="sa_period" class="form-control" placeholder="Sa period" type="text">
+                            </div>
+                            <div class="col-lg-5">
+                                <input id="il" class="form-control" placeholder="Intensity levels. Ex: 0.1, 0.2, 0.45..." type="text">
+                            </div>
+                            <div class="col-lg-1">
+                            	<button id="add-imt-btn" class="btn btn-primary btn-sm" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                            </div>
+                        </div>
+                        
+
+                        <div class="form-group">
+					  		<div class="col-lg-11 col-lg-offset-1">
+					  			<h4>Selected IM types and levels</h4>
+					  		</div>
+					  	</div>
+
+                        <div class="col-lg-10 col-lg-offset-2" id='imt-tags'></div>
+
+					</div>
+
+					<div class="tab-pane fade" id="outputs">
+					  	{% for field in form %}
+					  		{% if field.name in categories.outputs %}
+
+					  			{% include 'form_field.html' %}
+
+							{% endif %}
+					    {% endfor %}
+					</div>
+
+
+					{% for error in form.non_field_errors %}
+					<div class="form-group has-error">
+					    <div class="col-lg-10 col-lg-offset-2">
+					        <span class="help-block">{{ error|safe }}</span>
+					    </div>
+					</div>
+					{% endfor %}
+
+					<div class="form-group">
+					    <div class="col-lg-5 col-lg-offset-2">
+					        <input class="btn btn-primary" type="submit" value="Create job!" />
+					    </div>
+					</div>
+
+
+			    </fieldset>
+			</form>
+		</div>
+
+	</div>
+</div>
+
+{% load staticfiles %}
+<script type="text/javascript" src="{% static 'jobs/js/psha_hazard.js' %}"></script>
+
+{% endblock %}
+

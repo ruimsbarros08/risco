@@ -1,0 +1,39 @@
+{% load avatar_tags %}
+{% load staticfiles %}
+
+	<div class="row">
+
+		<div class="col-md-12">
+			
+			<h3>{{ model.name }}
+				{% if user == model.author %}
+					<div class="btn-group">
+			  			<a href="#" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">  <span class="caret"></span></a>
+						<ul class="dropdown-menu">
+						    <li><a href="#"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Add Contributor </a></li>
+						    {% if model.private %}
+						    <li><a href="#"><span class="glyphicon glyphicon-globe" aria-hidden="true"></span> Make public </a></li>
+						    {% else %}
+						    <li><a href="#"><span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Make private </a></li>
+						    {% endif %}
+						    <li><a href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete Model </a></li>
+						</ul>
+					</div>
+				{% endif %}
+			</h3>
+			<br>
+			<h4>{{ model.description }}</h4>
+			<br>
+			<p>Author: {% if user == model.author %} You {% else %} <a href="{% url 'profile' model.author.id %}">{{ model.author }}</a> {% endif %} </p>
+
+			{% if model.contributors.all %}<p>{{ model.contributors.all|length }} {% if model.contributors.all|length == 1 %} contributor: {% else %} contributors: {% endif %} {% for con in model.contributors.all %} <a href="{% url 'profile' con.id %}"> {% if con|has_avatar %} {% avatar con 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}" > {% endif %} </a> {% endfor %}</p>{% endif %}
+
+			</p>
+
+			{% if model.taxonomy_source %}<p>Taxonomy source: <a href="{% url 'detail_taxonomy' model.taxonomy_source.id %}">{{ model.taxonomy_source }}</a></p> {% endif %}
+
+			<br>
+
+		</div>
+
+	</div>

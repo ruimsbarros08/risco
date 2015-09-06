@@ -14,18 +14,20 @@
 		</div>
 	</div>
 
-	<div class="row">
-		<div class="col-md-12">
-			<h3>{{ model.name }}</h3>
-			<br>
-			<h4>{{ model.description }}</h4>
-			<br>
-		</div>
-	</div>
+	{% include 'model_header.html' %}
 
 	<div class="row">
 
 		<div class="col-md-2">
+				{% if user == model.author %}
+				<div class="row">
+					<div class="col-md-12">
+						<a href="#addSource"> <button class="btn btn-info" style="width: 100%"> <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Source</button> </a>
+					</div>
+				</div>
+				<br>
+				{% endif %}
+
 				{% if sources %}
 
 				<div class="row" style="height:90vh; overflow-y: auto;">
@@ -64,7 +66,7 @@
 
 	</div>
 </div>
-
+{% if user == model.author %}
 <div class="container" id="addSource">
 	<div class="row">
 		<div class="col-md-offset-2 col-md-8">
@@ -203,6 +205,7 @@
 		</div>
 	</div>
 </div>
+{% endif %}
 
 
 {% load staticfiles %}

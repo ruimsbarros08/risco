@@ -2,8 +2,19 @@
 {% load i18n avatar_tags %}
 {% load url from future %}
 
+
+
+
 {% block content %}
     <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <ul class="breadcrumb">
+                    <li class="">Account</li>
+                    <li class="active">Avatar</li>
+                </ul>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-6 col-md-offset-3">
                     
@@ -20,21 +31,8 @@
                     <form method="POST" action="{% url 'avatar_change' %}" class="form-horizontal">
                     <fieldset>
                         <legend>Choose an avatar</legend>
-                        {% for field in primary_avatar_form %}
-                            {% if field.errors %}
-                            <div class="form-group has-error">
-                            {% else %}
-                            <div class="form-group">
-                            {% endif %}
-                                <label for="{{ field.name }}" class="col-lg-2 control-label">{{ field.label }}</label>
-                                <div class="col-lg-10">
-                                    {{ field }}
-                                    {% if field.errors %}
-                                    <span class="help-block">{{ field.errors }}</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
+
+                        {{ primary_avatar_form }}
 
                         <div class="form-group">
                             <div class="col-lg-5 col-lg-offset-2">
@@ -80,4 +78,6 @@
             </div>
         </div>
     </div>
+
+
 {% endblock %}

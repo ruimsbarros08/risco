@@ -15,39 +15,7 @@
 		</div>
 	</div>
 	
-	<div class="row">
-
-		<div class="col-md-12">
-			
-			<h3>{{ model.name }}</h3>
-			<br>
-			<h4>{{ model.description }}</h4>
-			<br>
-			<p>Authors:
-			{% for contributor in model.building_taxonomy_source_contributor_set.all %}
-				{% if contributor.author %}
-					<a href="#">{{ contributor.contributor.first_name }} {{ contributor.contributor.last_name }}</a>
-					{% if model.building_taxonomy_source_contributor_set.all|length > 1 %}
-						{% if not forloop.last %},{% else %} and {% endif %}
-					{% endif %}
-				{% endif %}
-			{% endfor %}
-			</p>
-			<p>Contributors:
-			{% for contributor in model.building_taxonomy_source_contributor_set.all %}
-				{% if not contributor.author %}
-					<a href="#">{{ contributor.contributor.first_name }} {{ contributor.contributor.last_name }}</a>
-					{% if model.building_taxonomy_source_contributor_set.all|length > 1 %}
-						{% if not forloop.last %},{% else %} and {% endif %}
-					{% endif %}
-				{% endif %}
-			{% endfor %}
-			</p>
-			<br>
-
-		</div>
-
-	</div>
+	{% include 'model_header.html' %}
 
 	<div class="row">
 		<div class="col-md-12">

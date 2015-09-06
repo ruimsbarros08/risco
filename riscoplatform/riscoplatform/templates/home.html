@@ -2,115 +2,433 @@
 {% load humanize %}
 {% load custom_filters %}
 {% load avatar_tags %}
+{% load staticfiles %}
 
 
 {% block content %}
+
+
+
 <div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<ul class="breadcrumb">
+			  	<li class="active">Timeline</li>
+			</ul>
+		</div>
+	</div>
 	<div class="row">
 
 			{% for pub in publications %}
 					<div class="col-md-offset-3 col-md-6 col-md-offset-3">
 						<div class="well">
 							<div class="row">
-								<div class="col-md-10">
-
-									
+								<div class="col-md-12">
 
 									{% if pub|classname == 'Building_Taxonomy_Source'  %}
+
+										<p><a href="{% url 'profile' pub.author.id %}"> {% if pub.author|has_avatar %} {% avatar pub.author 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.author.id %}"> {{ pub.author.first_name }} {{ pub.author.last_name }} </a> created a <a href="{% url 'index_taxonomy' %}">Building Taxonomy Source Model</a></p>
+
+										{% if pub.contributors.all %}<p>{{ pub.contributors.all|length }} {% if pub.contributors.all|length == 1 %} contributor: {% else %} contributors: {% endif %} {% for con in pub.contributors.all %} <a href="{% url 'profile' con.id %}"> {% if con|has_avatar %} {% avatar con 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}" > {% endif %} </a> {% endfor %}</p>{% endif %}
+										
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
 										<h3> <a href="{% url 'detail_taxonomy' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Building Taxonomy Source</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Exposure_Model'  %}
+
+										<p><a href="{% url 'profile' pub.author.id %}"> {% if pub.author|has_avatar %} {% avatar pub.author 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.author.id %}"> {{ pub.author.first_name }} {{ pub.author.last_name }} </a> created an <a href="{% url 'index_exposure' %}">Exposure Model</a></p>
+										
+										{% if pub.contributors.all %}<p>{{ pub.contributors.all|length }} {% if pub.contributors.all|length == 1 %} contributor: {% else %} contributors: {% endif %} {% for con in pub.contributors.all %} <a href="{% url 'profile' con.id %}"> {% if con|has_avatar %} {% avatar con 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}" > {% endif %} </a> {% endfor %}</p>{% endif %}
+
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
 										<h3> <a href="{% url 'detail_exposure' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Exposure Model</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Site_Model'  %}
+
+										<p><a href="{% url 'profile' pub.author.id %}"> {% if pub.author|has_avatar %} {% avatar pub.author 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.author.id %}"> {{ pub.author.first_name }} {{ pub.author.last_name }} </a> created a <a href="{% url 'index_site' %}">Site Model</a></p>
+										
+										{% if pub.contributors.all %}<p>{{ pub.contributors.all|length }} {% if pub.contributors.all|length == 1 %} contributor: {% else %} contributors: {% endif %} {% for con in pub.contributors.all %} <a href="{% url 'profile' con.id %}"> {% if con|has_avatar %} {% avatar con 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}" > {% endif %} </a> {% endfor %}</p>{% endif %}
+
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
 										<h3> <a href="{% url 'detail_site' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Site Model</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Source_Model'  %}
+
+										<p> <a href="{% url 'profile' pub.author.id %}"> {% if pub.author|has_avatar %} {% avatar pub.author 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.author.id %}"> {{ pub.author.first_name }} {{ pub.author.last_name }} </a> created a <a href="{% url 'index_source' %}">Source Model</a></p>
+
+										{% if pub.contributors.all %}
+											<p>
+												{{ pub.contributors.all|length }}
+												{% if pub.contributors.all|length == 1 %}
+													contributor:
+												{% else %}
+													contributors:
+												{% endif %}
+												{% for con in pub.contributors.all %}
+													<a href="{% url 'profile' con.id %}">
+													{% if con|has_avatar %}
+														{% avatar con 30 %}
+													{% else %}
+														<img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}">
+													{% endif %}
+													</a>
+												{% endfor %}
+											</p>
+										{% endif %}
+
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
+
 										<h3> <a href="{% url 'detail_source' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Source Model</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Rupture_Model'  %}
+
+										<p><a href="{% url 'profile' pub.user.id %}"> {% if pub.user|has_avatar %} {% avatar pub.user 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.user.id %}"> {{ pub.user.first_name }} {{ pub.user.last_name }} </a> created a <a href="{% url 'index_rupture_model' %}">Rupture Model</a></p>
+										
+
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
 										<h3> <a href="{% url 'index_rupture_model' %}">{{ pub.name }}</a> </h3>
-										<p><i>Rupture Model</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Fragility_Model'  %}
+
+										<p><a href="{% url 'profile' pub.author.id %}"> {% if pub.author|has_avatar %} {% avatar pub.author 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.author.id %}"> {{ pub.author.first_name }} {{ pub.author.last_name }} </a> created a <a href="{% url 'index_fragility' %}">Fragility Model</a></p>
+										
+										{% if pub.contributors.all %}<p>{{ pub.contributors.all|length }} {% if pub.contributors.all|length == 1 %} contributor: {% else %} contributors: {% endif %} {% for con in pub.contributors.all %} <a href="{% url 'profile' con.id %}"> {% if con|has_avatar %} {% avatar con 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}" > {% endif %} </a> {% endfor %}</p>{% endif %}
+
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
 										<h3> <a href="{% url 'detail_fragility' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Fragility Model</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Consequence_Model'  %}
+
+										<p><a href="{% url 'profile' pub.author.id %}"> {% if pub.author|has_avatar %} {% avatar pub.author 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.author.id %}"> {{ pub.author.first_name }} {{ pub.author.last_name }} </a> created a <a href="{% url 'index_consequence' %}">Consequence Model</a></p>
+										
+										{% if pub.contributors.all %}<p>{{ pub.contributors.all|length }} {% if pub.contributors.all|length == 1 %} contributor: {% else %} contributors: {% endif %} {% for con in pub.contributors.all %} <a href="{% url 'profile' con.id %}"> {% if con|has_avatar %} {% avatar con 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}" > {% endif %} </a> {% endfor %}</p>{% endif %}
+
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
 										<h3> <a href="{% url 'detail_consequence' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Consequence Model</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Vulnerability_Model'  %}
+
+										<p><a href="{% url 'profile' pub.author.id %}"> {% if pub.author|has_avatar %} {% avatar pub.author 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.author.id %}"> {{ pub.author.first_name }} {{ pub.author.last_name }} </a> created a <a href="{% url 'index_vulnerability' %}">Vulnerability Model</a></p>
+										
+										{% if pub.contributors.all %}<p>{{ pub.contributors.all|length }} {% if pub.contributors.all|length == 1 %} contributor: {% else %} contributors: {% endif %} {% for con in pub.contributors.all %} <a href="{% url 'profile' con.id %}"> {% if con|has_avatar %} {% avatar con 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}" > {% endif %} </a> {% endfor %}</p>{% endif %}
+
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
 										<h3> <a href="{% url 'detail_vulnerability' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Vulnerability Model</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Logic_Tree_SM'  %}
+
+										<p><a href="{% url 'profile' pub.user.id %}"> {% if pub.user|has_avatar %} {% avatar pub.user 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.user.id %}"> {{ pub.user.first_name }} {{ pub.user.last_name }} </a> created a <a href="{% url 'index_logic_tree_sm' %}">Source Model Logic Tree</a></p>
+										
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
 										<h3> <a href="{% url 'detail_logic_tree_sm' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Source Model Logic Tree</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Logic_Tree_GMPE'  %}
+
+										<p>{% avatar pub.user 30 %} {{ pub.user.first_name }} {{ pub.user.last_name }} created a <a href="{% url 'index_logic_tree_gmpe' %}">GMPE Logic Tree</a></p>
+										
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
+
 										<h3> <a href="{% url 'detail_logic_tree_gmpe' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>GMPE Logic Tree</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Scenario_Hazard'  %}
+
+										<p><a href="{% url 'profile' pub.user.id %}"> {% if pub.user|has_avatar %} {% avatar pub.user 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.user.id %}"> {{ pub.user.first_name }} {{ pub.user.last_name }} </a> created a <a href="{% url 'index_scenario_hazard' %}">Scenario Hazard analysis</a></p>
+										
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
+
+										{% if pub.status == 'CREATED' %}
+										<p class="text-info">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'STARTED' %}
+										<p class="text-warning">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'ERROR' %}
+										<p class="text-error">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'FINISHED' %}
+										<p class="text-success">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% endif %}
+
 										<h3> <a href="{% url 'results_scenario_hazard' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Scenario Hazard</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Scenario_Damage'  %}
+
+										<p><a href="{% url 'profile' pub.user.id %}"> {% if pub.user|has_avatar %} {% avatar pub.user 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.user.id %}"> {{ pub.user.first_name }} {{ pub.user.last_name }} </a> created a <a href="{% url 'index_scenario_damage' %}">Scenario Damage analysis</a></p>
+										
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
+										{% if pub.status == 'CREATED' %}
+										<p class="text-info">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'STARTED' %}
+										<p class="text-warning">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'ERROR' %}
+										<p class="text-error">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'FINISHED' %}
+										<p class="text-success">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% endif %}
+
 										<h3> <a href="{% url 'results_scenario_damage' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Scenario Damage</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Scenario_Risk'  %}
+
+										<p><a href="{% url 'profile' pub.user.id %}"> {% if pub.user|has_avatar %} {% avatar pub.user 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.user.id %}"> {{ pub.user.first_name }} {{ pub.user.last_name }} </a> created a <a href="{% url 'index_scenario_risk' %}">Scenario Risk analysis</a></p>
+										
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
+										{% if pub.status == 'CREATED' %}
+										<p class="text-info">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'STARTED' %}
+										<p class="text-warning">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'ERROR' %}
+										<p class="text-error">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'FINISHED' %}
+										<p class="text-success">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% endif %}
+
 										<h3> <a href="{% url 'results_scenario_risk' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Scenario Risk</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Classical_PSHA_Hazard'  %}
+
+										<p><a href="{% url 'profile' pub.user.id %}"> {% if pub.user|has_avatar %} {% avatar pub.user 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.user.id %}"> {{ pub.user.first_name }} {{ pub.user.last_name }} </a> created a <a href="{% url 'index_psha_hazard' %}">Classical PHSA Hazard analysis</a></p>
+										
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
+										{% if pub.status == 'CREATED' %}
+										<p class="text-info">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'STARTED' %}
+										<p class="text-warning">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'ERROR' %}
+										<p class="text-error">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'FINISHED' %}
+										<p class="text-success">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% endif %}
+
 										<h3> <a href="{% url 'results_psha_hazard' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Classical PSHA Hazard</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Classical_PSHA_Risk'  %}
+
+										<p><a href="{% url 'profile' pub.user.id %}"> {% if pub.user|has_avatar %} {% avatar pub.user 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.user.id %}"> {{ pub.user.first_name }} {{ pub.user.last_name }} </a> created a <a href="{% url 'index_psha_risk' %}">Classical PSHA Risk analysis</a></p>
+										
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
+										{% if pub.status == 'CREATED' %}
+										<p class="text-info">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'STARTED' %}
+										<p class="text-warning">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'ERROR' %}
+										<p class="text-error">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'FINISHED' %}
+										<p class="text-success">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% endif %}
+
 										<h3> <a href="{% url 'results_psha_risk' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Classical PSHA Risk</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Event_Based_Hazard'  %}
+
+										<p><a href="{% url 'profile' pub.user.id %}"> {% if pub.user|has_avatar %} {% avatar pub.user 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.user.id %}"> {{ pub.user.first_name }} {{ pub.user.last_name }} </a>created an <a href="{% url 'index_event_based_hazard' %}">Event Based PSHA Hazard analysis</a></p>
+										
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
+										{% if pub.status == 'CREATED' %}
+										<p class="text-info">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'STARTED' %}
+										<p class="text-warning">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'ERROR' %}
+										<p class="text-error">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'FINISHED' %}
+										<p class="text-success">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% endif %}
+
 										<h3> <a href="{% url 'results_event_based_hazard' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Event Based PSHA Hazard</i></p>
 									{% endif %}
 
 									{% if pub|classname == 'Event_Based_Risk'  %}
+
+										<p><a href="{% url 'profile' pub.user.id %}"> {% if pub.user|has_avatar %} {% avatar pub.user 30 %} {% else %} <img style="height:30px;" src="{% static 'img/default-avatar.jpg' %}"> {% endif %} </a> <a href="{% url 'profile' pub.user.id %}"> {{ pub.user.first_name }} {{ pub.user.last_name }} </a> created an <a href="{% url 'index_event_based_risk' %}">Event Based PSHA Risk analysis</a></p>
+										
+										<p class="text-muted">
+											{% if pub.date_created|naturalday == 'today' %}
+												{{ pub.date_created|naturaltime }}
+											{% else %}
+												{{ pub.date_created|naturalday }}
+											{% endif %}
+										</p>
+										{% if pub.status == 'CREATED' %}
+										<p class="text-info">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'STARTED' %}
+										<p class="text-warning">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'ERROR' %}
+										<p class="text-error">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% elif pub.status == 'FINISHED' %}
+										<p class="text-success">
+											Status: {{ pub.get_status_display }}
+										</p>
+										{% endif %}
+										
 										<h3> <a href="{% url 'results_event_based_risk' pub.id %}">{{ pub.name }}</a> </h3>
-										<p><i>Event Based PSHA Risk</i></p>
 									{% endif %}
 
 
 									<p>{{ pub.description }}</p>
 								</div>
-								<div class="col-md-2">
-									{% if pub.date_created|naturalday == 'today' %}
-										{{ pub.date_created|naturaltime }}
-									{% else %}
-										{{ pub.date_created|naturalday }}
-									{% endif %}
-								</div>
+
 							</div>
 						</div>
 					</div>
