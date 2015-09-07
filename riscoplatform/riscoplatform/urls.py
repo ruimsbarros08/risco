@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 from django.views.generic.edit import CreateView
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
-
+import local_settings 
 
 urlpatterns = patterns('',
     url(r'^$', 'riscoplatform.views.home', name='home'),
@@ -22,7 +22,8 @@ urlpatterns = patterns('',
                                                         success_url='/accounts/'), name='account_settings'),
     url(r'^profile/(?P<user_id>\d+)/$',  'riscoplatform.views.profile', name='profile'),
     url(r'^accounts/login/$',  'django.contrib.auth.views.login', name='login'),
-    url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='logout'),
+    # url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='logout'),
+    url(r'^accounts/logout/$', 'django.contrib.auth.views.logout', name='logout', kwargs={'next_page': local_settings.BASE_URL}),
 
     url(r'^avatar/', include('avatar.urls')),
 
