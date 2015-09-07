@@ -48,22 +48,25 @@
 	</select>
 </div>
 
-<div id="charts" style="background-color: rgba(255, 255, 255, 0.5);">
+<div id="charts" style="background-color: rgba(255, 255, 255, 0.5); ">
     <!-- <div ng-show="!disableLossCurve"> -->
-    <div>
-    	<h4>Currency: [[ currency ]]</h4>
+    <h4>Currency: [[ currency ]]</h4>
+    <div style="float: left;">
+    <!-- <div> -->
     	<h5>Losses per region</h5>
 		<canvas id="regions_chart" class="chart chart-doughnut" data="region_data" labels="region_labels" legend="false" click='onRegionChartClick' options='charts_options'></canvas>
     </div>
 	<!-- <div ng-show="disableAllTaxonomies" > -->
-	<div>
+	<div style="float: left;">
+	<!-- <div> -->
     	<h5>Losses per Taxonomy</h5>
 		<canvas id="taxonomies_chart" class="chart chart-doughnut" data="taxonomies_data" labels="taxonomies_labels" legend="false" click="onTaxonomyChartClick" options='charts_options'></canvas>
 	</div>
 	<!-- <div ng-show="disableLossCurve"> -->
-	<div>
+	<div style="float: left;">
+	<!-- <div> -->
 		<h5>Loss curve</h5>
-		<canvas id="loss_curve" width="100" height="100"></canvas>
+		<canvas id="loss_curve" width="400" height="200"></canvas>
 	</div>
 </div>
 

@@ -204,7 +204,9 @@ riskResultsApp.controller('riskResultsCtrl', function($scope) {
             }
 
             var ctx = document.getElementById("loss_curve").getContext("2d");
-            var chart = new Chart(ctx).Scatter(dataset, {scaleLabel: "<%=Humanize.intword(value, '', 2)%>"});
+            var chart = new Chart(ctx).Scatter(dataset, {scaleLabel: function (valuePayload) {
+                                                            return Number(valuePayload.value).toFixed(2);
+                                                        },});
             
             $scope.$apply();
 
