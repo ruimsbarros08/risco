@@ -368,7 +368,7 @@ riskResultsApp.controller('riskResultsCtrl', function($scope) {
                     }
 
                     var ctx = document.getElementById("agg_chart").getContext("2d");
-                    var agg_chart = new Chart(ctx).Scatter(dataset, {});
+                    var agg_chart = new Chart(ctx).Scatter(dataset, {scaleLabel: "<%=Humanize.intword(value, '', 2)%>"});
                 }
                 catch(err){}
 
@@ -388,7 +388,7 @@ riskResultsApp.controller('riskResultsCtrl', function($scope) {
                     }
 
                     var ctx = document.getElementById("occ_chart").getContext("2d");
-                    var occ_chart = new Chart(ctx).Scatter(dataset, {});
+                    var occ_chart = new Chart(ctx).Scatter(dataset, {scaleLabel: "<%=Humanize.intword(value, '', 2)%>"});
                 }
                 catch(err){}
 

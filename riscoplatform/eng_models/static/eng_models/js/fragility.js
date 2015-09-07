@@ -3,7 +3,7 @@
 (function($) {
 $( document ).ready(function() {
 
-$('#fragility-info').hide();
+// $('#fragility-info').hide();
 
 var poe;
 var categories;
@@ -68,17 +68,13 @@ var draw_fragility = function(categories, container, title, units){
     });
     }
 
-var shown = false;
-$('#select').on('change', function() {
-    if (!shown){
-        shown = true;
-        $('#fragility-info').show('fast');
-    }
 
-    var url = document.URL.split('/');
-    var model_id = url[url.length -2];
+var url = document.URL.split('/');
+var model_id = url[url.length -2];
 
-    $.ajax(BASE_URL+'/models/fragility/'+model_id+'/taxonomy/'+$(this).val() )
+var get_taxonomy = function(tax){
+
+    $.ajax(BASE_URL+'/models/fragility/'+model_id+'/taxonomy/'+tax )
     .done(function(data) {
 
         $('#imt').html(data.info[0].fields.imt);
@@ -101,8 +97,8 @@ $('#select').on('change', function() {
             $('#values-table tbody').append(
                 $tr = $('<tr>').append(
                     $('<td>').text(data.functions[i].fields.limit_state),
-                    $('<td>').text(data.functions[i].fields.mean),
-                    $('<td>').text(data.functions[i].fields.stddev)
+                    $('<td>').text(Humanize.formatNumber(data.functions[i].fields.mean, 4)),
+                    $('<td>').text(Humanize.formatNumber(data.functions[i].fields.stddev, 4))
                 )   
             )
 
@@ -125,14 +121,31 @@ $('#select').on('change', function() {
             }
         }
 
-        if (shown && cons_shown){
+        if (cons_shown){
             update_vulnerability();
         }
 
+
     });
 
+}
+
+
+
+
+var shown = false;
+$('#select').on('change', function() {
+    // if (!shown){
+    //     shown = true;
+    //     $('#fragility-info').show('fast');
+    // }
+
+    get_taxonomy($(this).val());
 
 });
+
+get_taxonomy($('#select').val());
+
 
 var cons_categories;
 var cons_values;
@@ -216,9 +229,9 @@ var update_consequence = function(model_id){
             ]
         });
 
-        if (shown && cons_shown){
+        // if (shown && cons_shown){
             update_vulnerability();
-        }
+        // }
     });
 }
 

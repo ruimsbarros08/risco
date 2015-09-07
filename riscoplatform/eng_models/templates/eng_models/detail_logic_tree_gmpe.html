@@ -14,18 +14,45 @@
 	</div>
 </div>
 
-	{% include 'model_header.html' %}
+	<div class="row">
+
+		<div class="col-md-12">
+			
+			<h3>{{ model.name }}
+				{% if user == model.user %}
+					<div class="btn-group">
+			  			<a href="#" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">  <span class="caret"></span></a>
+						<ul class="dropdown-menu">
+						    <li><a href="#"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Add Contributor </a></li>
+						    {% if model.private %}
+						    <li><a href="#"><span class="glyphicon glyphicon-globe" aria-hidden="true"></span> Make public </a></li>
+						    {% else %}
+						    <li><a href="#"><span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Make private </a></li>
+						    {% endif %}
+						    <li><a href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete Model </a></li>
+						</ul>
+					</div>
+				{% endif %}
+			</h3>
+			<br>
+			<h4>{{ model.description }}</h4>
+			<br>
+			<p>Author: {% if user == model.user %} You {% else %} <a href="{% url 'profile' model.user.id %}">{{ model.user }}</a> {% endif %} </p>
+
+			{% if model.taxonomy_source %}<p>Taxonomy source: <a href="{% url 'detail_taxonomy' model.taxonomy_source.id %}">{{ model.taxonomy_source }}</a></p> {% endif %}
+
+			<br>
+
+		</div>
+
+	</div>
 
 	<div class="row">
 		<div class="col-md-12">
 			<button class="btn btn-success btn-sm" ng-click="save()"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save </button>
-			<br>
-			<div class="alert alert-dismissible alert-success" ng-show='hasMessage'>
-			<button type="button" class="close" data-dismiss="alert">×</button>
-			<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> [[ message ]]
-			</div>
 		</div>
 	</div>
+	<br>
 
 	<div class="row" >
 
