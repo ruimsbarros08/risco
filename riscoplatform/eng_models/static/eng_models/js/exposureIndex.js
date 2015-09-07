@@ -27,7 +27,7 @@ exposureIndexApp.controller('exposureIndexCtrl', function($scope) {
                     var models_str = '';
 
                     for (var i=0; i < feature.properties.models.length; i++){
-                        models_str += '<li><a href="/models/exposure/'+feature.properties.models[i].id+'">'+feature.properties.models[i].name+'</a><li>'
+                        models_str += '<li><a href="'+BASE_URL+'/models/exposure/'+feature.properties.models[i].id+'">'+feature.properties.models[i].name+'</a><li>'
                     }
 
                     var content = '<h3>'+feature.properties.name+' <img src="/static/img/flags/'+feature.properties.name+'.png" alt="country"> </h3>\

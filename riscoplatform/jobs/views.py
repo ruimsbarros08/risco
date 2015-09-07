@@ -2189,7 +2189,7 @@ def start_event_based_hazard(request, job_id):
 #############################
 
 
-event_based_risk_form_categories = {'general': ['name', 'description', 'random_seed', 'exposure_model', 'hazard_event_based',
+event_based_risk_form_categories = {'general': ['name', 'description', 'random_seed', 'exposure_model', 'hazard',
 												'asset_hazard_distance', 'region', 'lrem_steps_per_interval', 'asset_correlation', 'loss_curve_resolution'],
 									'vulnerability': ['structural_vulnerability', 'non_structural_vulnerability', 'contents_vulnerability',
 													'business_int_vulnerability', 'occupants_vulnerability'],
@@ -2197,6 +2197,7 @@ event_based_risk_form_categories = {'general': ['name', 'description', 'random_s
 
 
 class EventBased_RiskForm(forms.ModelForm):
+	hazard_event_based = forms.ModelChoiceField(queryset = Event_Based_Hazard.objects.filter(status='FINISHED'), required=False)
 	structural_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='structural_vulnerability'), required=False)
 	non_structural_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='nonstructural_vulnerability'), required=False)
 	contents_vulnerability = forms.ModelChoiceField(queryset = Vulnerability_Model.objects.filter(type='contents_vulnerability'), required=False)
