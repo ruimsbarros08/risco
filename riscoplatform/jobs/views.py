@@ -172,7 +172,7 @@ def add_scenario_hazard(request):
 
 @login_required
 def results_scenario_hazard(request, job_id):
-	job = get_object_or_404(Scenario_Hazard ,pk=job_id, user=request.user)
+	job = get_object_or_404(Scenario_Hazard ,pk=job_id)
 	return render(request, 'jobs/results_scenario_hazard.html', {'job': job})
 
 @login_required
@@ -391,7 +391,7 @@ def start_scenario_damage(request, job_id):
 
 @login_required
 def results_scenario_damage_ajax(request, job_id):
-	job = get_object_or_404(Scenario_Damage ,pk=job_id, user=request.user)
+	job = get_object_or_404(Scenario_Damage ,pk=job_id)
 
 	cursor = connection.cursor()
 	cursor.execute("SELECT limit_state, sum(mean), sum(stddev) \
@@ -616,7 +616,7 @@ def results_scenario_risk(request, job_id):
 
 @login_required
 def results_scenario_risk_ajax(request, job_id):
-	job = get_object_or_404(Scenario_Risk ,pk=job_id, user=request.user)
+	job = get_object_or_404(Scenario_Risk ,pk=job_id)
 	vulnerability_types = Scenario_Risk_Vulnerability_Model.objects.filter(job = job)
 
 	cursor = connection.cursor()
@@ -1095,7 +1095,7 @@ def add_psha_hazard(request):
 
 @login_required
 def results_psha_hazard(request, job_id):
-	job = get_object_or_404(Classical_PSHA_Hazard ,pk=job_id, user=request.user)
+	job = get_object_or_404(Classical_PSHA_Hazard ,pk=job_id)
 	imts = job.imt_l.keys()
 	return render(request, 'jobs/results_psha_hazard.html', {'job': job, 'imts': imts})
 
@@ -1112,7 +1112,7 @@ def start_psha_hazard(request, job_id):
 
 @login_required
 def results_psha_hazard_maps_ajax(request, job_id):
-	job = Classical_PSHA_Hazard.objects.get(pk=job_id, user=request.user)
+	job = Classical_PSHA_Hazard.objects.get(pk=job_id)
 	
 	job_json = serializers.serialize("json", [job])
 	job_json = json.loads(job_json)
@@ -1197,7 +1197,7 @@ def results_psha_hazard_maps_ajax(request, job_id):
 
 @login_required
 def results_psha_hazard_curves_ajax(request, job_id):
-	job = Classical_PSHA_Hazard.objects.get(pk=job_id, user=request.user)
+	job = Classical_PSHA_Hazard.objects.get(pk=job_id)
 	
 	job_json = serializers.serialize("json", [job])
 	job_json = json.loads(job_json)
@@ -1317,7 +1317,7 @@ def add_psha_risk(request):
 
 @login_required
 def results_psha_risk(request, job_id):
-	job = get_object_or_404(Classical_PSHA_Risk ,pk=job_id, user=request.user)
+	job = get_object_or_404(Classical_PSHA_Risk ,pk=job_id)
 	vulnerability_types = Classical_PSHA_Risk_Vulnerability.objects.filter(job = job)
 
 	economic_loss_types = []
@@ -1346,7 +1346,7 @@ def start_psha_risk(request, job_id):
 
 @login_required
 def results_psha_risk_maps_ajax(request, job_id):
-	job = get_object_or_404(Classical_PSHA_Risk ,pk=job_id, user=request.user)
+	job = get_object_or_404(Classical_PSHA_Risk ,pk=job_id)
 	vulnerability_types = Classical_PSHA_Risk_Vulnerability.objects.filter(job = job)
 	vulnerabilities = list(vulnerability.vulnerability_model.type for vulnerability in vulnerability_types)
 
@@ -2000,7 +2000,7 @@ def results_psha_risk_maps_ajax(request, job_id):
 
 @login_required
 def results_psha_risk_locations_ajax(request, job_id):
-	job = Classical_PSHA_Risk.objects.get(pk=job_id, user=request.user)
+	job = Classical_PSHA_Risk.objects.get(pk=job_id)
 
 	adm_2_id = request.GET.get('country')
 
@@ -2024,7 +2024,7 @@ def results_psha_risk_locations_ajax(request, job_id):
 
 @login_required
 def results_psha_risk_curves_ajax(request, job_id):
-	job = Classical_PSHA_Risk.objects.get(pk=job_id, user=request.user)
+	job = Classical_PSHA_Risk.objects.get(pk=job_id)
 
 	vulnerability = request.GET.get('vulnerability')
 	asset = request.GET.get('asset')
@@ -2169,7 +2169,7 @@ def add_event_based_hazard(request):
 
 @login_required
 def results_event_based_hazard(request, job_id):
-	job = get_object_or_404(Event_Based_Hazard ,pk=job_id, user=request.user)
+	job = get_object_or_404(Event_Based_Hazard ,pk=job_id)
 	#imts = job.imt_l.keys()
 	return render(request, 'jobs/results_event_based_hazard.html', {'job': job})
 
@@ -2309,7 +2309,7 @@ def add_event_based_risk(request):
 
 @login_required
 def results_event_based_risk(request, job_id):
-	job = get_object_or_404(Event_Based_Risk ,pk=job_id, user=request.user)
+	job = get_object_or_404(Event_Based_Risk ,pk=job_id)
 	vulnerability_types = Classical_PSHA_Risk_Vulnerability.objects.filter(job = job)
 
 	economic_loss_types = []
